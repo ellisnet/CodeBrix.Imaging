@@ -1,0 +1,48 @@
+// Copyright (c) Six Labors.
+// Licensed under the Apache License, Version 2.0.
+
+using System;
+using System.Buffers;
+using System.IO;
+using CodeBrix.Imaging.Formats.Tiff.Constants;
+using CodeBrix.Imaging.Memory;
+
+namespace CodeBrix.Imaging.Formats.Tiff.Compression.Compressors; //Was previously: namespace SixLabors.ImageSharp.Formats.Tiff.Compression.Compressors;
+
+internal sealed class PackBitsCompressor : TiffBaseCompressor
+{
+    private IMemoryOwner<byte> pixelData;
+
+    public PackBitsCompressor(Stream output, MemoryAllocator allocator, int width, int bitsPerPixel)
+        : base(output, allocator, width, bitsPerPixel)
+    {
+    }
+
+    /// <inheritdoc/>
+    public override TiffCompression Method => TiffCompression.PackBits;
+
+    /// <inheritdoc/>
+    public override void Initialize(int rowsPerStrip)
+    {
+        int additionalBytes = ((this.BytesPerRow + 126) / 127) + 1;
+        this.pixelData = this.Allocator.Allocate<byte>(this.BytesPerRow + additionalBytes);
+    }
+
+    /// <inheritdoc/>
+    public override void CompressStrip(Span<byte> rows, int height)
+    {
+        DebugGuard.IsTrue(rows.Length % height == 0, "Invalid height");
+        DebugGuard.IsTrue(this.BytesPerRow == rows.Length / height, "The widths must match");
+
+        Span<byte> span = this.pixelData.GetSpan();
+        for (int i = 0; i < height; i++)
+        {
+            Span<byte> row = rows.Slice(i * this.BytesPerRow, this.BytesPerRow);
+            int size = PackBitsWriter.PackBits(row, span);
+            this.Output.Write(span.Slice(0, size));
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing) => this.pixelData?.Dispose();
+}

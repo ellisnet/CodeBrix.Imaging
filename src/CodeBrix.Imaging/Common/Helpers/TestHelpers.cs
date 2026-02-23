@@ -1,0 +1,16 @@
+// Copyright (c) Six Labors.
+// Licensed under the Apache License, Version 2.0.
+
+namespace CodeBrix.Imaging.Common.Helpers; //Was previously: namespace SixLabors.ImageSharp.Common.Helpers;
+
+/// <summary>
+/// Internal utilities intended to be only used in tests.
+/// </summary>
+internal static class TestHelpers
+{
+    /// <summary>
+    /// This constant is useful to verify the target framework ImageSharp has been built against.
+    /// Only intended to be used in tests!
+    /// </summary>
+    internal const string ImageSharpBuiltAgainst = "net10.0";
+}
