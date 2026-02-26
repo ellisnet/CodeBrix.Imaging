@@ -3,6 +3,22 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- NuGet package properties -->
+    <PackageId>CodeBrix.Imaging.ApacheLicenseForever</PackageId>
+    <Version>1.0.48</Version>
+    <Authors>Jeremy Ellis</Authors>
+    <Description>A fully managed, cross-platform 2D image processing and font handling library for .NET. Supports BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, and WebP image formats, image processing, filters, effects, drawing, text rendering, font handling, and image metadata.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/ellisnet/CodeBrix.Imaging</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ellisnet/CodeBrix.Imaging</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>icon-codebrix-128.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>image;imaging;png;jpeg;jpg;gif;bmp;tiff;webp;pbm;tga;fonts;truetype;processing;resize;crop;filter;codebrix</PackageTags>
+    <Copyright>Copyright (c) 2026 Jeremy Ellis</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -12,5 +28,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);NULLABLE_ATTRIBUTES;SUPPORTS_ENCODING_STRING;SUPPORTS_HASHCODE;SUPPORTS_MATHF;SUPPORTS_CODECOVERAGE</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="icon-codebrix-128.png" Pack="true" PackagePath="" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
 </Project>
