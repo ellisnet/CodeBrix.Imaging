@@ -7,6 +7,8 @@
     <!-- NuGet package properties -->
     <PackageId>CodeBrix.Imaging.ApacheLicenseForever</PackageId>
     <Version>1.0.48</Version>
+    <Product>CodeBrix.Imaging</Product>
+    <Title>CodeBrix.Imaging</Title>
     <Authors>Jeremy Ellis</Authors>
     <Description>A fully managed, cross-platform 2D image processing and font handling library for .NET. Supports BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, and WebP image formats, image processing, filters, effects, drawing, text rendering, font handling, and image metadata.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -16,7 +18,7 @@
     <PackageIcon>icon-codebrix-128.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>image;imaging;png;jpeg;jpg;gif;bmp;tiff;webp;pbm;tga;fonts;truetype;processing;resize;crop;filter;codebrix</PackageTags>
-    <Copyright>Copyright (c) 2026 Jeremy Ellis</Copyright>
+    <Copyright>Copyright (c) 2026 Jeremy Ellis and contributors</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
