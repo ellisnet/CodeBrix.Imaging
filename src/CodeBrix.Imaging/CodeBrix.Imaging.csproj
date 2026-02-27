@@ -6,7 +6,7 @@
 
     <!-- NuGet package properties -->
     <PackageId>CodeBrix.Imaging.ApacheLicenseForever</PackageId>
-    <Version>1.0.48</Version>
+    <Version>1.0.49</Version>
     <Product>CodeBrix.Imaging</Product>
     <Title>CodeBrix.Imaging</Title>
     <Authors>Jeremy Ellis</Authors>
@@ -17,10 +17,10 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>icon-codebrix-128.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>image;imaging;png;jpeg;jpg;gif;bmp;tiff;webp;pbm;tga;fonts;truetype;processing;resize;crop;filter;codebrix</PackageTags>
     <Copyright>Copyright (c) 2026 Jeremy Ellis and contributors</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>image;imaging;png;jpeg;jpg;gif;bmp;tiff;webp;pbm;tga;fonts;truetype;processing;resize;crop;filter;CodeBrix</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
