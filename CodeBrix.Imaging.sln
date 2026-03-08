@@ -12,8 +12,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99F8674B-6369-46AE-93D2-D6FB3E999D18}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		icon-codebrix-128.png = icon-codebrix-128.png
 		LICENSE = LICENSE
 		README.md = README.md
+		THIRD-PARTY-NOTICES.txt = THIRD-PARTY-NOTICES.txt
 	EndProjectSection
 EndProject
 Global
