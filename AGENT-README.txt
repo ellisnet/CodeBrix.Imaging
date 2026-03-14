@@ -117,7 +117,106 @@ Load with a specific pixel type:
 
     using var image = Image.Load<Rgba32>("photo.jpg");
 
-3. SAVING IMAGES
+3. LOADING IMAGES FROM RAW PIXEL DATA
+---------------------------------------
+
+IMPORTANT: Image.LoadPixelData<TPixel>() requires FOUR parameters, not three.
+The fourth parameter is an IImageFormat specifying the intended image format.
+This is a common point of confusion — other imaging libraries often make the
+format parameter optional, but CodeBrix.Imaging requires it.
+
+Signature:
+
+    Image.LoadPixelData<TPixel>(byte[] data, int width, int height, IImageFormat format)
+
+Required namespaces:
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.PixelFormats;     // For Rgba32, Rgb24, etc.
+    using CodeBrix.Imaging.Formats.Png;      // For PngFormat.Instance (or other format)
+
+Example — creating an image from an RGBA byte array and saving as PNG:
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.PixelFormats;
+    using CodeBrix.Imaging.Formats.Png;
+
+    // pixelData is a byte[] containing raw RGBA pixel data (4 bytes per pixel)
+    // laid out in row-major order: R, G, B, A, R, G, B, A, ...
+    byte[] pixelData = GetPixelDataFromSomewhere();
+    int width = 800;
+    int height = 600;
+
+    using var image = Image.LoadPixelData<Rgba32>(
+        pixelData, width, height, PngFormat.Instance);
+    image.Save("output.png", new PngEncoder());
+
+Example — creating from RGB data (no alpha channel):
+
+    using var image = Image.LoadPixelData<Rgb24>(
+        rgbData, width, height, PngFormat.Instance);
+
+The format parameter tells CodeBrix.Imaging what format the image will be
+associated with. Common format instances:
+
+    PngFormat.Instance   (from CodeBrix.Imaging.Formats.Png)
+    JpegFormat.Instance  (from CodeBrix.Imaging.Formats.Jpeg)
+    BmpFormat.Instance   (from CodeBrix.Imaging.Formats.Bmp)
+    GifFormat.Instance   (from CodeBrix.Imaging.Formats.Gif)
+    WebpFormat.Instance  (from CodeBrix.Imaging.Formats.Webp)
+    TiffFormat.Instance  (from CodeBrix.Imaging.Formats.Tiff)
+    TgaFormat.Instance   (from CodeBrix.Imaging.Formats.Tga)
+    PbmFormat.Instance   (from CodeBrix.Imaging.Formats.Pbm)
+
+NOTE: You can save the image in a different format than the one specified in
+LoadPixelData by using a different encoder in the Save() call. The format
+parameter in LoadPixelData sets the image's default format association, but
+does not prevent saving in other formats.
+
+LOADING BGRA PIXEL DATA (e.g., from PDFium, Direct2D, Cairo, GDI+):
+
+    Many native renderers output pixels in BGRA byte order (Blue, Green, Red,
+    Alpha). Use Image.LoadPixelDataFromBgra() to load BGRA data directly —
+    the library handles the BGRA-to-RGBA conversion internally using
+    SIMD-optimized (AVX2/SSSE3) channel reordering for maximum performance.
+
+    Signature:
+
+        Image.LoadPixelDataFromBgra(byte[] data, int width, int height, IImageFormat format)
+
+    This returns an Image<Rgba32> with all channels correctly reordered.
+
+    Example — loading BGRA pixel data from PDFium:
+
+        using CodeBrix.Imaging;
+        using CodeBrix.Imaging.PixelFormats;
+        using CodeBrix.Imaging.Formats.Png;
+
+        // bgraData is a byte[] from PDFium (or other native renderer)
+        // in BGRA order: B, G, R, A, B, G, R, A, ...
+        byte[] bgraData = GetBgraDataFromPdfium();
+        int width = 2550;   // 8.5 inches at 300 DPI
+        int height = 3300;  // 11 inches at 300 DPI
+
+        using var image = Image.LoadPixelDataFromBgra(
+            bgraData, width, height, PngFormat.Instance);
+        image.Save("page.png", new PngEncoder());
+
+    LoadPixelDataFromBgra also accepts ReadOnlySpan<byte> and an optional
+    Configuration parameter, mirroring the LoadPixelData overloads:
+
+        Image.LoadPixelDataFromBgra(ReadOnlySpan<byte> data, int width, int height, IImageFormat format)
+        Image.LoadPixelDataFromBgra(Configuration config, byte[] data, int width, int height, IImageFormat format)
+        Image.LoadPixelDataFromBgra(Configuration config, ReadOnlySpan<byte> data, int width, int height, IImageFormat format)
+
+    PERFORMANCE NOTE: LoadPixelDataFromBgra is significantly faster than
+    manually swapping R and B bytes in a loop before calling LoadPixelData.
+    The internal conversion uses hardware-accelerated SIMD instructions
+    (AVX2 processes 8 pixels at a time, SSSE3 processes 4 pixels at a time)
+    and writes directly into the image's pixel buffer — eliminating both the
+    scalar byte-swap loop and the intermediate buffer allocation.
+
+4. SAVING IMAGES
 -----------------
 
 Save to file (format inferred from extension):
@@ -141,7 +240,7 @@ Save asynchronously:
 
     await image.SaveAsync(stream, new PngEncoder(), CancellationToken.None);
 
-4. FORMAT DETECTION AND IDENTIFICATION
+5. FORMAT DETECTION AND IDENTIFICATION
 ---------------------------------------
 
 Detect the format of an image without fully loading it:
@@ -156,7 +255,7 @@ Get image dimensions without fully loading:
     var info = Image.Identify(stream);
     Console.WriteLine($"{info.Width}x{info.Height}");
 
-5. FORMAT CONVERSION
+6. FORMAT CONVERSION
 ---------------------
 
 Convert between formats by loading in one format and saving in another:
@@ -587,6 +686,75 @@ Example 6: Detect Format Before Processing
         // Process image...
     }
 
+Example 7: Create Image from Raw Pixel Data (e.g., from a native renderer)
+---------------------------------------------------------------------------
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.PixelFormats;
+    using CodeBrix.Imaging.Formats.Png;
+
+    // Suppose you have raw RGBA pixel data from a native rendering engine
+    // (e.g., PDFium, Skia, Cairo, or a custom renderer).
+    // The data must be in the correct byte order for the pixel format:
+    //   Rgba32 expects: R, G, B, A, R, G, B, A, ... (row-major order)
+    //   Rgb24 expects:  R, G, B, R, G, B, ...
+
+    int width = 2550;   // e.g., 8.5 inches at 300 DPI
+    int height = 3300;  // e.g., 11 inches at 300 DPI
+    byte[] pixelData = new byte[width * height * 4]; // 4 bytes per Rgba32 pixel
+
+    // ... fill pixelData from your renderer ...
+
+    // IMPORTANT: LoadPixelData requires 4 arguments. The 4th is the image format.
+    using var image = Image.LoadPixelData<Rgba32>(
+        pixelData, width, height, PngFormat.Instance);
+
+    // Save as PNG
+    image.Save("rendered_page.png", new PngEncoder());
+
+    // Or save as JPEG (the format in LoadPixelData doesn't restrict save format)
+    image.Save("rendered_page.jpg", new JpegEncoder());
+
+Example 8: Load BGRA Pixel Data from a Native Renderer
+--------------------------------------------------------
+    using System.Runtime.InteropServices;
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.PixelFormats;
+    using CodeBrix.Imaging.Formats.Png;
+
+    // Many native renderers (PDFium, Direct2D, Cairo, GDI+) output pixels in
+    // BGRA order (Blue, Green, Red, Alpha). Use LoadPixelDataFromBgra() to
+    // load directly — no manual byte swapping needed.
+
+    // Simple case: BGRA data already in a byte array with no stride padding
+    byte[] bgraData = GetBgraFromRenderer();
+    int width = 800;
+    int height = 600;
+
+    using var image = Image.LoadPixelDataFromBgra(
+        bgraData, width, height, PngFormat.Instance);
+    image.Save("output.png", new PngEncoder());
+
+    // Advanced case: Reading from an unmanaged buffer with stride padding.
+    // Native renderers often use a stride (bytes per row) that is larger than
+    // width * bytesPerPixel due to memory alignment. When stride != width * 4,
+    // you must copy the data into a contiguous array first, stripping padding.
+    IntPtr nativeBuffer = GetBufferFromNativeRenderer();
+    int stride = GetStrideFromNativeRenderer();
+
+    var bgraPixelData = new byte[width * height * 4];
+    for (var y = 0; y < height; y++)
+    {
+        Marshal.Copy(
+            nativeBuffer + y * stride,  // source: row start in native buffer
+            bgraPixelData,
+            y * width * 4,               // destination: contiguous row start
+            width * 4);                  // copy only the pixel data (no padding)
+    }
+
+    using var image2 = Image.LoadPixelDataFromBgra(
+        bgraPixelData, width, height, PngFormat.Instance);
+    image2.Save("output.png", new PngEncoder());
+
 ================================================================================
 
 PERFORMANCE TIPS FOR CODING AGENTS
@@ -651,6 +819,22 @@ COMMON PITFALLS TO AVOID
 7. DO NOT forget to reset stream position after DetectFormat() if you
    subsequently want to Load() from the same stream.
 
+8. DO NOT call Image.LoadPixelData<TPixel>() with only 3 arguments. It
+   requires 4: (byte[] data, int width, int height, IImageFormat format).
+   Omitting the format parameter will cause a compilation error (CS1501).
+   Use the appropriate format instance, e.g., PngFormat.Instance.
+
+9. DO NOT pass BGRA-ordered pixel data directly to LoadPixelData<Rgba32>().
+    Many native renderers (PDFium, Direct2D, Cairo, GDI+) output BGRA byte
+    order. Use LoadPixelDataFromBgra() instead — it handles the conversion
+    internally using SIMD-optimized channel reordering. If you pass BGRA data
+    to LoadPixelData<Rgba32>(), colors will appear with red and blue swapped.
+
+10. DO NOT confuse stride with width when reading from native pixel buffers.
+    Stride (bytes per row) may be larger than width * bytesPerPixel due to
+    memory alignment padding. Always use the stride reported by the native
+    API when indexing into the source buffer.
+
 ================================================================================
 
 COMMON USING STATEMENT COMBINATIONS
@@ -668,6 +852,12 @@ For saving to a specific format with an explicit encoder, add one of:
     using CodeBrix.Imaging.Formats.Jpeg;
     using CodeBrix.Imaging.Formats.Bmp;
     using CodeBrix.Imaging.Formats.Webp;
+
+For loading raw pixel data (e.g., from native renderers), use:
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.PixelFormats;
+    using CodeBrix.Imaging.Formats.Png;   // Or whichever format you need
 
 For text rendering on images, add:
 
@@ -698,7 +888,11 @@ Do NOT attempt to use CodeBrix.Imaging for the following - it will not work:
 
 This library IS for: loading, saving, converting, resizing, cropping,
 filtering, drawing on, and adding text to 2D raster images in the supported
-formats (BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, WebP).
+formats (BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, WebP). It can also create
+images from raw pixel data via Image.LoadPixelData<TPixel>() (for RGBA data)
+or Image.LoadPixelDataFromBgra() (for BGRA data from native renderers),
+which is useful for integrating with native rendering engines that produce
+raw pixel buffers.
 
 ================================================================================
 
@@ -804,6 +998,8 @@ Install:        dotnet add package CodeBrix.Imaging.ApacheLicenseForever
 Load:           Image.Load("file.jpg")
 Load<T>:        Image.Load<Rgba32>("file.jpg")
 Create:         new Image<Rgba32>(width, height)
+LoadPixelData:  Image.LoadPixelData<Rgba32>(data, width, height, PngFormat.Instance)
+LoadFromBgra:   Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance)
 Save:           image.Save("file.png")
 Save stream:    image.Save(stream, new PngEncoder())
 Detect format:  Image.DetectFormat(stream)

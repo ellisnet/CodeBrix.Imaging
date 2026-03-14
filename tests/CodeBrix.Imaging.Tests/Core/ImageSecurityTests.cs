@@ -1131,6 +1131,184 @@ public class ImageSecurityTests
 
     #endregion
 
+    #region LoadPixelDataFromBgra Tests
+
+    [Fact]
+    public void LoadPixelDataFromBgra_WithByteArray_CorrectlyConvertsToRgba()
+    {
+        // Arrange - BGRA byte data (B, G, R, A order per pixel)
+        int width = 2;
+        int height = 2;
+        var bgraData = new byte[width * height * 4];
+
+        // Pixel (0,0) = Red in BGRA: B=0, G=0, R=255, A=255
+        bgraData[0] = 0; bgraData[1] = 0; bgraData[2] = 255; bgraData[3] = 255;
+        // Pixel (1,0) = Green in BGRA: B=0, G=255, R=0, A=255
+        bgraData[4] = 0; bgraData[5] = 255; bgraData[6] = 0; bgraData[7] = 255;
+        // Pixel (0,1) = Blue in BGRA: B=255, G=0, R=0, A=255
+        bgraData[8] = 255; bgraData[9] = 0; bgraData[10] = 0; bgraData[11] = 255;
+        // Pixel (1,1) = White in BGRA: B=255, G=255, R=255, A=128
+        bgraData[12] = 255; bgraData[13] = 255; bgraData[14] = 255; bgraData[15] = 128;
+
+        // Act
+        using var image = Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance);
+
+        // Assert - pixels should be in RGBA order now
+        Assert.Equal(width, image.Width);
+        Assert.Equal(height, image.Height);
+        Assert.Equal(new Rgba32(255, 0, 0, 255), image[0, 0]);     // Red
+        Assert.Equal(new Rgba32(0, 255, 0, 255), image[1, 0]);     // Green
+        Assert.Equal(new Rgba32(0, 0, 255, 255), image[0, 1]);     // Blue
+        Assert.Equal(new Rgba32(255, 255, 255, 128), image[1, 1]); // White semi-transparent
+        _output.WriteLine("BGRA to RGBA conversion via LoadPixelDataFromBgra verified correctly");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_SetsExpectedFormat()
+    {
+        // Arrange
+        int width = 2;
+        int height = 2;
+        var bgraData = new byte[width * height * 4];
+
+        // Act
+        using var image = Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance);
+
+        // Assert
+        Assert.Equal(PngFormat.Instance, image.Metadata.ExpectedFormat);
+        _output.WriteLine("LoadPixelDataFromBgra sets expected format correctly");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_WithConfiguration_CreatesImageWithCorrectDimensions()
+    {
+        // Arrange
+        int width = 50;
+        int height = 30;
+        var bgraData = new byte[width * height * 4];
+
+        // Act
+        using var image = Image.LoadPixelDataFromBgra(
+            Configuration.Default, bgraData, width, height, BmpFormat.Instance);
+
+        // Assert
+        Assert.Equal(width, image.Width);
+        Assert.Equal(height, image.Height);
+        _output.WriteLine($"LoadPixelDataFromBgra with Configuration created {width}x{height} image");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_WithInsufficientData_ThrowsArgumentException()
+    {
+        // Arrange - provide fewer bytes than width * height * 4
+        int width = 10;
+        int height = 10;
+        var bgraData = new byte[100]; // Only 100 bytes, need 400
+
+        // Act & Assert
+        var ex = Assert.ThrowsAny<ArgumentException>(
+            () => Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance));
+        _output.WriteLine($"Exception for insufficient data: {ex.Message}");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_then_PngSave_then_Load_PreservesPixels()
+    {
+        // Arrange - create BGRA data with a known gradient pattern
+        int width = 8;
+        int height = 8;
+        var bgraData = new byte[width * height * 4];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int i = (y * width + x) * 4;
+                byte r = (byte)(x * 32);
+                byte g = (byte)(y * 32);
+                byte b = (byte)((x + y) * 16);
+                byte a = 255;
+
+                // Write in BGRA order
+                bgraData[i] = b;
+                bgraData[i + 1] = g;
+                bgraData[i + 2] = r;
+                bgraData[i + 3] = a;
+            }
+        }
+
+        // Act - create from BGRA pixel data, save as PNG, reload
+        using var image = Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance);
+        using var stream = new MemoryStream();
+        image.Save(stream, new PngEncoder());
+        stream.Position = 0;
+        using var decoded = Image.Load<Rgba32>(stream);
+
+        // Assert - verify pixels survived the full pipeline
+        Assert.Equal(width, decoded.Width);
+        Assert.Equal(height, decoded.Height);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                var expected = new Rgba32(
+                    (byte)(x * 32),
+                    (byte)(y * 32),
+                    (byte)((x + y) * 16),
+                    255);
+                Assert.Equal(expected, decoded[x, y]);
+            }
+        }
+
+        _output.WriteLine($"Full BGRA pipeline roundtrip: {width}x{height} pixels preserved through LoadPixelDataFromBgra -> PNG -> Load");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_MatchesManualConversion()
+    {
+        // Arrange - verify that LoadPixelDataFromBgra produces the same result
+        // as manually converting BGRA to RGBA and calling LoadPixelData<Rgba32>
+        int width = 16;
+        int height = 16;
+        var bgraData = new byte[width * height * 4];
+        var random = new Random(42); // Fixed seed for reproducibility
+        random.NextBytes(bgraData);
+
+        // Ensure alpha values are non-zero for meaningful comparison
+        for (int i = 3; i < bgraData.Length; i += 4)
+        {
+            bgraData[i] = 255;
+        }
+
+        // Manual BGRA->RGBA conversion
+        var rgbaData = new byte[bgraData.Length];
+        for (int i = 0; i < bgraData.Length; i += 4)
+        {
+            rgbaData[i] = bgraData[i + 2];     // R from BGRA offset 2
+            rgbaData[i + 1] = bgraData[i + 1]; // G stays
+            rgbaData[i + 2] = bgraData[i];     // B from BGRA offset 0
+            rgbaData[i + 3] = bgraData[i + 3]; // A stays
+        }
+
+        // Act
+        using var fromBgra = Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance);
+        using var fromManual = Image.LoadPixelData<Rgba32>(rgbaData, width, height, PngFormat.Instance);
+
+        // Assert - both images should have identical pixels
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Assert.Equal(fromManual[x, y], fromBgra[x, y]);
+            }
+        }
+
+        _output.WriteLine($"LoadPixelDataFromBgra matches manual conversion for {width}x{height} random pixels");
+    }
+
+    #endregion
+
     #region Pixel Access Bounds Validation
 
     [Fact]
