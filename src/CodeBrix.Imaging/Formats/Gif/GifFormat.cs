@@ -14,9 +14,7 @@ public sealed class GifFormat : IImageFormat<GifMetadata, GifFrameMetadata>
     public const string FormatMimeType = "image/gif";
     public const string FormatDefaultExtension = ".gif";
 
-    private GifFormat()
-    {
-    }
+    private GifFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -34,6 +32,9 @@ public sealed class GifFormat : IImageFormat<GifMetadata, GifFrameMetadata>
 
     /// <inheritdoc/>
     public IEnumerable<string> FileExtensions => GifConstants.FileExtensions;
+
+    /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
 
     /// <inheritdoc/>
     public GifMetadata CreateDefaultFormatMetadata() => new GifMetadata();

@@ -14,9 +14,7 @@ public sealed class WebpFormat : IImageFormat<WebpMetadata>
     public const string FormatMimeType = "image/webp";
     public const string FormatDefaultExtension = ".webp";
 
-    private WebpFormat()
-    {
-    }
+    private WebpFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -34,6 +32,9 @@ public sealed class WebpFormat : IImageFormat<WebpMetadata>
 
     /// <inheritdoc/>
     public IEnumerable<string> FileExtensions => WebpConstants.FileExtensions;
+
+    /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
 
     /// <inheritdoc/>
     public WebpMetadata CreateDefaultFormatMetadata() => new WebpMetadata();

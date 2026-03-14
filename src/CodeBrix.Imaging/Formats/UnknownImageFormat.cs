@@ -10,7 +10,8 @@ public sealed class UnknownImageFormat : IImageFormat
     public string Name => FormatName;
     public string DefaultMimeType => FormatMimeType;
     public IEnumerable<string> MimeTypes => [FormatMimeType];
-    public IEnumerable<string> FileExtensions => [$".{FormatName}"];
+    public IEnumerable<string> FileExtensions => [DefaultFileExtension];
+    public string DefaultFileExtension => $".{FormatName}";
 
     /// <summary>
     /// Gets the current instance.

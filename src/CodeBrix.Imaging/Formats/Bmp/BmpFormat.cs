@@ -14,9 +14,7 @@ public sealed class BmpFormat : IImageFormat<BmpMetadata>
     public const string FormatMimeType = "image/bmp";
     public const string FormatDefaultExtension = ".bmp";
 
-    private BmpFormat()
-    {
-    }
+    private BmpFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -36,5 +34,10 @@ public sealed class BmpFormat : IImageFormat<BmpMetadata>
     public IEnumerable<string> FileExtensions => BmpConstants.FileExtensions;
 
     /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
+
+    /// <inheritdoc/>
     public BmpMetadata CreateDefaultFormatMetadata() => new BmpMetadata();
+
+
 }

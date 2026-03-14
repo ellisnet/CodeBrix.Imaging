@@ -16,9 +16,7 @@ public sealed class JpegFormat : IImageFormat<JpegMetadata>
     public const string FormatDefaultExtension = ".jpg";
     public const string FormatAltDefaultExtension = ".jpeg";
 
-    private JpegFormat()
-    {
-    }
+    private JpegFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -36,6 +34,9 @@ public sealed class JpegFormat : IImageFormat<JpegMetadata>
 
     /// <inheritdoc/>
     public IEnumerable<string> FileExtensions => JpegConstants.FileExtensions;
+
+    /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
 
     /// <inheritdoc/>
     public JpegMetadata CreateDefaultFormatMetadata() => new JpegMetadata();

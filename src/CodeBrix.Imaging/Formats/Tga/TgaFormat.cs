@@ -33,5 +33,8 @@ public sealed class TgaFormat : IImageFormat<TgaMetadata>
     public IEnumerable<string> FileExtensions => TgaConstants.FileExtensions;
 
     /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
+
+    /// <inheritdoc/>
     public TgaMetadata CreateDefaultFormatMetadata() => new TgaMetadata();
 }

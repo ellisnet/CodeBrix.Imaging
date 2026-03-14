@@ -14,9 +14,7 @@ public sealed class PngFormat : IImageFormat<PngMetadata>
     public const string FormatMimeType = "image/png";
     public const string FormatDefaultExtension = ".png";
 
-    private PngFormat()
-    {
-    }
+    private PngFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -34,6 +32,9 @@ public sealed class PngFormat : IImageFormat<PngMetadata>
 
     /// <inheritdoc/>
     public IEnumerable<string> FileExtensions => PngConstants.FileExtensions;
+
+    /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
 
     /// <inheritdoc/>
     public PngMetadata CreateDefaultFormatMetadata() => new PngMetadata();

@@ -29,6 +29,11 @@ public interface IImageFormat
     /// Gets the file extensions this image format commonly uses.
     /// </summary>
     IEnumerable<string> FileExtensions { get; }
+
+    /// <summary>
+    /// Gets the default file extension for this image format.
+    /// </summary>
+    string DefaultFileExtension { get; }
 }
 
 /// <summary>

@@ -16,9 +16,7 @@ public sealed class PbmFormat : IImageFormat<PbmMetadata>
     public const string FormatAlt1DefaultExtension = ".pbm";
     public const string FormatAlt2DefaultExtension = ".pgm";
 
-    private PbmFormat()
-    {
-    }
+    private PbmFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -36,6 +34,9 @@ public sealed class PbmFormat : IImageFormat<PbmMetadata>
 
     /// <inheritdoc/>
     public IEnumerable<string> FileExtensions => PbmConstants.FileExtensions;
+
+    /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
 
     /// <inheritdoc/>
     public PbmMetadata CreateDefaultFormatMetadata() => new();

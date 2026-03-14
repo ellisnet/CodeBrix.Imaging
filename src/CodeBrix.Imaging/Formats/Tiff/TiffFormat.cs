@@ -17,9 +17,7 @@ public sealed class TiffFormat : IImageFormat<TiffMetadata, TiffFrameMetadata>
     public const string FormatDefaultExtension = ".tiff";
     public const string FormatAltDefaultExtension = ".tif";
 
-    private TiffFormat()
-    {
-    }
+    private TiffFormat() { }
 
     /// <summary>
     /// Gets the current instance.
@@ -37,6 +35,9 @@ public sealed class TiffFormat : IImageFormat<TiffMetadata, TiffFrameMetadata>
 
     /// <inheritdoc/>
     public IEnumerable<string> FileExtensions => TiffConstants.FileExtensions;
+
+    /// <inheritdoc/>
+    public string DefaultFileExtension => FormatDefaultExtension;
 
     /// <inheritdoc/>
     public TiffMetadata CreateDefaultFormatMetadata() => new TiffMetadata();
