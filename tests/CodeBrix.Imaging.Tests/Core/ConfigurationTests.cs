@@ -179,7 +179,8 @@ public class ConfigurationTests
         var newConfig = new Configuration();
 
         //Act
-        newConfig.MaxDegreeOfParallelism = 2;
+        // Use a value that is guaranteed to differ from the default (Environment.ProcessorCount)
+        newConfig.MaxDegreeOfParallelism = Environment.ProcessorCount + 1;
 
         //Assert
         Assert.NotEqual(defaultConfig.MaxDegreeOfParallelism, newConfig.MaxDegreeOfParallelism);
