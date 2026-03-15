@@ -26,6 +26,8 @@ public class ImageManipulationTests
     public const string TempFolder = @"/Users/jeremy/Temp";
 #elif TESTING_ON_LINUX_ORANGEPI
     public const string TempFolder = "/home/orangepi/Temp";
+#elif TESTING_ON_LINUX_MINT
+    public const string TempFolder = "/home/mint/Temp";
 #else
     //TESTING_ON_WINDOWS
     public const string TempFolder = @"C:\Temp";
