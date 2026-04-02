@@ -57,6 +57,7 @@ When writing code with CodeBrix.Imaging, these are the primary namespaces:
     using CodeBrix.Imaging.Formats.Webp;     // WebP encoder/decoder
     using CodeBrix.Imaging.Formats.Pbm;      // PBM encoder/decoder
     using CodeBrix.Imaging.Formats.Tga;      // TGA encoder/decoder
+    using CodeBrix.Imaging.Helpers;          // BmpFormatHelper (8bpp grayscale BMP export)
     using CodeBrix.Imaging.Drawing;          // Drawing and text rendering (if applicable)
 
 ================================================================================
@@ -267,6 +268,94 @@ Or more explicitly:
 
     using var image = Image.Load("photo.bmp");
     image.Save("photo.webp"); // Converts BMP to WebP
+
+7. EXPORTING AS 8BPP GRAYSCALE BMP
+------------------------------------
+
+BmpFormatHelper provides extension methods for exporting any image as an
+8-bit-per-pixel grayscale BMP file. This is useful for document imaging
+workflows, scanner integrations, and systems that require 8bpp indexed BMPs
+(e.g., legacy document management systems).
+
+Required namespace:
+
+    using CodeBrix.Imaging.Helpers;   // For BmpFormatHelper extension methods
+
+IMPORTANT: These are "export" methods, not "save" methods. They bypass the
+library's standard encoder pipeline and do NOT update the image's
+Metadata.ExpectedFormat property. The in-memory image remains unchanged
+(still Rgba32) after the export. If you subsequently call image.Save(),
+it will save in whatever format was previously associated with the image.
+
+Methods (all are extension methods on Image):
+
+    // Sync - with default grayscale weights (R=0.3, G=0.59, B=0.11)
+    image.ExportAs8bppGrayscaleBmpFormat(stream, indexingMode);
+
+    // Async - with default grayscale weights
+    await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, indexingMode);
+
+    // Sync - with custom color matrix
+    image.ExportAs8bppGrayscaleBmpFormat(stream, colorMatrix, indexingMode);
+
+    // Async - with custom color matrix
+    await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, colorMatrix, indexingMode);
+
+Indexing Modes (BmpIndexingMode enum, from CodeBrix.Imaging.Helpers):
+
+    BmpIndexingMode.Normal (default)
+        256-entry linear grayscale palette (index 0 = black, 255 = white).
+        Each pixel's computed gray value maps directly to its palette index.
+
+    BmpIndexingMode.SystemDrawingCompatible
+        224-entry GDI+ halftone palette with empirically-determined quantization.
+        Produces output that matches System.Drawing's Format8bppIndexed conversion,
+        suitable for interop with systems that expect GDI+-compatible 8bpp BMPs.
+
+The default color matrix (BmpFormatHelper.DefaultGrayscaleColorMatrix) uses
+the standard luminance weights: R=0.3, G=0.59, B=0.11 — matching those used
+by System.Drawing.Imaging.ColorMatrix for grayscale conversion.
+
+The custom ColorMatrix overloads accept any 5x4 color matrix, but the output
+is always grayscale. The matrix controls how RGB channels are weighted to
+compute a single grayscale intensity value per pixel; it does NOT produce
+color 8bpp output.
+
+Example — export to file:
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.Helpers;
+
+    using var image = Image.Load("photo.jpg");
+    await using var fs = new FileStream("output-8bpp.bmp", FileMode.Create);
+    await image.ExportAs8bppGrayscaleBmpFormatAsync(fs);
+
+Example — export to MemoryStream with SystemDrawingCompatible mode:
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.Helpers;
+
+    using var image = Image.Load("photo.jpg");
+    using var ms = new MemoryStream();
+    await image.ExportAs8bppGrayscaleBmpFormatAsync(ms,
+        BmpIndexingMode.SystemDrawingCompatible);
+    byte[] bmpBytes = ms.ToArray();
+
+Example — export with custom color matrix (red-channel emphasis):
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.Helpers;
+
+    var redHeavyMatrix = new ColorMatrix(
+        .8f, .8f, .8f, 0f,
+        .1f, .1f, .1f, 0f,
+        .1f, .1f, .1f, 0f,
+        0f, 0f, 0f, 1f,
+        0f, 0f, 0f, 0f);
+
+    using var image = Image.Load("photo.jpg");
+    using var ms = new MemoryStream();
+    await image.ExportAs8bppGrayscaleBmpFormatAsync(ms, redHeavyMatrix);
 
 ================================================================================
 
@@ -831,9 +920,20 @@ COMMON PITFALLS TO AVOID
     to LoadPixelData<Rgba32>(), colors will appear with red and blue swapped.
 
 10. DO NOT confuse stride with width when reading from native pixel buffers.
-    Stride (bytes per row) may be larger than width * bytesPerPixel due to
-    memory alignment padding. Always use the stride reported by the native
-    API when indexing into the source buffer.
+     Stride (bytes per row) may be larger than width * bytesPerPixel due to
+     memory alignment padding. Always use the stride reported by the native
+     API when indexing into the source buffer.
+
+11. DO NOT confuse ExportAs8bppGrayscaleBmpFormat with Save/SaveAsBmp.
+     The Export methods write a specialized 8bpp grayscale BMP directly to
+     the stream and do NOT update Metadata.ExpectedFormat. The in-memory
+     image is unchanged after export. Use the standard Save()/SaveAsBmp()
+     methods for normal BMP saving (24bpp/32bpp).
+
+12. DO NOT expect ExportAs8bppGrayscaleBmpFormat with a custom ColorMatrix
+     to produce color output. The ColorMatrix controls how RGB channels are
+     weighted to compute a single grayscale intensity value — the output is
+     always grayscale regardless of the matrix used.
 
 ================================================================================
 
@@ -858,6 +958,11 @@ For loading raw pixel data (e.g., from native renderers), use:
     using CodeBrix.Imaging;
     using CodeBrix.Imaging.PixelFormats;
     using CodeBrix.Imaging.Formats.Png;   // Or whichever format you need
+
+For exporting as 8bpp grayscale BMP, use:
+
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.Helpers;        // BmpFormatHelper, BmpIndexingMode
 
 For text rendering on images, add:
 
@@ -892,7 +997,9 @@ formats (BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, WebP). It can also create
 images from raw pixel data via Image.LoadPixelData<TPixel>() (for RGBA data)
 or Image.LoadPixelDataFromBgra() (for BGRA data from native renderers),
 which is useful for integrating with native rendering engines that produce
-raw pixel buffers.
+raw pixel buffers. Additionally, it can export images as 8-bit-per-pixel
+grayscale BMP files via ExportAs8bppGrayscaleBmpFormat() — useful for
+document imaging workflows and interop with systems requiring 8bpp BMPs.
 
 ================================================================================
 
@@ -975,6 +1082,10 @@ Feature-to-test-file mapping:
   Pixel format operations:
     -> tests/CodeBrix.Imaging.Tests/PixelFormats/
 
+  8bpp grayscale BMP export (ExportAs8bppGrayscaleBmpFormat, BmpIndexingMode,
+  custom ColorMatrix, byte-level reference comparison):
+    -> tests/CodeBrix.Imaging.Tests/Advanced/Format8bppIndexedTests.cs
+
   Encoder detection, visitor pattern, configuration access, pixel memory:
     -> tests/CodeBrix.Imaging.Tests/Advanced/AdvancedImageExtensionsTests.cs
 
@@ -1002,6 +1113,8 @@ LoadPixelData:  Image.LoadPixelData<Rgba32>(data, width, height, PngFormat.Insta
 LoadFromBgra:   Image.LoadPixelDataFromBgra(bgraData, width, height, PngFormat.Instance)
 Save:           image.Save("file.png")
 Save stream:    image.Save(stream, new PngEncoder())
+Export 8bpp:    image.ExportAs8bppGrayscaleBmpFormat(stream)
+Export 8bpp:    await image.ExportAs8bppGrayscaleBmpFormatAsync(stream)
 Detect format:  Image.DetectFormat(stream)
 Identify:       Image.Identify(stream)
 Resize:         image.Mutate(x => x.Resize(w, h))

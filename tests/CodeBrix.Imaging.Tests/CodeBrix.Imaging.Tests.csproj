@@ -9,18 +9,39 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <None Remove="SampleFiles\fonts\Nabla-Regular-VariableFont_EDPT_EHLT.ttf" />
     <None Remove="SampleFiles\fonts\NotoColorEmoji-Regular.ttf" />
     <None Remove="SampleFiles\fonts\Roboto-Regular.ttf" />
+    <None Remove="SampleFiles\MakeGrayscaleAnd8Bit_from_BMP_reference.bmp" />
+    <None Remove="SampleFiles\MakeGrayscaleAnd8Bit_from_JPG_reference.bmp" />
+    <None Remove="SampleFiles\MakeGrayscaleAnd8Bit_from_PNG_reference.bmp" />
     <None Remove="SampleFiles\test-image-01.bmp" />
     <None Remove="SampleFiles\test-image-01.jpg" />
     <None Remove="SampleFiles\test-image-01.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <EmbeddedResource Include="SampleFiles\fonts\Nabla-Regular-VariableFont_EDPT_EHLT.ttf" />
     <EmbeddedResource Include="SampleFiles\fonts\NotoColorEmoji-Regular.ttf" />
     <EmbeddedResource Include="SampleFiles\fonts\Roboto-Regular.ttf" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <EmbeddedResource Include="SampleFiles\test-image-01.bmp" />
     <EmbeddedResource Include="SampleFiles\test-image-01.jpg" />
     <EmbeddedResource Include="SampleFiles\test-image-01.png" />

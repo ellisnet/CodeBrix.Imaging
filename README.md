@@ -21,6 +21,7 @@ CodeBrix.Imaging is a fork of the code of the open source SixLabors.ImageSharp a
 * Color spaces and pixel formats
 * Image metadata (EXIF, IPTC, XMP)
 * Quantization and dithering
+* 8bpp grayscale BMP export (with optional System.Drawing-compatible mode)
 * Many more...
 
 ## Sample Code
@@ -75,6 +76,17 @@ using var image = Image.Load("photo.jpg");
 image.Mutate(x => x.Crop(new Rectangle(100, 100, 500, 400)));
 
 image.Save("photo-cropped.jpg");
+```
+
+### Export as 8bpp Grayscale BMP
+
+```csharp
+using CodeBrix.Imaging;
+using CodeBrix.Imaging.Helpers;
+
+using var image = Image.Load("photo.jpg");
+await using var fs = new FileStream("grayscale-8bpp.bmp", FileMode.Create);
+await image.ExportAs8bppGrayscaleBmpFormatAsync(fs);
 ```
 
 Note that additional sample code and usage examples are available in the `CodeBrix.Imaging.Tests` project.
