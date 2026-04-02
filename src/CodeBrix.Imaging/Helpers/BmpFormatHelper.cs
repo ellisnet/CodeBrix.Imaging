@@ -149,7 +149,15 @@ public static class BmpFormatHelper
 
         // Calculate row stride - each row is padded to a 4-byte boundary
         int rowStride = (width + 3) & ~3;
-        int pixelDataSize = rowStride * height;
+        long pixelDataSizeLong = (long)rowStride * height;
+        if (pixelDataSizeLong > int.MaxValue)
+        {
+            throw new InvalidOperationException(
+                $"The image dimensions ({width}x{height}) are too large for the 8bpp BMP format. "
+                + $"The pixel data size ({pixelDataSizeLong:N0} bytes) exceeds the maximum of {int.MaxValue:N0} bytes.");
+        }
+
+        int pixelDataSize = (int)pixelDataSizeLong;
 
         // BMP structure sizes
         const int fileHeaderSize = 14;
@@ -319,6 +327,11 @@ public static class BmpFormatHelper
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanWrite)
+        {
+            throw new ArgumentException("The stream must be writable.", nameof(stream));
+        }
+
         if (!Enum.IsDefined(indexingMode))
         {
             throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
@@ -349,6 +362,11 @@ public static class BmpFormatHelper
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanWrite)
+        {
+            throw new ArgumentException("The stream must be writable.", nameof(stream));
+        }
+
         if (!Enum.IsDefined(indexingMode))
         {
             throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
@@ -380,6 +398,11 @@ public static class BmpFormatHelper
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanWrite)
+        {
+            throw new ArgumentException("The stream must be writable.", nameof(stream));
+        }
+
         if (!Enum.IsDefined(indexingMode))
         {
             throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
@@ -408,6 +431,11 @@ public static class BmpFormatHelper
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanWrite)
+        {
+            throw new ArgumentException("The stream must be writable.", nameof(stream));
+        }
+
         if (!Enum.IsDefined(indexingMode))
         {
             throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
