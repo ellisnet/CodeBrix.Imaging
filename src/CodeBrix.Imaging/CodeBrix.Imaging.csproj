@@ -23,11 +23,7 @@
     <PackageTags>image;imaging;png;jpeg;jpg;gif;bmp;tiff;webp;pbm;tga;fonts;truetype;processing;resize;crop;filter;CodeBrix</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants);NULLABLE_ATTRIBUTES;SUPPORTS_ENCODING_STRING;SUPPORTS_HASHCODE;SUPPORTS_MATHF;SUPPORTS_CODECOVERAGE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);NULLABLE_ATTRIBUTES;SUPPORTS_ENCODING_STRING;SUPPORTS_HASHCODE;SUPPORTS_MATHF;SUPPORTS_CODECOVERAGE</DefineConstants>
   </PropertyGroup>
 

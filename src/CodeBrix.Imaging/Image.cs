@@ -34,7 +34,6 @@ public abstract partial class Image : IImage, IConfigurationProvider
     /// <param name="pixelType">The <see cref="PixelTypeInfo"/>.</param>
     /// <param name="metadata">The <see cref="ImageMetadata"/>.</param>
     /// <param name="size">The <see cref="size"/>.</param>
-    /// <param name="format">The <see cref="Format" />.</param>
     protected Image(Configuration configuration, PixelTypeInfo pixelType, ImageMetadata metadata, Size size)
     {
         this.configuration = configuration ?? Configuration.Default;

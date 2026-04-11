@@ -57,17 +57,27 @@ public sealed class XmpProfile : IDeepCloneable<XmpProfile>
             return null;
         }
 
-        // Strip leading whitespace, as the XmlReader doesn't like them.
-        var count = byteArray.Length;
-        for (var i = count - 1; i > 0; i--)
+        // Strip leading and trailing null bytes, as the XmlReader doesn't like them.
+        int start = 0;
+        int end = byteArray.Length - 1;
+
+        while (start <= end && byteArray[start] == 0)
         {
-            if (byteArray[i] is 0 or 0x0f)
-            {
-                count--;
-            }
+            start++;
         }
 
-        using var stream = new MemoryStream(byteArray, 0, count);
+        while (end > start && byteArray[end] == 0)
+        {
+            end--;
+        }
+
+        int count = end - start + 1;
+        if (count <= 0)
+        {
+            return null;
+        }
+
+        using var stream = new MemoryStream(byteArray, start, count);
         using var reader = new StreamReader(stream, Encoding.UTF8);
         return XDocument.Load(reader);
     }

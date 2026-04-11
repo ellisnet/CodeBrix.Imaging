@@ -7,7 +7,6 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Threading.Tasks;
 
-// ReSharper disable SuggestVarOrType_BuiltInTypes
 // ReSharper disable InconsistentNaming
 
 namespace CodeBrix.Imaging.Helpers;
@@ -34,6 +33,9 @@ public enum BmpIndexingMode
     SystemDrawingCompatible = 1
 }
 
+/// <summary>
+/// Provides extension methods for exporting images as 8-bit-per-pixel grayscale BMP files.
+/// </summary>
 public static class BmpFormatHelper
 {
     #region SystemDrawingCompatible mode support
@@ -329,6 +331,21 @@ public static class BmpFormatHelper
         0f, 0f, 0f, 1f,
         0f, 0f, 0f, 0f);
 
+    private static void ValidateExportArguments(Image image, Stream stream, BmpIndexingMode indexingMode)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanWrite)
+        {
+            throw new ArgumentException("The stream must be writable.", nameof(stream));
+        }
+
+        if (!Enum.IsDefined(indexingMode))
+        {
+            throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
+        }
+    }
+
     /// <summary>
     /// Exports the image as an 8-bit-per-pixel grayscale BMP file to the specified stream,
     /// applying the given color matrix to determine each pixel's palette index.
@@ -349,18 +366,7 @@ public static class BmpFormatHelper
     public static void ExportAs8bppGrayscaleBmpFormat(this Image image, 
         Stream stream, ColorMatrix colorMatrix, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
     {
-        ArgumentNullException.ThrowIfNull(image);
-        ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanWrite)
-        {
-            throw new ArgumentException("The stream must be writable.", nameof(stream));
-        }
-
-        if (!Enum.IsDefined(indexingMode))
-        {
-            throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
-        }
-
+        ValidateExportArguments(image, stream, indexingMode);
         Write8bppBmp(image, stream, colorMatrix, indexingMode);
     }
 
@@ -384,18 +390,7 @@ public static class BmpFormatHelper
     public static async Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image, 
         Stream stream, ColorMatrix colorMatrix, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
     {
-        ArgumentNullException.ThrowIfNull(image);
-        ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanWrite)
-        {
-            throw new ArgumentException("The stream must be writable.", nameof(stream));
-        }
-
-        if (!Enum.IsDefined(indexingMode))
-        {
-            throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
-        }
-
+        ValidateExportArguments(image, stream, indexingMode);
         using var ms = new MemoryStream();
         Write8bppBmp(image, ms, colorMatrix, indexingMode);
         ms.Position = 0;
@@ -420,18 +415,7 @@ public static class BmpFormatHelper
     public static void ExportAs8bppGrayscaleBmpFormat(this Image image, 
         Stream stream, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
     {
-        ArgumentNullException.ThrowIfNull(image);
-        ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanWrite)
-        {
-            throw new ArgumentException("The stream must be writable.", nameof(stream));
-        }
-
-        if (!Enum.IsDefined(indexingMode))
-        {
-            throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
-        }
-
+        ValidateExportArguments(image, stream, indexingMode);
         Write8bppBmp(image, stream, DefaultGrayscaleColorMatrix, indexingMode);
     }
 
@@ -453,18 +437,7 @@ public static class BmpFormatHelper
     public static async Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image, 
         Stream stream, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
     {
-        ArgumentNullException.ThrowIfNull(image);
-        ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanWrite)
-        {
-            throw new ArgumentException("The stream must be writable.", nameof(stream));
-        }
-
-        if (!Enum.IsDefined(indexingMode))
-        {
-            throw new ArgumentException($"Unknown member: {indexingMode}", nameof(indexingMode));
-        }
-
+        ValidateExportArguments(image, stream, indexingMode);
         using var ms = new MemoryStream();
         Write8bppBmp(image, ms, DefaultGrayscaleColorMatrix, indexingMode);
         ms.Position = 0;
