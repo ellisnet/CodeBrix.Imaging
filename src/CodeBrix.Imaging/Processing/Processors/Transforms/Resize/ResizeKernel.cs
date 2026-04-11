@@ -144,9 +144,9 @@ internal readonly unsafe struct ResizeKernel
 #endif
         {
             // Destination color components
-            Vector4 result = Vector4.Zero;
-            float* bufferStart = this.bufferPtr;
-            float* bufferEnd = this.bufferPtr + this.Length;
+            var result = Vector4.Zero;
+            var bufferStart = this.bufferPtr;
+            var bufferEnd = this.bufferPtr + this.Length;
 
             while (bufferStart < bufferEnd)
             {
@@ -173,7 +173,7 @@ internal readonly unsafe struct ResizeKernel
     {
         DebugGuard.IsTrue(values.Length == this.Length, nameof(values), "ResizeKernel.Fill: values.Length != this.Length!");
 
-        for (int i = 0; i < this.Length; i++)
+        for (var i = 0; i < this.Length; i++)
         {
             this.Values[i] = (float)values[i];
         }

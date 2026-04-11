@@ -300,7 +300,7 @@ public sealed class ImageFrame<TPixel> : ImageFrame, IPixelSource<TPixel>
     /// <returns>The <see cref="bool"/> indicating the success.</returns>
     public bool DangerousTryGetSinglePixelMemory(out Memory<TPixel> memory)
     {
-        IMemoryGroup<TPixel> mg = this.GetPixelMemoryGroup();
+        var mg = this.GetPixelMemoryGroup();
         if (mg.Count > 1)
         {
             memory = default;
@@ -369,7 +369,7 @@ public sealed class ImageFrame<TPixel> : ImageFrame, IPixelSource<TPixel>
         {
             this.PixelBuffer.FastMemoryGroup.TransformTo(destination, (s, d) =>
             {
-                Span<TPixel> d1 = MemoryMarshal.Cast<TDestinationPixel, TPixel>(d);
+                var d1 = MemoryMarshal.Cast<TDestinationPixel, TPixel>(d);
                 s.CopyTo(d1);
             });
             return;
@@ -434,7 +434,7 @@ public sealed class ImageFrame<TPixel> : ImageFrame, IPixelSource<TPixel>
     /// <param name="value">The value to initialize the bitmap with.</param>
     internal void Clear(TPixel value)
     {
-        MemoryGroup<TPixel> group = this.PixelBuffer.FastMemoryGroup;
+        var group = this.PixelBuffer.FastMemoryGroup;
 
         if (value.Equals(default))
         {
@@ -491,10 +491,10 @@ public sealed class ImageFrame<TPixel> : ImageFrame, IPixelSource<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(in RowInterval rows)
         {
-            for (int y = rows.Min; y < rows.Max; y++)
+            for (var y = rows.Min; y < rows.Max; y++)
             {
-                Span<TPixel> sourceRow = this.source.DangerousGetRowSpan(y);
-                Span<TPixel2> targetRow = this.target.DangerousGetRowSpan(y);
+                var sourceRow = this.source.DangerousGetRowSpan(y);
+                var targetRow = this.target.DangerousGetRowSpan(y);
                 PixelOperations<TPixel>.Instance.To(this.configuration, sourceRow, targetRow);
             }
         }

@@ -43,7 +43,7 @@ public readonly struct Rational : IEquatable<Rational>
     {
         if (simplify)
         {
-            LongRational rational = new LongRational(numerator, denominator).Simplify();
+            var rational = new LongRational(numerator, denominator).Simplify();
 
             this.Numerator = (uint)rational.Numerator;
             this.Denominator = (uint)rational.Denominator;

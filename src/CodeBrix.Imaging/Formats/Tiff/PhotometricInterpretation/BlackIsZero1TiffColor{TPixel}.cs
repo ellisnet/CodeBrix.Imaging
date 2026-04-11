@@ -19,20 +19,20 @@ internal class BlackIsZero1TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         var color = default(TPixel);
 
-        int offset = 0;
+        var offset = 0;
 
-        Color black = Color.Black;
-        Color white = Color.White;
-        for (int y = top; y < top + height; y++)
+        var black = Color.Black;
+        var white = Color.White;
+        for (var y = top; y < top + height; y++)
         {
-            for (int x = left; x < left + width; x += 8)
+            for (var x = left; x < left + width; x += 8)
             {
-                byte b = data[offset++];
-                int maxShift = Math.Min(left + width - x, 8);
+                var b = data[offset++];
+                var maxShift = Math.Min(left + width - x, 8);
 
-                for (int shift = 0; shift < maxShift; shift++)
+                for (var shift = 0; shift < maxShift; shift++)
                 {
-                    int bit = (b >> (7 - shift)) & 1;
+                    var bit = (b >> (7 - shift)) & 1;
 
                     color.FromRgba32(bit == 0 ? black : white);
 

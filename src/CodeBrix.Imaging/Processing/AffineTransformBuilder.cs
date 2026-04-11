@@ -300,9 +300,9 @@ public class AffineTransformBuilder
         // Translate the origin matrix to cater for source rectangle offsets.
         var matrix = Matrix3x2.CreateTranslation(-sourceRectangle.Location);
 
-        Size size = sourceRectangle.Size;
+        var size = sourceRectangle.Size;
 
-        foreach (Func<Size, Matrix3x2> factory in this.matrixFactories)
+        foreach (var factory in this.matrixFactories)
         {
             matrix *= factory(size);
         }

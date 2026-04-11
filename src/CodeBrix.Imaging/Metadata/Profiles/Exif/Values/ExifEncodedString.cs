@@ -40,7 +40,7 @@ internal sealed class ExifEncodedString : ExifValue<EncodedString>
         }
         else if (value is byte[] buffer)
         {
-            if (ExifEncodedStringHelpers.TryParse(buffer, out EncodedString encodedString))
+            if (ExifEncodedStringHelpers.TryParse(buffer, out var encodedString))
             {
                 this.Value = encodedString;
                 return true;

@@ -61,7 +61,7 @@ internal class EdgeDetectorCompassProcessor<TPixel> : ImageProcessor<TPixel>
         var interest = Rectangle.Intersect(this.SourceRectangle, source.Bounds());
 
         // We need a clean copy for each pass to start from
-        using ImageFrame<TPixel> cleanCopy = source.Clone();
+        using var cleanCopy = source.Clone();
 
         using (var processor = new ConvolutionProcessor<TPixel>(this.Configuration, in this.kernels[0], true, this.Source, interest))
         {
@@ -74,9 +74,9 @@ internal class EdgeDetectorCompassProcessor<TPixel> : ImageProcessor<TPixel>
         }
 
         // Additional runs
-        for (int i = 1; i < this.kernels.Length; i++)
+        for (var i = 1; i < this.kernels.Length; i++)
         {
-            using ImageFrame<TPixel> pass = cleanCopy.Clone();
+            using var pass = cleanCopy.Clone();
 
             using (var processor = new ConvolutionProcessor<TPixel>(this.Configuration, in this.kernels[i], true, this.Source, interest))
             {
@@ -117,14 +117,14 @@ internal class EdgeDetectorCompassProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            ref TPixel passPixelsBase = ref MemoryMarshal.GetReference(this.passPixels.DangerousGetRowSpan(y));
-            ref TPixel targetPixelsBase = ref MemoryMarshal.GetReference(this.targetPixels.DangerousGetRowSpan(y));
+            ref var passPixelsBase = ref MemoryMarshal.GetReference(this.passPixels.DangerousGetRowSpan(y));
+            ref var targetPixelsBase = ref MemoryMarshal.GetReference(this.targetPixels.DangerousGetRowSpan(y));
 
-            for (int x = this.minX; x < this.maxX; x++)
+            for (var x = this.minX; x < this.maxX; x++)
             {
                 // Grab the max components of the two pixels
-                ref TPixel currentPassPixel = ref Unsafe.Add(ref passPixelsBase, x);
-                ref TPixel currentTargetPixel = ref Unsafe.Add(ref targetPixelsBase, x);
+                ref var currentPassPixel = ref Unsafe.Add(ref passPixelsBase, x);
+                ref var currentTargetPixel = ref Unsafe.Add(ref targetPixelsBase, x);
 
                 var pixelValue = Vector4.Max(currentPassPixel.ToVector4(), currentTargetPixel.ToVector4());
 

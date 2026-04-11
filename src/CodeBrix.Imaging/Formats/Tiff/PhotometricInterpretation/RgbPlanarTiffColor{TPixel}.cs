@@ -56,14 +56,14 @@ internal class RgbPlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
         var gBitReader = new BitReader(data[1].GetSpan());
         var bBitReader = new BitReader(data[2].GetSpan());
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                float r = rBitReader.ReadBits(this.bitsPerSampleR) / this.rFactor;
-                float g = gBitReader.ReadBits(this.bitsPerSampleG) / this.gFactor;
-                float b = bBitReader.ReadBits(this.bitsPerSampleB) / this.bFactor;
+                var r = rBitReader.ReadBits(this.bitsPerSampleR) / this.rFactor;
+                var g = gBitReader.ReadBits(this.bitsPerSampleG) / this.gFactor;
+                var b = bBitReader.ReadBits(this.bitsPerSampleB) / this.bFactor;
 
                 color.FromScaledVector4(new Vector4(r, g, b, 1.0f));
                 pixelRow[x] = color;

@@ -137,17 +137,17 @@ internal static class TransformUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static Matrix3x2 CreateCenteredTransformMatrix(Rectangle sourceRectangle, Matrix3x2 matrix)
     {
-        Rectangle destinationRectangle = GetTransformedBoundingRectangle(sourceRectangle, matrix);
+        var destinationRectangle = GetTransformedBoundingRectangle(sourceRectangle, matrix);
 
         // We invert the matrix to handle the transformation from screen to world space.
         // This ensures scaling matrices are correct.
-        Matrix3x2.Invert(matrix, out Matrix3x2 inverted);
+        Matrix3x2.Invert(matrix, out var inverted);
 
         var translationToTargetCenter = Matrix3x2.CreateTranslation(new Vector2(-destinationRectangle.Width, -destinationRectangle.Height) * .5F);
         var translateToSourceCenter = Matrix3x2.CreateTranslation(new Vector2(sourceRectangle.Width, sourceRectangle.Height) * .5F);
 
         // Translate back to world space.
-        Matrix3x2.Invert(translationToTargetCenter * inverted * translateToSourceCenter, out Matrix3x2 centered);
+        Matrix3x2.Invert(translationToTargetCenter * inverted * translateToSourceCenter, out var centered);
 
         return centered;
     }
@@ -164,7 +164,7 @@ internal static class TransformUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static Matrix4x4 CreateTaperMatrix(Size size, TaperSide side, TaperCorner corner, float fraction)
     {
-        Matrix4x4 matrix = Matrix4x4.Identity;
+        var matrix = Matrix4x4.Identity;
 
         /*
          * SkMatrix is laid out in the following manner:
@@ -285,7 +285,7 @@ internal static class TransformUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static Rectangle GetTransformedBoundingRectangle(Rectangle rectangle, Matrix3x2 matrix)
     {
-        Rectangle transformed = GetTransformedRectangle(rectangle, matrix);
+        var transformed = GetTransformedRectangle(rectangle, matrix);
         return new Rectangle(0, 0, transformed.Width, transformed.Height);
     }
 
@@ -329,7 +329,7 @@ internal static class TransformUtils
             return size;
         }
 
-        Rectangle rectangle = GetTransformedRectangle(new Rectangle(Point.Empty, size), matrix);
+        var rectangle = GetTransformedRectangle(new Rectangle(Point.Empty, size), matrix);
 
         return ConstrainSize(rectangle);
     }
@@ -350,10 +350,10 @@ internal static class TransformUtils
             return rectangle;
         }
 
-        Vector2 tl = ProjectiveTransform2D(rectangle.Left, rectangle.Top, matrix);
-        Vector2 tr = ProjectiveTransform2D(rectangle.Right, rectangle.Top, matrix);
-        Vector2 bl = ProjectiveTransform2D(rectangle.Left, rectangle.Bottom, matrix);
-        Vector2 br = ProjectiveTransform2D(rectangle.Right, rectangle.Bottom, matrix);
+        var tl = ProjectiveTransform2D(rectangle.Left, rectangle.Top, matrix);
+        var tr = ProjectiveTransform2D(rectangle.Right, rectangle.Top, matrix);
+        var bl = ProjectiveTransform2D(rectangle.Left, rectangle.Bottom, matrix);
+        var br = ProjectiveTransform2D(rectangle.Right, rectangle.Bottom, matrix);
 
         return GetBoundingRectangle(tl, tr, bl, br);
     }
@@ -376,7 +376,7 @@ internal static class TransformUtils
             return size;
         }
 
-        Rectangle rectangle = GetTransformedRectangle(new Rectangle(Point.Empty, size), matrix);
+        var rectangle = GetTransformedRectangle(new Rectangle(Point.Empty, size), matrix);
 
         return ConstrainSize(rectangle);
     }
@@ -385,8 +385,8 @@ internal static class TransformUtils
     private static Size ConstrainSize(Rectangle rectangle)
     {
         // We want to resize the canvas here taking into account any translations.
-        int height = rectangle.Top < 0 ? rectangle.Bottom : Math.Max(rectangle.Height, rectangle.Bottom);
-        int width = rectangle.Left < 0 ? rectangle.Right : Math.Max(rectangle.Width, rectangle.Right);
+        var height = rectangle.Top < 0 ? rectangle.Bottom : Math.Max(rectangle.Height, rectangle.Bottom);
+        var width = rectangle.Left < 0 ? rectangle.Right : Math.Max(rectangle.Width, rectangle.Right);
 
         // If location in either direction is translated to a negative value equal to or exceeding the
         // dimensions in either direction we need to reassign the dimension.
@@ -407,10 +407,10 @@ internal static class TransformUtils
     private static Rectangle GetBoundingRectangle(Vector2 tl, Vector2 tr, Vector2 bl, Vector2 br)
     {
         // Find the minimum and maximum "corners" based on the given vectors
-        float left = MathF.Min(tl.X, MathF.Min(tr.X, MathF.Min(bl.X, br.X)));
-        float top = MathF.Min(tl.Y, MathF.Min(tr.Y, MathF.Min(bl.Y, br.Y)));
-        float right = MathF.Max(tl.X, MathF.Max(tr.X, MathF.Max(bl.X, br.X)));
-        float bottom = MathF.Max(tl.Y, MathF.Max(tr.Y, MathF.Max(bl.Y, br.Y)));
+        var left = MathF.Min(tl.X, MathF.Min(tr.X, MathF.Min(bl.X, br.X)));
+        var top = MathF.Min(tl.Y, MathF.Min(tr.Y, MathF.Min(bl.Y, br.Y)));
+        var right = MathF.Max(tl.X, MathF.Max(tr.X, MathF.Max(bl.X, br.X)));
+        var bottom = MathF.Max(tl.Y, MathF.Max(tr.Y, MathF.Max(bl.Y, br.Y)));
 
         return Rectangle.Round(RectangleF.FromLTRB(left, top, right, bottom));
     }

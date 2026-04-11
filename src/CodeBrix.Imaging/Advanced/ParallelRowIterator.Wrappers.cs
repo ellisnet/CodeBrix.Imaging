@@ -41,16 +41,16 @@ public static partial class ParallelRowIterator
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int i)
         {
-            int yMin = this.minY + (i * this.stepY);
+            var yMin = this.minY + (i * this.stepY);
 
             if (yMin >= this.maxY)
             {
                 return;
             }
 
-            int yMax = Math.Min(yMin + this.stepY, this.maxY);
+            var yMax = Math.Min(yMin + this.stepY, this.maxY);
 
-            for (int y = yMin; y < yMax; y++)
+            for (var y = yMin; y < yMax; y++)
             {
                 // Skip the safety copy when invoking a potentially impure method on a readonly field
                 Unsafe.AsRef(in this.action).Invoke(y);
@@ -89,20 +89,20 @@ public static partial class ParallelRowIterator
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int i)
         {
-            int yMin = this.minY + (i * this.stepY);
+            var yMin = this.minY + (i * this.stepY);
 
             if (yMin >= this.maxY)
             {
                 return;
             }
 
-            int yMax = Math.Min(yMin + this.stepY, this.maxY);
+            var yMax = Math.Min(yMin + this.stepY, this.maxY);
 
-            using IMemoryOwner<TBuffer> buffer = this.allocator.Allocate<TBuffer>(this.width);
+            using var buffer = this.allocator.Allocate<TBuffer>(this.width);
 
-            Span<TBuffer> span = buffer.Memory.Span;
+            var span = buffer.Memory.Span;
 
-            for (int y = yMin; y < yMax; y++)
+            for (var y = yMin; y < yMax; y++)
             {
                 Unsafe.AsRef(in this.action).Invoke(y, span);
             }
@@ -133,14 +133,14 @@ public static partial class ParallelRowIterator
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int i)
         {
-            int yMin = this.minY + (i * this.stepY);
+            var yMin = this.minY + (i * this.stepY);
 
             if (yMin >= this.maxY)
             {
                 return;
             }
 
-            int yMax = Math.Min(yMin + this.stepY, this.maxY);
+            var yMax = Math.Min(yMin + this.stepY, this.maxY);
             var rows = new RowInterval(yMin, yMax);
 
             // Skip the safety copy when invoking a potentially impure method on a readonly field
@@ -179,17 +179,17 @@ public static partial class ParallelRowIterator
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int i)
         {
-            int yMin = this.minY + (i * this.stepY);
+            var yMin = this.minY + (i * this.stepY);
 
             if (yMin >= this.maxY)
             {
                 return;
             }
 
-            int yMax = Math.Min(yMin + this.stepY, this.maxY);
+            var yMax = Math.Min(yMin + this.stepY, this.maxY);
             var rows = new RowInterval(yMin, yMax);
 
-            using IMemoryOwner<TBuffer> buffer = this.allocator.Allocate<TBuffer>(this.width);
+            using var buffer = this.allocator.Allocate<TBuffer>(this.width);
 
             Unsafe.AsRef(in this.operation).Invoke(in rows, buffer.Memory.Span);
         }

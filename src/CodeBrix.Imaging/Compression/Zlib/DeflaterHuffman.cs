@@ -180,7 +180,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
         this.Pending.WriteBits(this.distTree.NumCodes - 1, 5);
         this.Pending.WriteBits(blTreeCodes - 4, 4);
 
-        for (int rank = 0; rank < blTreeCodes; rank++)
+        for (var rank = 0; rank < blTreeCodes; rank++)
         {
             this.Pending.WriteBits(this.blTree.Length[BitLengthOrder[rank]], 3);
         }
@@ -194,26 +194,26 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
     /// </summary>
     public void CompressBlock()
     {
-        DeflaterPendingBuffer pendingBuffer = this.Pending;
-        short* pinnedDistance = this.pinnedDistanceBuffer;
-        short* pinnedLiteral = this.pinnedLiteralBuffer;
+        var pendingBuffer = this.Pending;
+        var pinnedDistance = this.pinnedDistanceBuffer;
+        var pinnedLiteral = this.pinnedLiteralBuffer;
 
-        for (int i = 0; i < this.lastLiteral; i++)
+        for (var i = 0; i < this.lastLiteral; i++)
         {
-            int litlen = pinnedLiteral[i] & 0xFF;
+            var litlen = pinnedLiteral[i] & 0xFF;
             int dist = pinnedDistance[i];
             if (dist-- != 0)
             {
-                int lc = Lcode(litlen);
+                var lc = Lcode(litlen);
                 this.literalTree.WriteSymbol(pendingBuffer, lc);
 
-                int bits = (lc - 261) / 4;
+                var bits = (lc - 261) / 4;
                 if (bits > 0 && bits <= 5)
                 {
                     this.Pending.WriteBits(litlen & ((1 << bits) - 1), bits);
                 }
 
-                int dc = Dcode(dist);
+                var dc = Dcode(dist);
                 this.distTree.WriteSymbol(pendingBuffer, dc);
 
                 bits = (dc >> 1) - 1;
@@ -271,9 +271,9 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
         // Build bitlen tree
         this.blTree.BuildTree();
 
-        int blTreeCodes = 4;
+        var blTreeCodes = 4;
 
-        for (int i = 18; i > blTreeCodes; i--)
+        for (var i = 18; i > blTreeCodes; i--)
         {
             if (this.blTree.Length[BitLengthOrder[i]] > 0)
             {
@@ -281,19 +281,19 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
             }
         }
 
-        int opt_len = 14 + (blTreeCodes * 3) + this.blTree.GetEncodedLength()
+        var opt_len = 14 + (blTreeCodes * 3) + this.blTree.GetEncodedLength()
                       + this.literalTree.GetEncodedLength() + this.distTree.GetEncodedLength()
                       + this.extraBits;
 
-        int static_len = this.extraBits;
-        ref byte staticLLengthRef = ref MemoryMarshal.GetReference(StaticLLength);
-        for (int i = 0; i < LiteralNumber; i++)
+        var static_len = this.extraBits;
+        ref var staticLLengthRef = ref MemoryMarshal.GetReference(StaticLLength);
+        for (var i = 0; i < LiteralNumber; i++)
         {
             static_len += this.literalTree.Frequencies[i] * Unsafe.Add(ref staticLLengthRef, i);
         }
 
-        ref byte staticDLengthRef = ref MemoryMarshal.GetReference(StaticDLength);
-        for (int i = 0; i < DistanceNumber; i++)
+        ref var staticDLengthRef = ref MemoryMarshal.GetReference(StaticDLength);
+        for (var i = 0; i < DistanceNumber; i++)
         {
             static_len += this.distTree.Frequencies[i] * Unsafe.Add(ref staticDLengthRef, i);
         }
@@ -361,14 +361,14 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
         this.pinnedDistanceBuffer[this.lastLiteral] = (short)distance;
         this.pinnedLiteralBuffer[this.lastLiteral++] = (byte)(length - 3);
 
-        int lc = Lcode(length - 3);
+        var lc = Lcode(length - 3);
         this.literalTree.Frequencies[lc]++;
         if (lc >= 265 && lc < 285)
         {
             this.extraBits += (lc - 261) / 4;
         }
 
-        int dc = Dcode(distance - 1);
+        var dc = Dcode(distance - 1);
         this.distTree.Frequencies[dc]++;
         if (dc >= 4)
         {
@@ -401,10 +401,10 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
          *      fail as expected. We can't simply check whether the value is lower than
          *      15 << 12, because higher values are acceptable in the first 3 accesses.
          * Doing this reduces the total number of index checks from 4 down to just 1. */
-        int toReverseRightShiftBy12 = toReverse >> 12;
+        var toReverseRightShiftBy12 = toReverse >> 12;
         Guard.MustBeLessThanOrEqualTo<uint>((uint)toReverseRightShiftBy12, 15, nameof(toReverse));
 
-        ref byte bit4ReverseRef = ref MemoryMarshal.GetReference(Bit4Reverse);
+        ref var bit4ReverseRef = ref MemoryMarshal.GetReference(Bit4Reverse);
 
         return (short)(Unsafe.Add(ref bit4ReverseRef, toReverse & 0xF) << 12
                        | Unsafe.Add(ref bit4ReverseRef, (toReverse >> 4) & 0xF) << 8
@@ -443,7 +443,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
             return 285;
         }
 
-        int code = 257;
+        var code = 257;
         while (length >= 8)
         {
             code += 4;
@@ -456,7 +456,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int Dcode(int distance)
     {
-        int code = 0;
+        var code = 0;
         while (distance >= 4)
         {
             code += 2;
@@ -550,17 +550,17 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
         {
             // Maxes out at 15 * 4
             Span<int> nextCode = stackalloc int[this.maxLength];
-            ref int nextCodeRef = ref MemoryMarshal.GetReference(nextCode);
-            ref int bitLengthCountsRef = ref MemoryMarshal.GetReference<int>(this.bitLengthCounts);
+            ref var nextCodeRef = ref MemoryMarshal.GetReference(nextCode);
+            ref var bitLengthCountsRef = ref MemoryMarshal.GetReference<int>(this.bitLengthCounts);
 
-            int code = 0;
-            for (int bits = 0; bits < this.maxLength; bits++)
+            var code = 0;
+            for (var bits = 0; bits < this.maxLength; bits++)
             {
                 Unsafe.Add(ref nextCodeRef, bits) = code;
                 code += Unsafe.Add(ref bitLengthCountsRef, bits) << (15 - bits);
             }
 
-            for (int i = 0; i < this.NumCodes; i++)
+            for (var i = 0; i < this.NumCodes; i++)
             {
                 int bits = this.Length[i];
                 if (bits > 0)
@@ -574,7 +574,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
         [MethodImpl(InliningOptions.HotPath)]
         public void BuildTree()
         {
-            int numSymbols = this.elementCount;
+            var numSymbols = this.elementCount;
 
             // heap is a priority queue, sorted by frequency, least frequent
             // nodes first.  The heap is a binary tree, with the property, that
@@ -584,19 +584,19 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
             // The binary tree is encoded in an array:  0 is root node and
             // the nodes 2*n+1, 2*n+2 are the child nodes of node n.
             // Maxes out at 286 * 4 so too large for the stack.
-            using (IMemoryOwner<int> heapMemoryOwner = this.memoryAllocator.Allocate<int>(numSymbols))
+            using (var heapMemoryOwner = this.memoryAllocator.Allocate<int>(numSymbols))
             {
-                ref int heapRef = ref MemoryMarshal.GetReference(heapMemoryOwner.Memory.Span);
+                ref var heapRef = ref MemoryMarshal.GetReference(heapMemoryOwner.Memory.Span);
 
-                int heapLen = 0;
-                int maxCode = 0;
-                for (int n = 0; n < numSymbols; n++)
+                var heapLen = 0;
+                var maxCode = 0;
+                for (var n = 0; n < numSymbols; n++)
                 {
                     int freq = this.Frequencies[n];
                     if (freq != 0)
                     {
                         // Insert n into heap
-                        int pos = heapLen++;
+                        var pos = heapLen++;
                         int ppos;
                         while (pos > 0 && this.Frequencies[Unsafe.Add(ref heapRef, ppos = (pos - 1) >> 1)] > freq)
                         {
@@ -621,19 +621,19 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
 
                 this.NumCodes = Math.Max(maxCode + 1, this.minNumCodes);
 
-                int numLeafs = heapLen;
-                int childrenLength = (4 * heapLen) - 2;
-                using (IMemoryOwner<int> childrenMemoryOwner = this.memoryAllocator.Allocate<int>(childrenLength))
-                using (IMemoryOwner<int> valuesMemoryOwner = this.memoryAllocator.Allocate<int>((2 * heapLen) - 1))
+                var numLeafs = heapLen;
+                var childrenLength = (4 * heapLen) - 2;
+                using (var childrenMemoryOwner = this.memoryAllocator.Allocate<int>(childrenLength))
+                using (var valuesMemoryOwner = this.memoryAllocator.Allocate<int>((2 * heapLen) - 1))
                 {
-                    ref int childrenRef = ref MemoryMarshal.GetReference(childrenMemoryOwner.Memory.Span);
-                    ref int valuesRef = ref MemoryMarshal.GetReference(valuesMemoryOwner.Memory.Span);
-                    int numNodes = numLeafs;
+                    ref var childrenRef = ref MemoryMarshal.GetReference(childrenMemoryOwner.Memory.Span);
+                    ref var valuesRef = ref MemoryMarshal.GetReference(valuesMemoryOwner.Memory.Span);
+                    var numNodes = numLeafs;
 
-                    for (int i = 0; i < heapLen; i++)
+                    for (var i = 0; i < heapLen; i++)
                     {
-                        int node = Unsafe.Add(ref heapRef, i);
-                        int i2 = 2 * i;
+                        var node = Unsafe.Add(ref heapRef, i);
+                        var i2 = 2 * i;
                         Unsafe.Add(ref childrenRef, i2) = node;
                         Unsafe.Add(ref childrenRef, i2 + 1) = -1;
                         Unsafe.Add(ref valuesRef, i) = this.Frequencies[node] << 8;
@@ -644,12 +644,12 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
                     // frequent nodes.
                     do
                     {
-                        int first = Unsafe.Add(ref heapRef, 0);
-                        int last = Unsafe.Add(ref heapRef, --heapLen);
+                        var first = Unsafe.Add(ref heapRef, 0);
+                        var last = Unsafe.Add(ref heapRef, --heapLen);
 
                         // Propagate the hole to the leafs of the heap
-                        int ppos = 0;
-                        int path = 1;
+                        var ppos = 0;
+                        var path = 1;
 
                         while (path < heapLen)
                         {
@@ -665,7 +665,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
 
                         // Now propagate the last element down along path.  Normally
                         // it shouldn't go too deep.
-                        int lastVal = Unsafe.Add(ref valuesRef, last);
+                        var lastVal = Unsafe.Add(ref valuesRef, last);
                         while ((path = ppos) > 0
                                && Unsafe.Add(ref valuesRef, Unsafe.Add(ref heapRef, ppos = (path - 1) >> 1)) > lastVal)
                         {
@@ -674,13 +674,13 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
 
                         Unsafe.Add(ref heapRef, path) = last;
 
-                        int second = Unsafe.Add(ref heapRef, 0);
+                        var second = Unsafe.Add(ref heapRef, 0);
 
                         // Create a new node father of first and second
                         last = numNodes++;
                         Unsafe.Add(ref childrenRef, 2 * last) = first;
                         Unsafe.Add(ref childrenRef, (2 * last) + 1) = second;
-                        int mindepth = Math.Min(Unsafe.Add(ref valuesRef, first) & 0xFF, Unsafe.Add(ref valuesRef, second) & 0xFF);
+                        var mindepth = Math.Min(Unsafe.Add(ref valuesRef, first) & 0xFF, Unsafe.Add(ref valuesRef, second) & 0xFF);
                         Unsafe.Add(ref valuesRef, last) = lastVal = Unsafe.Add(ref valuesRef, first) + Unsafe.Add(ref valuesRef, second) - mindepth + 1;
 
                         // Again, propagate the hole to the leafs
@@ -727,8 +727,8 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
         [MethodImpl(InliningOptions.ShortMethod)]
         public int GetEncodedLength()
         {
-            int len = 0;
-            for (int i = 0; i < this.elementCount; i++)
+            var len = 0;
+            for (var i = 0; i < this.elementCount; i++)
             {
                 len += this.Frequencies[i] * this.Length[i];
             }
@@ -745,9 +745,9 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
             int maxCount;                // max repeat count
             int minCount;                // min repeat count
             int count;                   // repeat count of the current code
-            int curLen = -1;             // length of current code
+            var curLen = -1;             // length of current code
 
-            int i = 0;
+            var i = 0;
             while (i < this.NumCodes)
             {
                 count = 1;
@@ -809,9 +809,9 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
             int maxCount;               // max repeat count
             int minCount;               // min repeat count
             int count;                  // repeat count of the current code
-            int curLen = -1;            // length of current code
+            var curLen = -1;            // length of current code
 
-            int i = 0;
+            var i = 0;
             while (i < this.NumCodes)
             {
                 count = 1;
@@ -871,27 +871,27 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
 
         private void BuildLength(ReadOnlySpan<int> children)
         {
-            byte* lengthPtr = this.Length;
-            ref int childrenRef = ref MemoryMarshal.GetReference(children);
-            ref int bitLengthCountsRef = ref MemoryMarshal.GetReference<int>(this.bitLengthCounts);
+            var lengthPtr = this.Length;
+            ref var childrenRef = ref MemoryMarshal.GetReference(children);
+            ref var bitLengthCountsRef = ref MemoryMarshal.GetReference<int>(this.bitLengthCounts);
 
-            int maxLen = this.maxLength;
-            int numNodes = children.Length >> 1;
-            int numLeafs = (numNodes + 1) >> 1;
-            int overflow = 0;
+            var maxLen = this.maxLength;
+            var numNodes = children.Length >> 1;
+            var numLeafs = (numNodes + 1) >> 1;
+            var overflow = 0;
 
             Array.Clear(this.bitLengthCounts, 0, maxLen);
 
             // First calculate optimal bit lengths
-            using (IMemoryOwner<int> lengthsMemoryOwner = this.memoryAllocator.Allocate<int>(numNodes, AllocationOptions.Clean))
+            using (var lengthsMemoryOwner = this.memoryAllocator.Allocate<int>(numNodes, AllocationOptions.Clean))
             {
-                ref int lengthsRef = ref MemoryMarshal.GetReference(lengthsMemoryOwner.Memory.Span);
+                ref var lengthsRef = ref MemoryMarshal.GetReference(lengthsMemoryOwner.Memory.Span);
 
-                for (int i = numNodes - 1; i >= 0; i--)
+                for (var i = numNodes - 1; i >= 0; i--)
                 {
                     if (children[(2 * i) + 1] != -1)
                     {
-                        int bitLength = Unsafe.Add(ref lengthsRef, i) + 1;
+                        var bitLength = Unsafe.Add(ref lengthsRef, i) + 1;
                         if (bitLength > maxLen)
                         {
                             bitLength = maxLen;
@@ -903,7 +903,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
                     else
                     {
                         // A leaf node
-                        int bitLength = Unsafe.Add(ref lengthsRef, i);
+                        var bitLength = Unsafe.Add(ref lengthsRef, i);
                         Unsafe.Add(ref bitLengthCountsRef, bitLength - 1)++;
                         lengthPtr[Unsafe.Add(ref childrenRef, 2 * i)] = (byte)Unsafe.Add(ref lengthsRef, i);
                     }
@@ -915,7 +915,7 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
                 return;
             }
 
-            int incrBitLen = maxLen - 1;
+            var incrBitLen = maxLen - 1;
             do
             {
                 // Find the first bit length which could increase:
@@ -947,13 +947,13 @@ internal sealed unsafe class DeflaterHuffman : IDisposable
             //
             // The nodes were inserted with decreasing frequency into the childs
             // array.
-            int nodeIndex = 2 * numLeafs;
-            for (int bits = maxLen; bits != 0; bits--)
+            var nodeIndex = 2 * numLeafs;
+            for (var bits = maxLen; bits != 0; bits--)
             {
-                int n = Unsafe.Add(ref bitLengthCountsRef, bits - 1);
+                var n = Unsafe.Add(ref bitLengthCountsRef, bits - 1);
                 while (n > 0)
                 {
-                    int childIndex = 2 * Unsafe.Add(ref childrenRef, nodeIndex++);
+                    var childIndex = 2 * Unsafe.Add(ref childrenRef, nodeIndex++);
                     if (Unsafe.Add(ref childrenRef, childIndex + 1) == -1)
                     {
                         // We found another leaf

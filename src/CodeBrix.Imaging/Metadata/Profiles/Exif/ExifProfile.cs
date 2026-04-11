@@ -86,7 +86,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
         {
             this.values = new List<IExifValue>(other.Values.Count);
 
-            foreach (IExifValue value in other.Values)
+            foreach (var value in other.Values)
             {
                 this.values.Add(value.DeepClone());
             }
@@ -165,7 +165,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
     /// <typeparam name="TValueType">The data type of the tag.</typeparam>
     public IExifValue<TValueType> GetValue<TValueType>(ExifTag<TValueType> tag)
     {
-        IExifValue value = this.GetValueInternal(tag);
+        var value = this.GetValueInternal(tag);
         return value is null ? null : (IExifValue<TValueType>)value;
     }
 
@@ -180,7 +180,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
     {
         this.InitializeValues();
 
-        for (int i = 0; i < this.values.Count; i++)
+        for (var i = 0; i < this.values.Count; i++)
         {
             if (this.values[i].Tag == tag)
             {
@@ -231,7 +231,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
     /// <returns>The value with the specified tag.</returns>
     internal IExifValue GetValueInternal(ExifTag tag)
     {
-        foreach (IExifValue exifValue in this.Values)
+        foreach (var exifValue in this.Values)
         {
             if (exifValue.Tag == tag)
             {
@@ -249,7 +249,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
     /// <param name="value">The value.</param>
     internal void SetValueInternal(ExifTag tag, object value)
     {
-        foreach (IExifValue exifValue in this.Values)
+        foreach (var exifValue in this.Values)
         {
             if (exifValue.Tag == tag)
             {
@@ -258,7 +258,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
             }
         }
 
-        ExifValue newExifValue = ExifValues.Create(tag);
+        var newExifValue = ExifValues.Create(tag);
         if (newExifValue is null)
         {
             throw new NotSupportedException();
@@ -280,7 +280,7 @@ public sealed class ExifProfile : IDeepCloneable<ExifProfile>
 
     private void SyncResolution(ExifTag<Rational> tag, double resolution)
     {
-        IExifValue<Rational> value = this.GetValue(tag);
+        var value = this.GetValue(tag);
 
         if (value is null)
         {

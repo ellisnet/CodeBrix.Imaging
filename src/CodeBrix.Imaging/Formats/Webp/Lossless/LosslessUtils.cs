@@ -79,9 +79,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static int VectorMismatch(ReadOnlySpan<uint> array1, ReadOnlySpan<uint> array2, int length)
     {
-        int matchLen = 0;
-        ref uint array1Ref = ref MemoryMarshal.GetReference(array1);
-        ref uint array2Ref = ref MemoryMarshal.GetReference(array2);
+        var matchLen = 0;
+        ref var array1Ref = ref MemoryMarshal.GetReference(array1);
+        ref var array2Ref = ref MemoryMarshal.GetReference(array2);
 
         while (matchLen < length && Unsafe.Add(ref array1Ref, matchLen) == Unsafe.Add(ref array2Ref, matchLen))
         {
@@ -98,7 +98,7 @@ internal static unsafe class LosslessUtils
     {
         if (distance < PrefixLookupIdxMax)
         {
-            (int Code, int ExtraBits) prefixCode = WebpLookupTables.PrefixEncodeCode[distance];
+            var prefixCode = WebpLookupTables.PrefixEncodeCode[distance];
             extraBits = prefixCode.ExtraBits;
             return prefixCode.Code;
         }
@@ -110,7 +110,7 @@ internal static unsafe class LosslessUtils
     {
         if (distance < PrefixLookupIdxMax)
         {
-            (int Code, int ExtraBits) prefixCode = WebpLookupTables.PrefixEncodeCode[distance];
+            var prefixCode = WebpLookupTables.PrefixEncodeCode[distance];
             extraBits = prefixCode.ExtraBits;
             extraBitsValue = WebpLookupTables.PrefixEncodeExtraBitsValue[distance];
 
@@ -192,12 +192,12 @@ internal static unsafe class LosslessUtils
 
     private static void AddGreenToBlueAndRedScalar(Span<uint> pixelData)
     {
-        int numPixels = pixelData.Length;
-        for (int i = 0; i < numPixels; i++)
+        var numPixels = pixelData.Length;
+        for (var i = 0; i < numPixels; i++)
         {
-            uint argb = pixelData[i];
-            uint green = (argb >> 8) & 0xff;
-            uint redBlue = argb & 0x00ff00ffu;
+            var argb = pixelData[i];
+            var green = (argb >> 8) & 0xff;
+            var redBlue = argb & 0x00ff00ffu;
             redBlue += (green << 16) | green;
             redBlue &= 0x00ff00ffu;
             pixelData[i] = (argb & 0xff00ff00u) | redBlue;
@@ -272,13 +272,13 @@ internal static unsafe class LosslessUtils
 
     private static void SubtractGreenFromBlueAndRedScalar(Span<uint> pixelData)
     {
-        int numPixels = pixelData.Length;
-        for (int i = 0; i < numPixels; i++)
+        var numPixels = pixelData.Length;
+        for (var i = 0; i < numPixels; i++)
         {
-            uint argb = pixelData[i];
-            uint green = (argb >> 8) & 0xff;
-            uint newR = (((argb >> 16) & 0xff) - green) & 0xff;
-            uint newB = (((argb >> 0) & 0xff) - green) & 0xff;
+            var argb = pixelData[i];
+            var green = (argb >> 8) & 0xff;
+            var newR = (((argb >> 16) & 0xff) - green) & 0xff;
+            var newB = (((argb >> 0) & 0xff) - green) & 0xff;
             pixelData[i] = (argb & 0xff00ff00u) | (newR << 16) | newB;
         }
     }
@@ -291,23 +291,23 @@ internal static unsafe class LosslessUtils
     /// <param name="pixelData">The pixel data to apply the reverse transform on.</param>
     public static void ColorIndexInverseTransform(Vp8LTransform transform, Span<uint> pixelData)
     {
-        int bitsPerPixel = 8 >> transform.Bits;
-        int width = transform.XSize;
-        int height = transform.YSize;
-        Span<uint> colorMap = transform.Data.GetSpan();
-        int decodedPixels = 0;
+        var bitsPerPixel = 8 >> transform.Bits;
+        var width = transform.XSize;
+        var height = transform.YSize;
+        var colorMap = transform.Data.GetSpan();
+        var decodedPixels = 0;
         if (bitsPerPixel < 8)
         {
-            int pixelsPerByte = 1 << transform.Bits;
-            int countMask = pixelsPerByte - 1;
-            int bitMask = (1 << bitsPerPixel) - 1;
+            var pixelsPerByte = 1 << transform.Bits;
+            var countMask = pixelsPerByte - 1;
+            var bitMask = (1 << bitsPerPixel) - 1;
 
-            uint[] decodedPixelData = new uint[width * height];
-            int pixelDataPos = 0;
-            for (int y = 0; y < height; y++)
+            var decodedPixelData = new uint[width * height];
+            var pixelDataPos = 0;
+            for (var y = 0; y < height; y++)
             {
                 uint packedPixels = 0;
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
                     // We need to load fresh 'packed_pixels' once every
                     // 'pixelsPerByte' increments of x. Fortunately, pixelsPerByte
@@ -327,11 +327,11 @@ internal static unsafe class LosslessUtils
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
-                    uint colorMapIndex = GetArgbIndex(pixelData[decodedPixels]);
+                    var colorMapIndex = GetArgbIndex(pixelData[decodedPixels]);
                     pixelData[decodedPixels] = colorMap[(int)colorMapIndex];
                     decodedPixels++;
                 }
@@ -347,27 +347,27 @@ internal static unsafe class LosslessUtils
     /// <param name="pixelData">The pixel data to apply the inverse transform on.</param>
     public static void ColorSpaceInverseTransform(Vp8LTransform transform, Span<uint> pixelData)
     {
-        int width = transform.XSize;
-        int yEnd = transform.YSize;
-        int tileWidth = 1 << transform.Bits;
-        int mask = tileWidth - 1;
-        int safeWidth = width & ~mask;
-        int remainingWidth = width - safeWidth;
-        int tilesPerRow = SubSampleSize(width, transform.Bits);
-        int y = 0;
-        int predRowIdxStart = (y >> transform.Bits) * tilesPerRow;
-        Span<uint> transformData = transform.Data.GetSpan();
+        var width = transform.XSize;
+        var yEnd = transform.YSize;
+        var tileWidth = 1 << transform.Bits;
+        var mask = tileWidth - 1;
+        var safeWidth = width & ~mask;
+        var remainingWidth = width - safeWidth;
+        var tilesPerRow = SubSampleSize(width, transform.Bits);
+        var y = 0;
+        var predRowIdxStart = (y >> transform.Bits) * tilesPerRow;
+        var transformData = transform.Data.GetSpan();
 
-        int pixelPos = 0;
+        var pixelPos = 0;
         while (y < yEnd)
         {
-            int predRowIdx = predRowIdxStart;
+            var predRowIdx = predRowIdxStart;
             var m = default(Vp8LMultipliers);
-            int srcSafeEnd = pixelPos + safeWidth;
-            int srcEnd = pixelPos + width;
+            var srcSafeEnd = pixelPos + safeWidth;
+            var srcEnd = pixelPos + width;
             while (pixelPos < srcSafeEnd)
             {
-                uint colorCode = transformData[predRowIdx++];
+                var colorCode = transformData[predRowIdx++];
                 ColorCodeToMultipliers(colorCode, ref m);
                 TransformColorInverse(m, pixelData.Slice(pixelPos, tileWidth));
                 pixelPos += tileWidth;
@@ -375,7 +375,7 @@ internal static unsafe class LosslessUtils
 
             if (pixelPos < srcEnd)
             {
-                uint colorCode = transformData[predRowIdx];
+                var colorCode = transformData[predRowIdx];
                 ColorCodeToMultipliers(colorCode, ref m);
                 TransformColorInverse(m, pixelData.Slice(pixelPos, remainingWidth));
                 pixelPos += remainingWidth;
@@ -462,13 +462,13 @@ internal static unsafe class LosslessUtils
 
     private static void TransformColorScalar(Vp8LMultipliers m, Span<uint> data, int numPixels)
     {
-        for (int i = 0; i < numPixels; i++)
+        for (var i = 0; i < numPixels; i++)
         {
-            uint argb = data[i];
-            sbyte green = U32ToS8(argb >> 8);
-            sbyte red = U32ToS8(argb >> 16);
-            int newRed = red & 0xff;
-            int newBlue = (int)(argb & 0xff);
+            var argb = data[i];
+            var green = U32ToS8(argb >> 8);
+            var red = U32ToS8(argb >> 16);
+            var newRed = red & 0xff;
+            var newBlue = (int)(argb & 0xff);
             newRed -= ColorTransformDelta((sbyte)m.GreenToRed, green);
             newRed &= 0xff;
             newBlue -= ColorTransformDelta((sbyte)m.GreenToBlue, green);
@@ -552,13 +552,13 @@ internal static unsafe class LosslessUtils
 
     private static void TransformColorInverseScalar(Vp8LMultipliers m, Span<uint> pixelData)
     {
-        for (int i = 0; i < pixelData.Length; i++)
+        for (var i = 0; i < pixelData.Length; i++)
         {
-            uint argb = pixelData[i];
-            sbyte green = (sbyte)(argb >> 8);
-            uint red = argb >> 16;
-            int newRed = (int)(red & 0xff);
-            int newBlue = (int)argb & 0xff;
+            var argb = pixelData[i];
+            var green = (sbyte)(argb >> 8);
+            var red = argb >> 16;
+            var newRed = (int)(red & 0xff);
+            var newBlue = (int)argb & 0xff;
             newRed += ColorTransformDelta((sbyte)m.GreenToRed, green);
             newRed &= 0xff;
             newBlue += ColorTransformDelta((sbyte)m.GreenToBlue, green);
@@ -587,11 +587,11 @@ internal static unsafe class LosslessUtils
         {
             fixed (uint* outputFixed = outputSpan)
             {
-                uint* input = inputFixed;
-                uint* output = outputFixed;
+                var input = inputFixed;
+                var output = outputFixed;
 
-                int width = transform.XSize;
-                Span<uint> transformData = transform.Data.GetSpan();
+                var width = transform.XSize;
+                var transformData = transform.Data.GetSpan();
 
                 // First Row follows the L (mode=1) mode.
                 PredictorAdd0(input, 1, output);
@@ -599,17 +599,17 @@ internal static unsafe class LosslessUtils
                 input += width;
                 output += width;
 
-                int y = 1;
-                int yEnd = transform.YSize;
-                int tileWidth = 1 << transform.Bits;
-                int mask = tileWidth - 1;
-                int tilesPerRow = SubSampleSize(width, transform.Bits);
-                int predictorModeIdxBase = (y >> transform.Bits) * tilesPerRow;
+                var y = 1;
+                var yEnd = transform.YSize;
+                var tileWidth = 1 << transform.Bits;
+                var mask = tileWidth - 1;
+                var tilesPerRow = SubSampleSize(width, transform.Bits);
+                var predictorModeIdxBase = (y >> transform.Bits) * tilesPerRow;
                 Span<short> scratch = stackalloc short[8];
                 while (y < yEnd)
                 {
-                    int predictorModeIdx = predictorModeIdxBase;
-                    int x = 1;
+                    var predictorModeIdx = predictorModeIdxBase;
+                    var x = 1;
 
                     // First pixel follows the T (mode=2) mode.
                     PredictorAdd2(input, output - width, 1, output);
@@ -617,8 +617,8 @@ internal static unsafe class LosslessUtils
                     // .. the rest:
                     while (x < width)
                     {
-                        uint predictorMode = (transformData[predictorModeIdx++] >> 8) & 0xf;
-                        int xEnd = (x & ~mask) + tileWidth;
+                        var predictorMode = (transformData[predictorModeIdx++] >> 8) & 0xf;
+                        var xEnd = (x & ~mask) + tileWidth;
                         if (xEnd > width)
                         {
                             xEnd = width;
@@ -695,9 +695,9 @@ internal static unsafe class LosslessUtils
     public static void ExpandColorMap(int numColors, Span<uint> transformData, Span<uint> newColorMap)
     {
         newColorMap[0] = transformData[0];
-        Span<byte> data = MemoryMarshal.Cast<uint, byte>(transformData);
-        Span<byte> newData = MemoryMarshal.Cast<uint, byte>(newColorMap);
-        int numColorsX4 = 4 * numColors;
+        var data = MemoryMarshal.Cast<uint, byte>(transformData);
+        var newData = MemoryMarshal.Cast<uint, byte>(newColorMap);
+        var numColorsX4 = 4 * numColors;
         int i;
         for (i = 4; i < numColorsX4; i++)
         {
@@ -705,7 +705,7 @@ internal static unsafe class LosslessUtils
             newData[i] = (byte)((data[i] + newData[i - 4]) & 0xff);
         }
 
-        int colorMapLength4 = 4 * newColorMap.Length;
+        var colorMapLength4 = 4 * newColorMap.Length;
         for (; i < colorMapLength4; i++)
         {
             newData[i] = 0;  // black tail.
@@ -718,8 +718,8 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static uint SubPixels(uint a, uint b)
     {
-        uint alphaAndGreen = 0x00ff00ffu + (a & 0xff00ff00u) - (b & 0xff00ff00u);
-        uint redAndBlue = 0xff00ff00u + (a & 0x00ff00ffu) - (b & 0x00ff00ffu);
+        var alphaAndGreen = 0x00ff00ffu + (a & 0xff00ff00u) - (b & 0xff00ff00u);
+        var redAndBlue = 0xff00ff00u + (a & 0x00ff00ffu) - (b & 0x00ff00ffu);
         return (alphaAndGreen & 0xff00ff00u) | (redAndBlue & 0x00ff00ffu);
     }
 
@@ -731,12 +731,12 @@ internal static unsafe class LosslessUtils
         int x;
         if (xBits > 0)
         {
-            int bitDepth = 1 << (3 - xBits);
-            int mask = (1 << xBits) - 1;
-            uint code = 0xff000000;
+            var bitDepth = 1 << (3 - xBits);
+            var mask = (1 << xBits) - 1;
+            var code = 0xff000000;
             for (x = 0; x < width; x++)
             {
-                int xsub = x & mask;
+                var xsub = x & mask;
                 if (xsub == 0)
                 {
                     code = 0xff000000;
@@ -916,14 +916,14 @@ internal static unsafe class LosslessUtils
             else
 #endif
         {
-            double retVal = 0.0d;
+            var retVal = 0.0d;
             uint sumX = 0, sumXY = 0;
-            for (int i = 0; i < 256; i++)
+            for (var i = 0; i < 256; i++)
             {
-                uint xi = (uint)x[i];
+                var xi = (uint)x[i];
                 if (xi != 0)
                 {
-                    uint xy = xi + (uint)y[i];
+                    var xy = xi + (uint)y[i];
                     sumX += xi;
                     retVal -= FastSLog2(xi);
                     sumXY += xy;
@@ -944,8 +944,8 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static byte TransformColorRed(sbyte greenToRed, uint argb)
     {
-        sbyte green = U32ToS8(argb >> 8);
-        int newRed = (int)(argb >> 16);
+        var green = U32ToS8(argb >> 8);
+        var newRed = (int)(argb >> 16);
         newRed -= ColorTransformDelta(greenToRed, green);
         return (byte)(newRed & 0xff);
     }
@@ -953,9 +953,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static byte TransformColorBlue(sbyte greenToBlue, sbyte redToBlue, uint argb)
     {
-        sbyte green = U32ToS8(argb >> 8);
-        sbyte red = U32ToS8(argb >> 16);
-        int newBlue = (int)(argb & 0xff);
+        var green = U32ToS8(argb >> 8);
+        var red = U32ToS8(argb >> 16);
+        var newBlue = (int)(argb & 0xff);
         newBlue -= ColorTransformDelta(greenToBlue, green);
         newBlue -= ColorTransformDelta(redToBlue, red);
         return (byte)(newBlue & 0xff);
@@ -997,10 +997,10 @@ internal static unsafe class LosslessUtils
 
         if (v < ApproxLogWithCorrectionMax)
         {
-            int logCnt = 0;
+            var logCnt = 0;
             uint y = 1;
             float vF = v;
-            uint origV = v;
+            var origV = v;
             do
             {
                 ++logCnt;
@@ -1015,7 +1015,7 @@ internal static unsafe class LosslessUtils
             // The correction factor: log(1 + d) ~ d; for very small d values, so
             // log2(1 + (v % y) / v) ~ LOG_2_RECIPROCAL * (v % y)/v
             // LOG_2_RECIPROCAL ~ 23/16
-            int correction = (int)((23 * (origV & (y - 1))) >> 4);
+            var correction = (int)((23 * (origV & (y - 1))) >> 4);
             return (vF * (WebpLookupTables.Log2Table[v] + logCnt)) + correction;
         }
 
@@ -1028,9 +1028,9 @@ internal static unsafe class LosslessUtils
 
         if (v < ApproxLogWithCorrectionMax)
         {
-            int logCnt = 0;
+            var logCnt = 0;
             uint y = 1;
-            uint origV = v;
+            var origV = v;
             do
             {
                 ++logCnt;
@@ -1044,7 +1044,7 @@ internal static unsafe class LosslessUtils
             {
                 // Since the division is still expensive, add this correction factor only
                 // for large values of 'v'.
-                int correction = (int)(23 * (origV & (y - 1))) >> 4;
+                var correction = (int)(23 * (origV & (y - 1))) >> 4;
                 log2 += (double)correction / origV;
             }
 
@@ -1061,27 +1061,27 @@ internal static unsafe class LosslessUtils
     /// </summary>
     private static int PrefixEncodeBitsNoLut(int distance, ref int extraBits)
     {
-        int highestBit = Numerics.Log2((uint)--distance);
-        int secondHighestBit = (distance >> (highestBit - 1)) & 1;
+        var highestBit = Numerics.Log2((uint)--distance);
+        var secondHighestBit = (distance >> (highestBit - 1)) & 1;
         extraBits = highestBit - 1;
-        int code = (2 * highestBit) + secondHighestBit;
+        var code = (2 * highestBit) + secondHighestBit;
         return code;
     }
 
     private static int PrefixEncodeNoLut(int distance, ref int extraBits, ref int extraBitsValue)
     {
-        int highestBit = Numerics.Log2((uint)--distance);
-        int secondHighestBit = (distance >> (highestBit - 1)) & 1;
+        var highestBit = Numerics.Log2((uint)--distance);
+        var secondHighestBit = (distance >> (highestBit - 1)) & 1;
         extraBits = highestBit - 1;
         extraBitsValue = distance & ((1 << extraBits) - 1);
-        int code = (2 * highestBit) + secondHighestBit;
+        var code = (2 * highestBit) + secondHighestBit;
         return code;
     }
 
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd0(uint* input, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
             output[x] = AddPixels(input[x], WebpConstants.ArgbBlack);
         }
@@ -1090,8 +1090,8 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd1(uint* input, int numberOfPixels, uint* output)
     {
-        uint left = output[-1];
-        for (int x = 0; x < numberOfPixels; x++)
+        var left = output[-1];
+        for (var x = 0; x < numberOfPixels; x++)
         {
             output[x] = left = AddPixels(input[x], left);
         }
@@ -1100,9 +1100,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd2(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor2(output[x - 1], upper + x);
+            var pred = Predictor2(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1110,9 +1110,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd3(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor3(output[x - 1], upper + x);
+            var pred = Predictor3(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1120,9 +1120,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd4(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor4(output[x - 1], upper + x);
+            var pred = Predictor4(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1130,9 +1130,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd5(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor5(output[x - 1], upper + x);
+            var pred = Predictor5(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1140,9 +1140,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd6(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor6(output[x - 1], upper + x);
+            var pred = Predictor6(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1150,9 +1150,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd7(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor7(output[x - 1], upper + x);
+            var pred = Predictor7(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1160,9 +1160,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd8(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor8(output[x - 1], upper + x);
+            var pred = Predictor8(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1170,9 +1170,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd9(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor9(output[x - 1], upper + x);
+            var pred = Predictor9(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1180,9 +1180,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd10(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor10(output[x - 1], upper + x);
+            var pred = Predictor10(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1190,9 +1190,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd11(uint* input, uint* upper, int numberOfPixels, uint* output, Span<short> scratch)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor11(output[x - 1], upper + x, scratch);
+            var pred = Predictor11(output[x - 1], upper + x, scratch);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1200,9 +1200,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd12(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor12(output[x - 1], upper + x);
+            var pred = Predictor12(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1210,9 +1210,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void PredictorAdd13(uint* input, uint* upper, int numberOfPixels, uint* output)
     {
-        for (int x = 0; x < numberOfPixels; x++)
+        for (var x = 0; x < numberOfPixels; x++)
         {
-            uint pred = Predictor13(output[x - 1], upper + x);
+            var pred = Predictor13(output[x - 1], upper + x);
             output[x] = AddPixels(input[x], pred);
         }
     }
@@ -1256,7 +1256,7 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub0(uint* input, int numPixels, uint* output)
     {
-        for (int i = 0; i < numPixels; i++)
+        for (var i = 0; i < numPixels; i++)
         {
             output[i] = SubPixels(input[i], WebpConstants.ArgbBlack);
         }
@@ -1265,7 +1265,7 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub1(uint* input, int numPixels, uint* output)
     {
-        for (int i = 0; i < numPixels; i++)
+        for (var i = 0; i < numPixels; i++)
         {
             output[i] = SubPixels(input[i], input[i - 1]);
         }
@@ -1274,9 +1274,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub2(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor2(input[x - 1], upper + x);
+            var pred = Predictor2(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1284,9 +1284,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub3(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor3(input[x - 1], upper + x);
+            var pred = Predictor3(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1294,9 +1294,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub4(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor4(input[x - 1], upper + x);
+            var pred = Predictor4(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1304,9 +1304,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub5(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor5(input[x - 1], upper + x);
+            var pred = Predictor5(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1314,9 +1314,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub6(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor6(input[x - 1], upper + x);
+            var pred = Predictor6(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1324,9 +1324,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub7(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor7(input[x - 1], upper + x);
+            var pred = Predictor7(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1334,9 +1334,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub8(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor8(input[x - 1], upper + x);
+            var pred = Predictor8(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1344,9 +1344,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub9(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor9(input[x - 1], upper + x);
+            var pred = Predictor9(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1354,9 +1354,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub10(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor10(input[x - 1], upper + x);
+            var pred = Predictor10(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1364,9 +1364,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub11(uint* input, uint* upper, int numPixels, uint* output, Span<short> scratch)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor11(input[x - 1], upper + x, scratch);
+            var pred = Predictor11(input[x - 1], upper + x, scratch);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1374,9 +1374,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub12(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor12(input[x - 1], upper + x);
+            var pred = Predictor12(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1384,9 +1384,9 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void PredictorSub13(uint* input, uint* upper, int numPixels, uint* output)
     {
-        for (int x = 0; x < numPixels; x++)
+        for (var x = 0; x < numPixels; x++)
         {
-            uint pred = Predictor13(input[x - 1], upper + x);
+            var pred = Predictor13(input[x - 1], upper + x);
             output[x] = SubPixels(input[x], pred);
         }
     }
@@ -1403,8 +1403,8 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static uint AddPixels(uint a, uint b)
     {
-        uint alphaAndGreen = (a & 0xff00ff00u) + (b & 0xff00ff00u);
-        uint redAndBlue = (a & 0x00ff00ffu) + (b & 0x00ff00ffu);
+        var alphaAndGreen = (a & 0xff00ff00u) + (b & 0xff00ff00u);
+        var redAndBlue = (a & 0x00ff00ffu) + (b & 0x00ff00ffu);
         return (alphaAndGreen & 0xff00ff00u) | (redAndBlue & 0x00ff00ffu);
     }
 
@@ -1428,19 +1428,19 @@ internal static unsafe class LosslessUtils
             }
 #endif
         {
-            int a = AddSubtractComponentFull(
+            var a = AddSubtractComponentFull(
                 (int)(c0 >> 24),
                 (int)(c1 >> 24),
                 (int)(c2 >> 24));
-            int r = AddSubtractComponentFull(
+            var r = AddSubtractComponentFull(
                 (int)((c0 >> 16) & 0xff),
                 (int)((c1 >> 16) & 0xff),
                 (int)((c2 >> 16) & 0xff));
-            int g = AddSubtractComponentFull(
+            var g = AddSubtractComponentFull(
                 (int)((c0 >> 8) & 0xff),
                 (int)((c1 >> 8) & 0xff),
                 (int)((c2 >> 8) & 0xff));
-            int b = AddSubtractComponentFull((int)(c0 & 0xff), (int)(c1 & 0xff), (int)(c2 & 0xff));
+            var b = AddSubtractComponentFull((int)(c0 & 0xff), (int)(c1 & 0xff), (int)(c2 & 0xff));
             return ((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | (uint)b;
         }
     }
@@ -1466,11 +1466,11 @@ internal static unsafe class LosslessUtils
             }
 #endif
         {
-            uint ave = Average2(c0, c1);
-            int a = AddSubtractComponentHalf((int)(ave >> 24), (int)(c2 >> 24));
-            int r = AddSubtractComponentHalf((int)((ave >> 16) & 0xff), (int)((c2 >> 16) & 0xff));
-            int g = AddSubtractComponentHalf((int)((ave >> 8) & 0xff), (int)((c2 >> 8) & 0xff));
-            int b = AddSubtractComponentHalf((int)(ave & 0xff), (int)(c2 & 0xff));
+            var ave = Average2(c0, c1);
+            var a = AddSubtractComponentHalf((int)(ave >> 24), (int)(c2 >> 24));
+            var r = AddSubtractComponentHalf((int)((ave >> 16) & 0xff), (int)((c2 >> 16) & 0xff));
+            var g = AddSubtractComponentHalf((int)((ave >> 8) & 0xff), (int)((c2 >> 8) & 0xff));
+            var b = AddSubtractComponentHalf((int)(ave & 0xff), (int)(c2 & 0xff));
             return ((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | (uint)b;
         }
     }
@@ -1520,7 +1520,7 @@ internal static unsafe class LosslessUtils
             else
 #endif
         {
-            int paMinusPb =
+            var paMinusPb =
                 Sub3((int)(a >> 24), (int)(b >> 24), (int)(c >> 24)) +
                 Sub3((int)((a >> 16) & 0xff), (int)((b >> 16) & 0xff), (int)((c >> 16) & 0xff)) +
                 Sub3((int)((a >> 8) & 0xff), (int)((b >> 8) & 0xff), (int)((c >> 8) & 0xff)) +
@@ -1532,8 +1532,8 @@ internal static unsafe class LosslessUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int Sub3(int a, int b, int c)
     {
-        int pb = b - c;
-        int pa = a - c;
+        var pb = b - c;
+        var pa = a - c;
         return Math.Abs(pb) - Math.Abs(pa);
     }
 

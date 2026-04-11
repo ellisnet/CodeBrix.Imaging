@@ -97,7 +97,7 @@ internal struct HuffmanScanBuffer
     public unsafe int DecodeHuffman(ref HuffmanTable h)
     {
         this.CheckBits();
-        int index = this.PeekBits(JpegConstants.Huffman.LookupBits);
+        var index = this.PeekBits(JpegConstants.Huffman.LookupBits);
         int size = h.LookaheadSize[index];
 
         if (size < JpegConstants.Huffman.SlowBits)
@@ -106,7 +106,7 @@ internal struct HuffmanScanBuffer
             return h.LookaheadValue[index];
         }
 
-        ulong x = this.data << (JpegConstants.Huffman.RegisterSize - this.remainingBits);
+        var x = this.data << (JpegConstants.Huffman.RegisterSize - this.remainingBits);
         while (x > h.MaxCode[size])
         {
             size++;
@@ -144,14 +144,14 @@ internal struct HuffmanScanBuffer
     private ulong GetBytes()
     {
         ulong temp = 0;
-        for (int i = 0; i < JpegConstants.Huffman.FetchLoop; i++)
+        for (var i = 0; i < JpegConstants.Huffman.FetchLoop; i++)
         {
-            int b = this.ReadStream();
+            var b = this.ReadStream();
 
             // Found a marker.
             if (b == JpegConstants.Markers.XFF)
             {
-                int c = this.ReadStream();
+                var c = this.ReadStream();
                 while (c == JpegConstants.Markers.XFF)
                 {
                     // Loop here to discard any padding FF bytes on terminating marker,
@@ -180,7 +180,7 @@ internal struct HuffmanScanBuffer
     {
         while (true)
         {
-            int b = this.stream.ReadByte();
+            var b = this.stream.ReadByte();
             if (b == -1)
             {
                 return false;
@@ -214,7 +214,7 @@ internal struct HuffmanScanBuffer
     [MethodImpl(InliningOptions.AlwaysInline)]
     private int ReadStream()
     {
-        int value = this.badData ? 0 : this.stream.ReadByte();
+        var value = this.badData ? 0 : this.stream.ReadByte();
 
         // We've encountered the end of the file stream which means there's no EOI marker or the marker has been read
         // during decoding of the SOS marker.

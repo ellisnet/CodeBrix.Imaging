@@ -207,7 +207,7 @@ public partial struct Bgra32 : IPixel<Bgra32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromL16(L16 source)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.PackedValue);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.PackedValue);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -228,7 +228,7 @@ public partial struct Bgra32 : IPixel<Bgra32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromLa32(La32 source)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.L);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.L);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;

@@ -29,7 +29,7 @@ internal sealed class ModifiedHuffmanTiffCompression : TiffBaseDecompressor
         : base(allocator, width, bitsPerPixel)
     {
         this.FillOrder = fillOrder;
-        bool isWhiteZero = photometricInterpretation == TiffPhotometricInterpretation.WhiteIsZero;
+        var isWhiteZero = photometricInterpretation == TiffPhotometricInterpretation.WhiteIsZero;
         this.whiteValue = (byte)(isWhiteZero ? 0 : 1);
         this.blackValue = (byte)(isWhiteZero ? 1 : 0);
     }
@@ -72,7 +72,7 @@ internal sealed class ModifiedHuffmanTiffCompression : TiffBaseDecompressor
                 pixelsWritten = 0;
 
                 // Write padding bits, if necessary.
-                uint pad = 8 - (bitsWritten % 8);
+                var pad = 8 - (bitsWritten % 8);
                 if (pad != 8)
                 {
                     BitWriterUtils.WriteBits(buffer, (int)bitsWritten, pad, 0);

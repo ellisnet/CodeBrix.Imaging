@@ -55,11 +55,11 @@ internal class YCbCrConverter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Rgba32 ConvertToRgba32(byte y, byte cb, byte cr)
     {
-        float yExpanded = this.yExpander.Expand(y);
-        float cbExpanded = this.cbExpander.Expand(cb);
-        float crExpanded = this.crExpander.Expand(cr);
+        var yExpanded = this.yExpander.Expand(y);
+        var cbExpanded = this.cbExpander.Expand(cb);
+        var crExpanded = this.crExpander.Expand(cr);
 
-        Rgba32 rgba = this.converter.Convert(yExpanded, cbExpanded, crExpanded);
+        var rgba = this.converter.Convert(yExpanded, cbExpanded, crExpanded);
 
         return rgba;
     }
@@ -67,7 +67,7 @@ internal class YCbCrConverter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static byte RoundAndClampTo8Bit(float value)
     {
-        int input = (int)MathF.Round(value);
+        var input = (int)MathF.Round(value);
         return (byte)Numerics.Clamp(input, 0, 255);
     }
 
@@ -78,8 +78,8 @@ internal class YCbCrConverter
 
         public CodingRangeExpander(Rational referenceBlack, Rational referenceWhite, int codingRange)
         {
-            float black = referenceBlack.ToSingle();
-            float white = referenceWhite.ToSingle();
+            var black = referenceBlack.ToSingle();
+            var white = referenceWhite.ToSingle();
             this.f1 = codingRange / (white - black);
             this.f2 = this.f1 * black;
         }

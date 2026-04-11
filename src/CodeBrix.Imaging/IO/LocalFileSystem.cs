@@ -38,7 +38,7 @@ internal sealed class LocalFileSystem : IFileSystem
         // Reject paths containing path traversal sequences.
         // Check both the raw path and the normalized path to catch encoded or
         // OS-specific separator variants.
-        string fullPath = Path.GetFullPath(path);
+        var fullPath = Path.GetFullPath(path);
         if (fullPath.Contains(".." + Path.DirectorySeparatorChar)
             || fullPath.Contains(".." + Path.AltDirectorySeparatorChar)
             || fullPath.EndsWith(".."))

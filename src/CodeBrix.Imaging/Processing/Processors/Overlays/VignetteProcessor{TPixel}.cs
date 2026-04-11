@@ -38,29 +38,29 @@ internal class VignetteProcessor<TPixel> : ImageProcessor<TPixel>
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        TPixel vignetteColor = this.definition.VignetteColor.ToPixel<TPixel>();
-        float blendPercent = this.definition.GraphicsOptions.BlendPercentage;
+        var vignetteColor = this.definition.VignetteColor.ToPixel<TPixel>();
+        var blendPercent = this.definition.GraphicsOptions.BlendPercentage;
 
         var interest = Rectangle.Intersect(this.SourceRectangle, source.Bounds());
 
         Vector2 center = Rectangle.Center(interest);
-        float finalRadiusX = this.definition.RadiusX.Calculate(interest.Size);
-        float finalRadiusY = this.definition.RadiusY.Calculate(interest.Size);
+        var finalRadiusX = this.definition.RadiusX.Calculate(interest.Size);
+        var finalRadiusY = this.definition.RadiusY.Calculate(interest.Size);
 
-        float rX = finalRadiusX > 0
+        var rX = finalRadiusX > 0
             ? MathF.Min(finalRadiusX, interest.Width * .5F)
             : interest.Width * .5F;
 
-        float rY = finalRadiusY > 0
+        var rY = finalRadiusY > 0
             ? MathF.Min(finalRadiusY, interest.Height * .5F)
             : interest.Height * .5F;
 
-        float maxDistance = MathF.Sqrt((rX * rX) + (rY * rY));
+        var maxDistance = MathF.Sqrt((rX * rX) + (rY * rY));
 
-        Configuration configuration = this.Configuration;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
+        var configuration = this.Configuration;
+        var allocator = configuration.MemoryAllocator;
 
-        using IMemoryOwner<TPixel> rowColors = allocator.Allocate<TPixel>(interest.Width);
+        using var rowColors = allocator.Allocate<TPixel>(interest.Width);
         rowColors.GetSpan().Fill(vignetteColor);
 
         var operation = new RowOperation(configuration, interest, rowColors, this.blender, center, maxDistance, blendPercent, source.PixelBuffer);
@@ -105,15 +105,15 @@ internal class VignetteProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<float> span)
         {
-            Span<TPixel> colorSpan = this.colors.GetSpan();
+            var colorSpan = this.colors.GetSpan();
 
-            for (int i = 0; i < this.bounds.Width; i++)
+            for (var i = 0; i < this.bounds.Width; i++)
             {
-                float distance = Vector2.Distance(this.center, new Vector2(i + this.bounds.X, y));
+                var distance = Vector2.Distance(this.center, new Vector2(i + this.bounds.X, y));
                 span[i] = Numerics.Clamp(this.blendPercent * (.9F * (distance / this.maxDistance)), 0, 1F);
             }
 
-            Span<TPixel> destination = this.source.DangerousGetRowSpan(y).Slice(this.bounds.X, this.bounds.Width);
+            var destination = this.source.DangerousGetRowSpan(y).Slice(this.bounds.X, this.bounds.Width);
 
             this.blender.Blend(
                 this.configuration,

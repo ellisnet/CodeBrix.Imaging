@@ -66,15 +66,15 @@ internal readonly struct DefaultShuffle4 : IShuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref byte sBase = ref MemoryMarshal.GetReference(source);
-        ref byte dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
         int p3 = this.p3;
         int p2 = this.p2;
         int p1 = this.p1;
         int p0 = this.p0;
 
-        for (int i = 0; i < source.Length; i += 4)
+        for (var i = 0; i < source.Length; i += 4)
         {
             Unsafe.Add(ref dBase, i) = Unsafe.Add(ref sBase, p0 + i);
             Unsafe.Add(ref dBase, i + 1) = Unsafe.Add(ref sBase, p1 + i);
@@ -95,13 +95,13 @@ internal readonly struct WXYZShuffle4 : IShuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref uint sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
-        ref uint dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
-        int n = source.Length / 4;
+        ref var sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
+        ref var dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
+        var n = source.Length / 4;
 
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
-            uint packed = Unsafe.Add(ref sBase, i);
+            var packed = Unsafe.Add(ref sBase, i);
 
             // packed          = [W Z Y X]
             // ROTL(8, packed) = [Z Y X W]
@@ -121,13 +121,13 @@ internal readonly struct WZYXShuffle4 : IShuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref uint sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
-        ref uint dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
-        int n = source.Length / 4;
+        ref var sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
+        ref var dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
+        var n = source.Length / 4;
 
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
-            uint packed = Unsafe.Add(ref sBase, i);
+            var packed = Unsafe.Add(ref sBase, i);
 
             // packed              = [W Z Y X]
             // REVERSE(packedArgb) = [X Y Z W]
@@ -147,13 +147,13 @@ internal readonly struct YZWXShuffle4 : IShuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref uint sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
-        ref uint dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
-        int n = source.Length / 4;
+        ref var sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
+        ref var dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
+        var n = source.Length / 4;
 
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
-            uint packed = Unsafe.Add(ref sBase, i);
+            var packed = Unsafe.Add(ref sBase, i);
 
             // packed              = [W Z Y X]
             // ROTR(8, packedArgb) = [Y Z W X]
@@ -173,22 +173,22 @@ internal readonly struct ZYXWShuffle4 : IShuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref uint sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
-        ref uint dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
-        int n = source.Length / 4;
+        ref var sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
+        ref var dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
+        var n = source.Length / 4;
 
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
-            uint packed = Unsafe.Add(ref sBase, i);
+            var packed = Unsafe.Add(ref sBase, i);
 
             // packed              = [W Z Y X]
             // tmp1                = [W 0 Y 0]
             // tmp2                = [0 Z 0 X]
             // tmp3=ROTL(16, tmp2) = [0 X 0 Z]
             // tmp1 + tmp3         = [W X Y Z]
-            uint tmp1 = packed & 0xFF00FF00;
-            uint tmp2 = packed & 0x00FF00FF;
-            uint tmp3 = Numerics.RotateLeft(tmp2, 16);
+            var tmp1 = packed & 0xFF00FF00;
+            var tmp2 = packed & 0x00FF00FF;
+            var tmp3 = Numerics.RotateLeft(tmp2, 16);
 
             Unsafe.Add(ref dBase, i) = tmp1 + tmp3;
         }
@@ -206,22 +206,22 @@ internal readonly struct XWZYShuffle4 : IShuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref uint sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
-        ref uint dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
-        int n = source.Length / 4;
+        ref var sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
+        ref var dBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(dest));
+        var n = source.Length / 4;
 
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
-            uint packed = Unsafe.Add(ref sBase, i);
+            var packed = Unsafe.Add(ref sBase, i);
 
             // packed              = [W Z Y X]
             // tmp1                = [0 Z 0 X]
             // tmp2                = [W 0 Y 0]
             // tmp3=ROTL(16, tmp2) = [Y 0 W 0]
             // tmp1 + tmp3         = [Y Z W X]
-            uint tmp1 = packed & 0x00FF00FF;
-            uint tmp2 = packed & 0xFF00FF00;
-            uint tmp3 = Numerics.RotateLeft(tmp2, 16);
+            var tmp1 = packed & 0x00FF00FF;
+            var tmp2 = packed & 0xFF00FF00;
+            var tmp3 = Numerics.RotateLeft(tmp2, 16);
 
             Unsafe.Add(ref dBase, i) = tmp1 + tmp3;
         }

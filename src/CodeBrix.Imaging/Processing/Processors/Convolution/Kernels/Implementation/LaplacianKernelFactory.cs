@@ -22,7 +22,7 @@ internal static class LaplacianKernelFactory
         var kernel = new DenseMatrix<float>((int)length);
         kernel.Fill(-1);
 
-        int mid = (int)(length / 2);
+        var mid = (int)(length / 2);
         kernel[mid, mid] = (length * length) - 1;
 
         return kernel;

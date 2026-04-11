@@ -46,17 +46,17 @@ internal sealed class T4BitCompressor : TiffCcittCompressor
             this.WriteCode(12, 1, compressedData);
         }
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            bool isWhiteRun = true;
-            bool isStartOrRow = true;
-            int x = 0;
+            var isWhiteRun = true;
+            var isStartOrRow = true;
+            var x = 0;
 
-            Span<byte> row = pixelsAsGray.Slice(y * this.Width, this.Width);
+            var row = pixelsAsGray.Slice(y * this.Width, this.Width);
             while (x < this.Width)
             {
                 uint runLength = 0;
-                for (int i = x; i < this.Width; i++)
+                for (var i = x; i < this.Width; i++)
                 {
                     if (isWhiteRun && row[i] != 255)
                     {

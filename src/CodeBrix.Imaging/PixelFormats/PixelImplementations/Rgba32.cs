@@ -245,7 +245,7 @@ public partial struct Rgba32 : IPixel<Rgba32>, IPackedVector<uint>
     {
         Guard.NotNull(hex, nameof(hex));
 
-        if (!TryParseHex(hex, out Rgba32 rgba))
+        if (!TryParseHex(hex, out var rgba))
         {
             throw new ArgumentException("Hexadecimal string is not in the correct format.", nameof(hex));
         }
@@ -276,7 +276,7 @@ public partial struct Rgba32 : IPixel<Rgba32>, IPackedVector<uint>
 
         hex = ToRgbaHex(hex);
 
-        if (hex is null || !uint.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint packedValue))
+        if (hex is null || !uint.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var packedValue))
         {
             return false;
         }
@@ -361,7 +361,7 @@ public partial struct Rgba32 : IPixel<Rgba32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromL16(L16 source)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.PackedValue);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.PackedValue);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -382,7 +382,7 @@ public partial struct Rgba32 : IPixel<Rgba32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromLa32(La32 source)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.L);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.L);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -431,7 +431,7 @@ public partial struct Rgba32 : IPixel<Rgba32>, IPackedVector<uint>
     /// <returns>A hexadecimal string representation of the value.</returns>
     public readonly string ToHex()
     {
-        uint hexOrder = (uint)((this.A << 0) | (this.B << 8) | (this.G << 16) | (this.R << 24));
+        var hexOrder = (uint)((this.A << 0) | (this.B << 8) | (this.G << 16) | (this.R << 24));
         return hexOrder.ToString("X8");
     }
 
@@ -535,10 +535,10 @@ public partial struct Rgba32 : IPixel<Rgba32>, IPackedVector<uint>
             return null;
         }
 
-        char r = hex[0];
-        char g = hex[1];
-        char b = hex[2];
-        char a = hex.Length == 3 ? 'F' : hex[3];
+        var r = hex[0];
+        var g = hex[1];
+        var b = hex[2];
+        var a = hex.Length == 3 ? 'F' : hex[3];
 
         return new string(new[] { r, r, g, g, b, b, a, a });
     }

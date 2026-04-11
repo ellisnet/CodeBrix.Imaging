@@ -34,7 +34,7 @@ public abstract partial class Image
         ImageMetadata metadata)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Buffer2D<TPixel> uninitializedMemoryBuffer = configuration.MemoryAllocator.Allocate2D<TPixel>(
+        var uninitializedMemoryBuffer = configuration.MemoryAllocator.Allocate2D<TPixel>(
             width,
             height,
             configuration.PreferContiguousImageBuffers);
@@ -51,7 +51,7 @@ public abstract partial class Image
     {
         // We take a minimum of the stream length vs the max header size and always check below
         // to ensure that only formats that headers fit within the given buffer length are tested.
-        int headerSize = (int)Math.Min(config.MaxHeaderSize, stream.Length);
+        var headerSize = (int)Math.Min(config.MaxHeaderSize, stream.Length);
         if (headerSize <= 0)
         {
             return null;
@@ -60,12 +60,12 @@ public abstract partial class Image
         // Header sizes are so small, that headersBuffer will be always stackalloc-ed in practice,
         // and heap allocation will never happen, there is no need for the usual try-finally ArrayPool dance.
         // The array case is only a safety mechanism following stackalloc best practices.
-        Span<byte> headersBuffer = headerSize > 512 ? new byte[headerSize] : stackalloc byte[headerSize];
-        long startPosition = stream.Position;
+        var headersBuffer = headerSize > 512 ? new byte[headerSize] : stackalloc byte[headerSize];
+        var startPosition = stream.Position;
 
         // Read doesn't always guarantee the full returned length so read a byte
         // at a time until we get either our count or hit the end of the stream.
-        int n = 0;
+        var n = 0;
         int i;
         do
         {
@@ -80,11 +80,11 @@ public abstract partial class Image
         // and does that data match the format specification?
         // Individual formats should still check since they are public.
         IImageFormat format = null;
-        foreach (IImageFormatDetector formatDetector in config.ImageFormatsManager.FormatDetectors)
+        foreach (var formatDetector in config.ImageFormatsManager.FormatDetectors)
         {
             if (formatDetector.HeaderSize <= headerSize)
             {
-                IImageFormat attemptFormat = formatDetector.DetectFormat(headersBuffer);
+                var attemptFormat = formatDetector.DetectFormat(headersBuffer);
                 if (attemptFormat != null)
                 {
                     format = attemptFormat;
@@ -124,25 +124,25 @@ public abstract partial class Image
     private static (Image<TPixel> Image, IImageFormat Format) Decode<TPixel>(Stream stream, Configuration config, CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        IImageDecoder decoder = DiscoverDecoder(stream, config, out IImageFormat format);
+        var decoder = DiscoverDecoder(stream, config, out var format);
         if (decoder is null)
         {
             return (null, null);
         }
 
-        Image<TPixel> img = decoder.Decode<TPixel>(config, stream, cancellationToken);
+        var img = decoder.Decode<TPixel>(config, stream, cancellationToken);
         return (img, format);
     }
 
     private static (Image Image, IImageFormat Format) Decode(Stream stream, Configuration config, CancellationToken cancellationToken = default)
     {
-        IImageDecoder decoder = DiscoverDecoder(stream, config, out IImageFormat format);
+        var decoder = DiscoverDecoder(stream, config, out var format);
         if (decoder is null)
         {
             return (null, null);
         }
 
-        Image img = decoder.Decode(config, stream, cancellationToken);
+        var img = decoder.Decode(config, stream, cancellationToken);
         return (img, format);
     }
 
@@ -157,14 +157,14 @@ public abstract partial class Image
     /// </returns>
     private static (IImageInfo ImageInfo, IImageFormat Format) InternalIdentity(Stream stream, Configuration config, CancellationToken cancellationToken = default)
     {
-        IImageDecoder decoder = DiscoverDecoder(stream, config, out IImageFormat format);
+        var decoder = DiscoverDecoder(stream, config, out var format);
 
         if (decoder is not IImageInfoDetector detector)
         {
             return (null, null);
         }
 
-        IImageInfo info = detector?.Identify(config, stream, cancellationToken);
+        var info = detector?.Identify(config, stream, cancellationToken);
         return (info, format);
     }
 }

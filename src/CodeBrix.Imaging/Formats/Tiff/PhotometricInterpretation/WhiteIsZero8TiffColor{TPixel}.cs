@@ -19,15 +19,15 @@ internal class WhiteIsZero8TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         var color = default(TPixel);
 
-        int offset = 0;
+        var offset = 0;
 
         var l8 = default(L8);
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                byte intensity = (byte)(byte.MaxValue - data[offset++]);
+                var intensity = (byte)(byte.MaxValue - data[offset++]);
                 pixelRow[x] = TiffUtils.ColorFromL8(l8, intensity, color);
             }
         }

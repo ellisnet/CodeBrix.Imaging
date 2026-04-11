@@ -27,7 +27,7 @@ public class GifMetadata : IDeepCloneable
         this.ColorTableMode = other.ColorTableMode;
         this.GlobalColorTableLength = other.GlobalColorTableLength;
 
-        for (int i = 0; i < other.Comments.Count; i++)
+        for (var i = 0; i < other.Comments.Count; i++)
         {
             this.Comments.Add(other.Comments[i]);
         }

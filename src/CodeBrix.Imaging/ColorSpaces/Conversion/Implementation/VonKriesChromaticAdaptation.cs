@@ -53,11 +53,11 @@ public sealed class VonKriesChromaticAdaptation : IChromaticAdaptation
             return source;
         }
 
-        Lms sourceColorLms = this.converter.Convert(source);
-        Lms sourceWhitePointLms = this.converter.Convert(sourceWhitePoint);
-        Lms targetWhitePointLms = this.converter.Convert(destinationWhitePoint);
+        var sourceColorLms = this.converter.Convert(source);
+        var sourceWhitePointLms = this.converter.Convert(sourceWhitePoint);
+        var targetWhitePointLms = this.converter.Convert(destinationWhitePoint);
 
-        Vector3 vector = targetWhitePointLms.ToVector3() / sourceWhitePointLms.ToVector3();
+        var vector = targetWhitePointLms.ToVector3() / sourceWhitePointLms.ToVector3();
         var targetColorLms = new Lms(Vector3.Multiply(vector, sourceColorLms.ToVector3()));
 
         return this.converter.Convert(targetColorLms);
@@ -71,7 +71,7 @@ public sealed class VonKriesChromaticAdaptation : IChromaticAdaptation
         in CieXyz destinationWhitePoint)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
         if (sourceWhitePoint.Equals(destinationWhitePoint))
         {
@@ -79,19 +79,19 @@ public sealed class VonKriesChromaticAdaptation : IChromaticAdaptation
             return;
         }
 
-        ref CieXyz sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieXyz sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
 
-            Lms sourceColorLms = this.converter.Convert(sp);
-            Lms sourceWhitePointLms = this.converter.Convert(sourceWhitePoint);
-            Lms targetWhitePointLms = this.converter.Convert(destinationWhitePoint);
+            var sourceColorLms = this.converter.Convert(sp);
+            var sourceWhitePointLms = this.converter.Convert(sourceWhitePoint);
+            var targetWhitePointLms = this.converter.Convert(destinationWhitePoint);
 
-            Vector3 vector = targetWhitePointLms.ToVector3() / sourceWhitePointLms.ToVector3();
+            var vector = targetWhitePointLms.ToVector3() / sourceWhitePointLms.ToVector3();
             var targetColorLms = new Lms(Vector3.Multiply(vector, sourceColorLms.ToVector3()));
 
             dp = this.converter.Convert(targetColorLms);

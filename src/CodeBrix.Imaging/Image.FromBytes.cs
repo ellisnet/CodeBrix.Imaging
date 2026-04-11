@@ -49,7 +49,7 @@ public abstract partial class Image
     /// <returns>
     /// The <see cref="IImageInfo"/> or null if suitable info detector not found.
     /// </returns>
-    public static IImageInfo Identify(byte[] data) => Identify(data, out IImageFormat _);
+    public static IImageInfo Identify(byte[] data) => Identify(data, out var _);
 
     /// <summary>
     /// Reads the raw image information from the specified stream without fully decoding it.
@@ -235,15 +235,15 @@ public abstract partial class Image
     {
         Guard.NotNull(configuration, nameof(configuration));
 
-        int maxHeaderSize = configuration.MaxHeaderSize;
+        var maxHeaderSize = configuration.MaxHeaderSize;
         if (maxHeaderSize <= 0)
         {
             return null;
         }
 
-        foreach (IImageFormatDetector detector in configuration.ImageFormatsManager.FormatDetectors)
+        foreach (var detector in configuration.ImageFormatsManager.FormatDetectors)
         {
-            IImageFormat f = detector.DetectFormat(data);
+            var f = detector.DetectFormat(data);
 
             if (f != null)
             {

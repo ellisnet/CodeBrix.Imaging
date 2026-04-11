@@ -52,17 +52,17 @@ internal sealed class T6TiffCompression : TiffBaseDecompressor
     /// <inheritdoc/>
     protected override void Decompress(BufferedReadStream stream, int byteCount, int stripHeight, Span<byte> buffer)
     {
-        int height = stripHeight;
+        var height = stripHeight;
 
-        using System.Buffers.IMemoryOwner<byte> scanLineBuffer = this.Allocator.Allocate<byte>(this.width * 2);
-        Span<byte> scanLine = scanLineBuffer.GetSpan().Slice(0, this.width);
-        Span<byte> referenceScanLineSpan = scanLineBuffer.GetSpan().Slice(this.width, this.width);
+        using var scanLineBuffer = this.Allocator.Allocate<byte>(this.width * 2);
+        var scanLine = scanLineBuffer.GetSpan().Slice(0, this.width);
+        var referenceScanLineSpan = scanLineBuffer.GetSpan().Slice(this.width, this.width);
 
         using var bitReader = new T6BitReader(stream, this.FillOrder, byteCount, this.Allocator);
 
         var referenceScanLine = new CcittReferenceScanline(this.isWhiteZero, this.width);
         uint bitsWritten = 0;
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             scanLine.Clear();
             Decode2DScanline(bitReader, this.isWhiteZero, referenceScanLine, scanLine);
@@ -76,18 +76,18 @@ internal sealed class T6TiffCompression : TiffBaseDecompressor
 
     private uint WriteScanLine(Span<byte> buffer, Span<byte> scanLine, uint bitsWritten)
     {
-        byte white = (byte)(this.isWhiteZero ? 0 : 255);
-        for (int i = 0; i < scanLine.Length; i++)
+        var white = (byte)(this.isWhiteZero ? 0 : 255);
+        for (var i = 0; i < scanLine.Length; i++)
         {
             BitWriterUtils.WriteBits(buffer, (int)bitsWritten, 1, scanLine[i] == white ? this.whiteValue : this.blackValue);
             bitsWritten++;
         }
 
         // Write padding bytes, if necessary.
-        uint remainder = bitsWritten % 8;
+        var remainder = bitsWritten % 8;
         if (remainder != 0)
         {
-            uint padding = 8 - remainder;
+            var padding = 8 - remainder;
             BitWriterUtils.WriteBits(buffer, (int)bitsWritten, padding, 0);
             bitsWritten += padding;
         }
@@ -97,19 +97,19 @@ internal sealed class T6TiffCompression : TiffBaseDecompressor
 
     private static void Decode2DScanline(T6BitReader bitReader, bool whiteIsZero, CcittReferenceScanline referenceScanline, Span<byte> scanline)
     {
-        int width = scanline.Length;
+        var width = scanline.Length;
         bitReader.StartNewRow();
 
         // 2D Encoding variables.
-        int a0 = -1;
-        byte fillByte = whiteIsZero ? (byte)0 : (byte)255;
+        var a0 = -1;
+        var fillByte = whiteIsZero ? (byte)0 : (byte)255;
 
         // Process every code word in this scanline.
-        int unpacked = 0;
+        var unpacked = 0;
         while (true)
         {
             // Read next code word and advance pass it.
-            bool isEol = bitReader.ReadNextCodeWord();
+            var isEol = bitReader.ReadNextCodeWord();
 
             // Special case handling for EOL.
             if (isEol)
@@ -129,7 +129,7 @@ internal sealed class T6TiffCompression : TiffBaseDecompressor
             }
 
             // Update 2D Encoding variables.
-            int b1 = referenceScanline.FindB1(a0, fillByte);
+            var b1 = referenceScanline.FindB1(a0, fillByte);
 
             // Switch on the code word.
             int a1;
@@ -140,7 +140,7 @@ internal sealed class T6TiffCompression : TiffBaseDecompressor
                     break;
 
                 case CcittTwoDimensionalCodeType.Pass:
-                    int b2 = referenceScanline.FindB2(b1);
+                    var b2 = referenceScanline.FindB2(b1);
                     scanline.Slice(unpacked, b2 - unpacked).Fill(fillByte);
                     unpacked = b2;
                     a0 = b2;
@@ -148,7 +148,7 @@ internal sealed class T6TiffCompression : TiffBaseDecompressor
                 case CcittTwoDimensionalCodeType.Horizontal:
                     // Decode M(a0a1)
                     bitReader.ReadNextRun();
-                    int runLength = (int)bitReader.RunLength;
+                    var runLength = (int)bitReader.RunLength;
                     if (runLength > (uint)(scanline.Length - unpacked))
                     {
                         TiffThrowHelper.ThrowImageFormatException("ccitt compression parsing error");

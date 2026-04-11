@@ -20,20 +20,20 @@ internal sealed class CieLuvToCieXyzConverter
         // Conversion algorithm described here: http://www.brucelindbloom.com/index.html?Eqn_Luv_to_XYZ.html
         float l = input.L, u = input.U, v = input.V;
 
-        float u0 = ComputeU0(input.WhitePoint);
-        float v0 = ComputeV0(input.WhitePoint);
+        var u0 = ComputeU0(input.WhitePoint);
+        var v0 = ComputeV0(input.WhitePoint);
 
-        float y = l > CieConstants.Kappa * CieConstants.Epsilon
+        var y = l > CieConstants.Kappa * CieConstants.Epsilon
             ? Numerics.Pow3((l + 16) / 116)
             : l / CieConstants.Kappa;
 
-        float a = ((52 * l / (u + (13 * l * u0))) - 1) / 3;
-        float b = -5 * y;
+        var a = ((52 * l / (u + (13 * l * u0))) - 1) / 3;
+        var b = -5 * y;
         const float c = -0.3333333F;
-        float d = y * ((39 * l / (v + (13 * l * v0))) - 5);
+        var d = y * ((39 * l / (v + (13 * l * v0))) - 5);
 
-        float x = (d - b) / (a - c);
-        float z = (x * a) + b;
+        var x = (d - b) / (a - c);
+        var z = (x * a) + b;
 
         if (float.IsNaN(x) || x < 0)
         {

@@ -67,7 +67,7 @@ internal readonly struct GifGraphicControlExtension : IGifExtension
 
     public int WriteTo(Span<byte> buffer)
     {
-        ref GifGraphicControlExtension dest = ref Unsafe.As<byte, GifGraphicControlExtension>(ref MemoryMarshal.GetReference(buffer));
+        ref var dest = ref Unsafe.As<byte, GifGraphicControlExtension>(ref MemoryMarshal.GetReference(buffer));
 
         dest = this;
 

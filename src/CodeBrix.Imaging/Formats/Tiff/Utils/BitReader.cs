@@ -32,11 +32,11 @@ internal ref struct BitReader
     /// <returns>The value read from the array.</returns>
     public int ReadBits(uint bits)
     {
-        int value = 0;
+        var value = 0;
 
         for (uint i = 0; i < bits; i++)
         {
-            int bit = (this.array[this.offset] >> (7 - this.bitOffset)) & 0x01;
+            var bit = (this.array[this.offset] >> (7 - this.bitOffset)) & 0x01;
             value = (value << 1) | bit;
 
             this.bitOffset++;

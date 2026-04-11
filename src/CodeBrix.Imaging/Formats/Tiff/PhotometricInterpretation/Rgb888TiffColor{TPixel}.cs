@@ -20,12 +20,12 @@ internal class Rgb888TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     /// <inheritdoc/>
     public override void Decode(ReadOnlySpan<byte> data, Buffer2D<TPixel> pixels, int left, int top, int width, int height)
     {
-        int offset = 0;
+        var offset = 0;
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            int byteCount = pixelRow.Length * 3;
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var byteCount = pixelRow.Length * 3;
             PixelOperations<TPixel>.Instance.FromRgb24Bytes(
                 this.configuration,
                 data.Slice(offset, byteCount),

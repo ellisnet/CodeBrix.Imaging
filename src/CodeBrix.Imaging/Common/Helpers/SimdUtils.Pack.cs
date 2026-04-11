@@ -71,22 +71,22 @@ internal static partial class SimdUtils
         ref ReadOnlySpan<byte> blueChannel,
         ref Span<Rgb24> destination)
     {
-        ref ByteTuple4 r = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(redChannel));
-        ref ByteTuple4 g = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(greenChannel));
-        ref ByteTuple4 b = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(blueChannel));
-        ref Rgb24 rgb = ref MemoryMarshal.GetReference(destination);
+        ref var r = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(redChannel));
+        ref var g = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(greenChannel));
+        ref var b = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(blueChannel));
+        ref var rgb = ref MemoryMarshal.GetReference(destination);
 
-        int count = redChannel.Length / 4;
-        for (int i = 0; i < count; i++)
+        var count = redChannel.Length / 4;
+        for (var i = 0; i < count; i++)
         {
-            ref Rgb24 d0 = ref Unsafe.Add(ref rgb, i * 4);
-            ref Rgb24 d1 = ref Unsafe.Add(ref d0, 1);
-            ref Rgb24 d2 = ref Unsafe.Add(ref d0, 2);
-            ref Rgb24 d3 = ref Unsafe.Add(ref d0, 3);
+            ref var d0 = ref Unsafe.Add(ref rgb, i * 4);
+            ref var d1 = ref Unsafe.Add(ref d0, 1);
+            ref var d2 = ref Unsafe.Add(ref d0, 2);
+            ref var d3 = ref Unsafe.Add(ref d0, 3);
 
-            ref ByteTuple4 rr = ref Unsafe.Add(ref r, i);
-            ref ByteTuple4 gg = ref Unsafe.Add(ref g, i);
-            ref ByteTuple4 bb = ref Unsafe.Add(ref b, i);
+            ref var rr = ref Unsafe.Add(ref r, i);
+            ref var gg = ref Unsafe.Add(ref g, i);
+            ref var bb = ref Unsafe.Add(ref b, i);
 
             d0.R = rr.V0;
             d0.G = gg.V0;
@@ -105,7 +105,7 @@ internal static partial class SimdUtils
             d3.B = bb.V3;
         }
 
-        int finished = count * 4;
+        var finished = count * 4;
         redChannel = redChannel.Slice(finished);
         greenChannel = greenChannel.Slice(finished);
         blueChannel = blueChannel.Slice(finished);
@@ -118,23 +118,23 @@ internal static partial class SimdUtils
         ref ReadOnlySpan<byte> blueChannel,
         ref Span<Rgba32> destination)
     {
-        ref ByteTuple4 r = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(redChannel));
-        ref ByteTuple4 g = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(greenChannel));
-        ref ByteTuple4 b = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(blueChannel));
-        ref Rgba32 rgb = ref MemoryMarshal.GetReference(destination);
+        ref var r = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(redChannel));
+        ref var g = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(greenChannel));
+        ref var b = ref Unsafe.As<byte, ByteTuple4>(ref MemoryMarshal.GetReference(blueChannel));
+        ref var rgb = ref MemoryMarshal.GetReference(destination);
 
-        int count = redChannel.Length / 4;
+        var count = redChannel.Length / 4;
         destination.Fill(new Rgba32(0, 0, 0, 255));
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Rgba32 d0 = ref Unsafe.Add(ref rgb, i * 4);
-            ref Rgba32 d1 = ref Unsafe.Add(ref d0, 1);
-            ref Rgba32 d2 = ref Unsafe.Add(ref d0, 2);
-            ref Rgba32 d3 = ref Unsafe.Add(ref d0, 3);
+            ref var d0 = ref Unsafe.Add(ref rgb, i * 4);
+            ref var d1 = ref Unsafe.Add(ref d0, 1);
+            ref var d2 = ref Unsafe.Add(ref d0, 2);
+            ref var d3 = ref Unsafe.Add(ref d0, 3);
 
-            ref ByteTuple4 rr = ref Unsafe.Add(ref r, i);
-            ref ByteTuple4 gg = ref Unsafe.Add(ref g, i);
-            ref ByteTuple4 bb = ref Unsafe.Add(ref b, i);
+            ref var rr = ref Unsafe.Add(ref r, i);
+            ref var gg = ref Unsafe.Add(ref g, i);
+            ref var bb = ref Unsafe.Add(ref b, i);
 
             d0.R = rr.V0;
             d0.G = gg.V0;
@@ -153,7 +153,7 @@ internal static partial class SimdUtils
             d3.B = bb.V3;
         }
 
-        int finished = count * 4;
+        var finished = count * 4;
         redChannel = redChannel.Slice(finished);
         greenChannel = greenChannel.Slice(finished);
         blueChannel = blueChannel.Slice(finished);
@@ -166,14 +166,14 @@ internal static partial class SimdUtils
         ReadOnlySpan<byte> blueChannel,
         Span<Rgb24> destination)
     {
-        ref byte r = ref MemoryMarshal.GetReference(redChannel);
-        ref byte g = ref MemoryMarshal.GetReference(greenChannel);
-        ref byte b = ref MemoryMarshal.GetReference(blueChannel);
-        ref Rgb24 rgb = ref MemoryMarshal.GetReference(destination);
+        ref var r = ref MemoryMarshal.GetReference(redChannel);
+        ref var g = ref MemoryMarshal.GetReference(greenChannel);
+        ref var b = ref MemoryMarshal.GetReference(blueChannel);
+        ref var rgb = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < destination.Length; i++)
+        for (var i = 0; i < destination.Length; i++)
         {
-            ref Rgb24 d = ref Unsafe.Add(ref rgb, i);
+            ref var d = ref Unsafe.Add(ref rgb, i);
             d.R = Unsafe.Add(ref r, i);
             d.G = Unsafe.Add(ref g, i);
             d.B = Unsafe.Add(ref b, i);
@@ -186,14 +186,14 @@ internal static partial class SimdUtils
         ReadOnlySpan<byte> blueChannel,
         Span<Rgba32> destination)
     {
-        ref byte r = ref MemoryMarshal.GetReference(redChannel);
-        ref byte g = ref MemoryMarshal.GetReference(greenChannel);
-        ref byte b = ref MemoryMarshal.GetReference(blueChannel);
-        ref Rgba32 rgba = ref MemoryMarshal.GetReference(destination);
+        ref var r = ref MemoryMarshal.GetReference(redChannel);
+        ref var g = ref MemoryMarshal.GetReference(greenChannel);
+        ref var b = ref MemoryMarshal.GetReference(blueChannel);
+        ref var rgba = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < destination.Length; i++)
+        for (var i = 0; i < destination.Length; i++)
         {
-            ref Rgba32 d = ref Unsafe.Add(ref rgba, i);
+            ref var d = ref Unsafe.Add(ref rgba, i);
             d.R = Unsafe.Add(ref r, i);
             d.G = Unsafe.Add(ref g, i);
             d.B = Unsafe.Add(ref b, i);

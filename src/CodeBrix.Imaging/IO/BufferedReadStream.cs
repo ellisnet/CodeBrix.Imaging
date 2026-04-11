@@ -95,7 +95,7 @@ internal sealed class BufferedReadStream : Stream
 
             // Only reset readBufferIndex if we are out of bounds of our working buffer
             // otherwise we should simply move the value by the diff.
-            if (this.IsInReadBuffer(value, out long index))
+            if (this.IsInReadBuffer(value, out var index))
             {
                 this.readBufferIndex = (int)index;
                 this.readerPosition = value;
@@ -208,7 +208,7 @@ internal sealed class BufferedReadStream : Stream
     public override void Flush()
     {
         // Reset the stream position to match reader position.
-        Stream baseStream = this.BaseStream;
+        var baseStream = this.BaseStream;
         if (this.readerPosition != baseStream.Position)
         {
             baseStream.Seek(this.readerPosition, SeekOrigin.Begin);
@@ -279,7 +279,7 @@ internal sealed class BufferedReadStream : Stream
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void FillReadBuffer()
     {
-        Stream baseStream = this.BaseStream;
+        var baseStream = this.BaseStream;
         if (this.readerPosition != baseStream.Position)
         {
             baseStream.Seek(this.readerPosition, SeekOrigin.Begin);
@@ -287,7 +287,7 @@ internal sealed class BufferedReadStream : Stream
 
         // Read doesn't always guarantee the full returned length so read a byte
         // at a time until we get either our count or hit the end of the stream.
-        int n = 0;
+        var n = 0;
         int i;
         do
         {
@@ -302,7 +302,7 @@ internal sealed class BufferedReadStream : Stream
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ReadToBufferViaCopyFast(Span<byte> buffer)
     {
-        int n = this.GetCopyCount(buffer.Length);
+        var n = this.GetCopyCount(buffer.Length);
 
         // Just straight copy. MemoryStream does the same so should be fast enough.
         this.readBuffer.AsSpan(this.readBufferIndex, n).CopyTo(buffer);
@@ -316,7 +316,7 @@ internal sealed class BufferedReadStream : Stream
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ReadToBufferViaCopyFast(byte[] buffer, int offset, int count)
     {
-        int n = this.GetCopyCount(count);
+        var n = this.GetCopyCount(count);
         this.CopyBytes(buffer, offset, n);
 
         this.readerPosition += n;
@@ -347,7 +347,7 @@ internal sealed class BufferedReadStream : Stream
     private int ReadToBufferDirectSlow(Span<byte> buffer)
     {
         // Read to target but don't copy to our read buffer.
-        Stream baseStream = this.BaseStream;
+        var baseStream = this.BaseStream;
         if (this.readerPosition != baseStream.Position)
         {
             baseStream.Seek(this.readerPosition, SeekOrigin.Begin);
@@ -355,8 +355,8 @@ internal sealed class BufferedReadStream : Stream
 
         // Read doesn't always guarantee the full returned length so read a byte
         // at a time until we get either our count or hit the end of the stream.
-        int count = buffer.Length;
-        int n = 0;
+        var count = buffer.Length;
+        var n = 0;
         int i;
         do
         {
@@ -375,7 +375,7 @@ internal sealed class BufferedReadStream : Stream
     private int ReadToBufferDirectSlow(byte[] buffer, int offset, int count)
     {
         // Read to target but don't copy to our read buffer.
-        Stream baseStream = this.BaseStream;
+        var baseStream = this.BaseStream;
         if (this.readerPosition != baseStream.Position)
         {
             baseStream.Seek(this.readerPosition, SeekOrigin.Begin);
@@ -383,7 +383,7 @@ internal sealed class BufferedReadStream : Stream
 
         // Read doesn't always guarantee the full returned length so read a byte
         // at a time until we get either our count or hit the end of the stream.
-        int n = 0;
+        var n = 0;
         int i;
         do
         {
@@ -400,7 +400,7 @@ internal sealed class BufferedReadStream : Stream
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int GetCopyCount(int count)
     {
-        long n = this.Length - this.readerPosition;
+        var n = this.Length - this.readerPosition;
         if (n > count)
         {
             return count;
@@ -420,9 +420,9 @@ internal sealed class BufferedReadStream : Stream
         // Same as MemoryStream.
         if (count < 9)
         {
-            int byteCount = count;
-            int read = this.readBufferIndex;
-            byte* pinned = this.pinnedReadBuffer;
+            var byteCount = count;
+            var read = this.readBufferIndex;
+            var pinned = this.pinnedReadBuffer;
 
             while (--byteCount > -1)
             {

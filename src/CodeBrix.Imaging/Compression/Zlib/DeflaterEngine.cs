@@ -191,11 +191,11 @@ internal sealed unsafe class DeflaterEngine : IDisposable
     /// <returns>Returns true if progress has been made.</returns>
     public bool Deflate(bool flush, bool finish)
     {
-        bool progress = false;
+        var progress = false;
         do
         {
             this.FillWindow();
-            bool canFlush = flush && (this.inputOff == this.inputEnd);
+            var canFlush = flush && (this.inputOff == this.inputEnd);
 
             switch (this.compressionFunction)
             {
@@ -249,7 +249,7 @@ internal sealed unsafe class DeflaterEngine : IDisposable
             DeflateThrowHelper.ThrowNotProcessed();
         }
 
-        int end = offset + count;
+        var end = offset + count;
 
         // We want to throw an ArgumentOutOfRangeException early.
         // The check is very tricky: it also handles integer wrap around.
@@ -362,7 +362,7 @@ internal sealed unsafe class DeflaterEngine : IDisposable
         // If there is not enough lookahead, but still some input left, read in the input.
         if (this.lookahead < DeflaterConstants.MIN_LOOKAHEAD && this.inputOff < this.inputEnd)
         {
-            int more = (2 * DeflaterConstants.WSIZE) - this.lookahead - this.strstart;
+            var more = (2 * DeflaterConstants.WSIZE) - this.lookahead - this.strstart;
 
             if (more > this.inputEnd - this.inputOff)
             {
@@ -419,7 +419,7 @@ internal sealed unsafe class DeflaterEngine : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private void UpdateHash()
     {
-        byte* pinned = this.pinnedWindowPointer;
+        var pinned = this.pinnedWindowPointer;
 
         // Validate window pointer indices: strstart and strstart+1 must be within the window buffer (2 * WSIZE).
         DebugGuard.MustBeBetweenOrEqualTo(this.strstart, 0, (2 * DeflaterConstants.WSIZE) - 2, nameof(this.strstart));
@@ -444,13 +444,13 @@ internal sealed unsafe class DeflaterEngine : IDisposable
             (2 * DeflaterConstants.WSIZE) - 1,
             nameof(this.strstart));
 
-        int hash = ((this.insertHashIndex << DeflaterConstants.HASH_SHIFT) ^ this.pinnedWindowPointer[this.strstart + (DeflaterConstants.MIN_MATCH - 1)]) & DeflaterConstants.HASH_MASK;
+        var hash = ((this.insertHashIndex << DeflaterConstants.HASH_SHIFT) ^ this.pinnedWindowPointer[this.strstart + (DeflaterConstants.MIN_MATCH - 1)]) & DeflaterConstants.HASH_MASK;
 
         // Hash is masked by HASH_MASK so it is always within [0, HASH_SIZE - 1].
         // Prev index is masked by WMASK so it is always within [0, WSIZE - 1].
         DebugGuard.MustBeBetweenOrEqualTo(hash, 0, DeflaterConstants.HASH_SIZE - 1, nameof(hash));
 
-        short* pinnedHead = this.pinnedHeadPointer;
+        var pinnedHead = this.pinnedHeadPointer;
         this.pinnedPrevPointer[this.strstart & DeflaterConstants.WMASK] = match = pinnedHead[hash];
         pinnedHead[hash] = unchecked((short)this.strstart);
         this.insertHashIndex = hash;
@@ -470,18 +470,18 @@ internal sealed unsafe class DeflaterEngine : IDisposable
 
         // Slide the hash table (could be avoided with 32 bit values
         // at the expense of memory usage).
-        short* pinnedHead = this.pinnedHeadPointer;
-        for (int i = 0; i < DeflaterConstants.HASH_SIZE; ++i)
+        var pinnedHead = this.pinnedHeadPointer;
+        for (var i = 0; i < DeflaterConstants.HASH_SIZE; ++i)
         {
-            int m = pinnedHead[i] & 0xFFFF;
+            var m = pinnedHead[i] & 0xFFFF;
             pinnedHead[i] = (short)(m >= DeflaterConstants.WSIZE ? (m - DeflaterConstants.WSIZE) : 0);
         }
 
         // Slide the prev table.
-        short* pinnedPrev = this.pinnedPrevPointer;
-        for (int i = 0; i < DeflaterConstants.WSIZE; i++)
+        var pinnedPrev = this.pinnedPrevPointer;
+        for (var i = 0; i < DeflaterConstants.WSIZE; i++)
         {
-            int m = pinnedPrev[i] & 0xFFFF;
+            var m = pinnedPrev[i] & 0xFFFF;
             pinnedPrev[i] = (short)(m >= DeflaterConstants.WSIZE ? (m - DeflaterConstants.WSIZE) : 0);
         }
     }
@@ -503,7 +503,7 @@ internal sealed unsafe class DeflaterEngine : IDisposable
     private bool FindLongestMatch(int curMatch)
     {
         int match;
-        int scan = this.strstart;
+        var scan = this.strstart;
 
         // Validate that scan + MAX_MATCH fits within window buffer.
         DebugGuard.MustBeLessThanOrEqualTo(
@@ -512,14 +512,14 @@ internal sealed unsafe class DeflaterEngine : IDisposable
             nameof(this.strstart));
 
         // scanMax is the highest position that we can look at
-        int scanMax = scan + Math.Min(DeflaterConstants.MAX_MATCH, this.lookahead) - 1;
-        int limit = Math.Max(scan - DeflaterConstants.MAX_DIST, 0);
+        var scanMax = scan + Math.Min(DeflaterConstants.MAX_MATCH, this.lookahead) - 1;
+        var limit = Math.Max(scan - DeflaterConstants.MAX_DIST, 0);
 
-        int chainLength = this.maxChain;
-        int niceLength = Math.Min(this.niceLength, this.lookahead);
+        var chainLength = this.maxChain;
+        var niceLength = Math.Min(this.niceLength, this.lookahead);
 
-        int matchStrt = this.matchStart;
-        int matchLength = this.matchLen;
+        var matchStrt = this.matchStart;
+        var matchLength = this.matchLen;
         matchLength = Math.Max(matchLength, DeflaterConstants.MIN_MATCH - 1);
         this.matchLen = matchLength;
 
@@ -528,12 +528,12 @@ internal sealed unsafe class DeflaterEngine : IDisposable
             return false;
         }
 
-        int scanEndPosition = scan + matchLength;
+        var scanEndPosition = scan + matchLength;
 
-        byte* pinnedWindow = this.pinnedWindowPointer;
-        int scanStart = this.strstart;
-        byte scanEnd1 = pinnedWindow[scanEndPosition - 1];
-        byte scanEnd = pinnedWindow[scanEndPosition];
+        var pinnedWindow = this.pinnedWindowPointer;
+        var scanStart = this.strstart;
+        var scanEnd1 = pinnedWindow[scanEndPosition - 1];
+        var scanEnd = pinnedWindow[scanEndPosition];
 
         // Do not waste too much time if we already have a good match:
         if (matchLength >= this.goodLength)
@@ -541,13 +541,13 @@ internal sealed unsafe class DeflaterEngine : IDisposable
             chainLength >>= 2;
         }
 
-        short* pinnedPrev = this.pinnedPrevPointer;
+        var pinnedPrev = this.pinnedPrevPointer;
         do
         {
             match = curMatch;
             scan = scanStart;
 
-            int matchEndPosition = match + matchLength;
+            var matchEndPosition = match + matchLength;
             if (pinnedWindow[matchEndPosition] != scanEnd
                 || pinnedWindow[matchEndPosition - 1] != scanEnd1
                 || pinnedWindow[match] != pinnedWindow[scan]
@@ -697,13 +697,13 @@ internal sealed unsafe class DeflaterEngine : IDisposable
         this.strstart += this.lookahead;
         this.lookahead = 0;
 
-        int storedLength = this.strstart - this.blockStart;
+        var storedLength = this.strstart - this.blockStart;
 
         if ((storedLength >= DeflaterConstants.MAX_BLOCK_SIZE) || // Block is full
             (this.blockStart < DeflaterConstants.WSIZE && storedLength >= DeflaterConstants.MAX_DIST) || // Block may move out of window
             flush)
         {
-            bool lastBlock = finish;
+            var lastBlock = finish;
             if (storedLength > DeflaterConstants.MAX_BLOCK_SIZE)
             {
                 storedLength = DeflaterConstants.MAX_BLOCK_SIZE;
@@ -752,7 +752,7 @@ internal sealed unsafe class DeflaterEngine : IDisposable
                 this.FindLongestMatch(hashHead))
             {
                 // longestMatch sets matchStart and matchLen
-                bool full = this.huffman.TallyDist(this.strstart - this.matchStart, this.matchLen);
+                var full = this.huffman.TallyDist(this.strstart - this.matchStart, this.matchLen);
 
                 this.lookahead -= this.matchLen;
                 if (this.matchLen <= this.maxLazy && this.lookahead >= DeflaterConstants.MIN_MATCH)
@@ -791,7 +791,7 @@ internal sealed unsafe class DeflaterEngine : IDisposable
 
             if (this.huffman.IsFull())
             {
-                bool lastBlock = finish && (this.lookahead == 0);
+                var lastBlock = finish && (this.lookahead == 0);
                 this.huffman.FlushBlock(this.window.Span, this.blockStart, this.strstart - this.blockStart, lastBlock);
                 this.blockStart = this.strstart;
                 return !lastBlock;
@@ -836,11 +836,11 @@ internal sealed unsafe class DeflaterEngine : IDisposable
                 this.SlideWindow();
             }
 
-            int prevMatch = this.matchStart;
-            int prevLen = this.matchLen;
+            var prevMatch = this.matchStart;
+            var prevLen = this.matchLen;
             if (this.lookahead >= DeflaterConstants.MIN_MATCH)
             {
-                int hashHead = this.InsertString();
+                var hashHead = this.InsertString();
 
                 if (this.strategy != DeflateStrategy.HuffmanOnly &&
                     hashHead != 0 &&
@@ -893,13 +893,13 @@ internal sealed unsafe class DeflaterEngine : IDisposable
 
             if (this.huffman.IsFull())
             {
-                int len = this.strstart - this.blockStart;
+                var len = this.strstart - this.blockStart;
                 if (this.prevAvailable)
                 {
                     len--;
                 }
 
-                bool lastBlock = finish && (this.lookahead == 0) && !this.prevAvailable;
+                var lastBlock = finish && (this.lookahead == 0) && !this.prevAvailable;
                 this.huffman.FlushBlock(this.window.Span, this.blockStart, len, lastBlock);
                 this.blockStart += len;
                 return !lastBlock;

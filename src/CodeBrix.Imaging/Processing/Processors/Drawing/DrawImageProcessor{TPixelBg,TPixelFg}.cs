@@ -71,24 +71,24 @@ internal class DrawImageProcessor<TPixelBg, TPixelFg> : ImageProcessor<TPixelBg>
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixelBg> source)
     {
-        Rectangle sourceRectangle = this.SourceRectangle;
-        Configuration configuration = this.Configuration;
+        var sourceRectangle = this.SourceRectangle;
+        var configuration = this.Configuration;
 
-        Image<TPixelFg> targetImage = this.Image;
-        PixelBlender<TPixelBg> blender = this.Blender;
-        int locationY = this.Location.Y;
+        var targetImage = this.Image;
+        var blender = this.Blender;
+        var locationY = this.Location.Y;
 
         // Align start/end positions.
-        Rectangle bounds = targetImage.Bounds();
+        var bounds = targetImage.Bounds();
 
-        int minX = Math.Max(this.Location.X, sourceRectangle.X);
-        int maxX = Math.Min(this.Location.X + bounds.Width, sourceRectangle.Right);
-        int targetX = minX - this.Location.X;
+        var minX = Math.Max(this.Location.X, sourceRectangle.X);
+        var maxX = Math.Min(this.Location.X + bounds.Width, sourceRectangle.Right);
+        var targetX = minX - this.Location.X;
 
-        int minY = Math.Max(this.Location.Y, sourceRectangle.Y);
-        int maxY = Math.Min(this.Location.Y + bounds.Height, sourceRectangle.Bottom);
+        var minY = Math.Max(this.Location.Y, sourceRectangle.Y);
+        var maxY = Math.Min(this.Location.Y + bounds.Height, sourceRectangle.Bottom);
 
-        int width = maxX - minX;
+        var width = maxX - minX;
 
         var workingRect = Rectangle.FromLTRB(minX, minY, maxX, maxY);
 
@@ -148,8 +148,8 @@ internal class DrawImageProcessor<TPixelBg, TPixelFg> : ImageProcessor<TPixelBg>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixelBg> background = this.source.DangerousGetRowSpan(y).Slice(this.minX, this.width);
-            Span<TPixelFg> foreground = this.target.DangerousGetRowSpan(y - this.locationY).Slice(this.targetX, this.width);
+            var background = this.source.DangerousGetRowSpan(y).Slice(this.minX, this.width);
+            var foreground = this.target.DangerousGetRowSpan(y - this.locationY).Slice(this.targetX, this.width);
             this.blender.Blend<TPixelFg>(this.configuration, background, background, foreground, this.opacity);
         }
     }

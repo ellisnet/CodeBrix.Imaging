@@ -15,7 +15,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMultiProcessElement(IccMultiProcessElement value)
     {
-        int count = this.WriteUInt32((uint)value.Signature);
+        var count = this.WriteUInt32((uint)value.Signature);
         count += this.WriteUInt16((ushort)value.InputChannelCount);
         count += this.WriteUInt16((ushort)value.OutputChannelCount);
 
@@ -44,8 +44,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteCurveSetProcessElement(IccCurveSetProcessElement value)
     {
-        int count = 0;
-        foreach (IccOneDimensionalCurve curve in value.Curves)
+        var count = 0;
+        foreach (var curve in value.Curves)
         {
             count += this.WriteOneDimensionalCurve(curve);
             count += this.WritePadding();

@@ -80,10 +80,10 @@ internal ref struct RowOctet<T>
     {
         // We don't actually have to assign values outside of the
         // frame pixel buffer since they are never requested.
-        int y = startY;
-        int yEnd = Math.Min(y + 8, buffer.Height);
+        var y = startY;
+        var yEnd = Math.Min(y + 8, buffer.Height);
 
-        int i = 0;
+        var i = 0;
         while (y < yEnd)
         {
             this[i++] = buffer.DangerousGetRowSpan(y++);

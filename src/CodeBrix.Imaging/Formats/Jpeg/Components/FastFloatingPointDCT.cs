@@ -66,8 +66,8 @@ internal static partial class FastFloatingPointDCT
     /// <param name="quantTable">Quantization table to adjust.</param>
     public static void AdjustToIDCT(ref Block8x8F quantTable)
     {
-        ref float tableRef = ref Unsafe.As<Block8x8F, float>(ref quantTable);
-        ref float multipliersRef = ref MemoryMarshal.GetReference<float>(AdjustmentCoefficients);
+        ref var tableRef = ref Unsafe.As<Block8x8F, float>(ref quantTable);
+        ref var multipliersRef = ref MemoryMarshal.GetReference<float>(AdjustmentCoefficients);
         for (nint i = 0; i < Block8x8F.Size; i++)
         {
             tableRef = 0.125f * tableRef * Unsafe.Add(ref multipliersRef, i);
@@ -85,8 +85,8 @@ internal static partial class FastFloatingPointDCT
     /// <param name="quantTable">Quantization table to adjust.</param>
     public static void AdjustToFDCT(ref Block8x8F quantTable)
     {
-        ref float tableRef = ref Unsafe.As<Block8x8F, float>(ref quantTable);
-        ref float multipliersRef = ref MemoryMarshal.GetReference<float>(AdjustmentCoefficients);
+        ref var tableRef = ref Unsafe.As<Block8x8F, float>(ref quantTable);
+        ref var multipliersRef = ref MemoryMarshal.GetReference<float>(AdjustmentCoefficients);
         for (nint i = 0; i < Block8x8F.Size; i++)
         {
             tableRef = 0.125f / (tableRef * Unsafe.Add(ref multipliersRef, i));
@@ -166,17 +166,17 @@ internal static partial class FastFloatingPointDCT
         static void IDCT8x4_Vector4(ref Vector4 vecRef)
         {
             // Even part
-            Vector4 tmp0 = Unsafe.Add(ref vecRef, 0 * 2);
-            Vector4 tmp1 = Unsafe.Add(ref vecRef, 2 * 2);
-            Vector4 tmp2 = Unsafe.Add(ref vecRef, 4 * 2);
-            Vector4 tmp3 = Unsafe.Add(ref vecRef, 6 * 2);
+            var tmp0 = Unsafe.Add(ref vecRef, 0 * 2);
+            var tmp1 = Unsafe.Add(ref vecRef, 2 * 2);
+            var tmp2 = Unsafe.Add(ref vecRef, 4 * 2);
+            var tmp3 = Unsafe.Add(ref vecRef, 6 * 2);
 
-            Vector4 z5 = tmp0;
-            Vector4 tmp10 = z5 + tmp2;
-            Vector4 tmp11 = z5 - tmp2;
+            var z5 = tmp0;
+            var tmp10 = z5 + tmp2;
+            var tmp11 = z5 - tmp2;
 
-            Vector4 tmp13 = tmp1 + tmp3;
-            Vector4 tmp12 = ((tmp1 - tmp3) * mm128_F_1_4142) - tmp13;
+            var tmp13 = tmp1 + tmp3;
+            var tmp12 = ((tmp1 - tmp3) * mm128_F_1_4142) - tmp13;
 
             tmp0 = tmp10 + tmp13;
             tmp3 = tmp10 - tmp13;
@@ -184,15 +184,15 @@ internal static partial class FastFloatingPointDCT
             tmp2 = tmp11 - tmp12;
 
             // Odd part
-            Vector4 tmp4 = Unsafe.Add(ref vecRef, 1 * 2);
-            Vector4 tmp5 = Unsafe.Add(ref vecRef, 3 * 2);
-            Vector4 tmp6 = Unsafe.Add(ref vecRef, 5 * 2);
-            Vector4 tmp7 = Unsafe.Add(ref vecRef, 7 * 2);
+            var tmp4 = Unsafe.Add(ref vecRef, 1 * 2);
+            var tmp5 = Unsafe.Add(ref vecRef, 3 * 2);
+            var tmp6 = Unsafe.Add(ref vecRef, 5 * 2);
+            var tmp7 = Unsafe.Add(ref vecRef, 7 * 2);
 
-            Vector4 z13 = tmp6 + tmp5;
-            Vector4 z10 = tmp6 - tmp5;
-            Vector4 z11 = tmp4 + tmp7;
-            Vector4 z12 = tmp4 - tmp7;
+            var z13 = tmp6 + tmp5;
+            var z10 = tmp6 - tmp5;
+            var z11 = tmp4 + tmp7;
+            var z12 = tmp4 - tmp7;
 
             tmp7 = z11 + z13;
             tmp11 = (z11 - z13) * mm128_F_1_4142;
@@ -235,25 +235,25 @@ internal static partial class FastFloatingPointDCT
         // Applies 1D floating point FDCT inplace on 8x4 part of 8x8 block
         static void FDCT8x4_Vector4(ref Vector4 vecRef)
         {
-            Vector4 tmp0 = Unsafe.Add(ref vecRef, 0) + Unsafe.Add(ref vecRef, 14);
-            Vector4 tmp7 = Unsafe.Add(ref vecRef, 0) - Unsafe.Add(ref vecRef, 14);
-            Vector4 tmp1 = Unsafe.Add(ref vecRef, 2) + Unsafe.Add(ref vecRef, 12);
-            Vector4 tmp6 = Unsafe.Add(ref vecRef, 2) - Unsafe.Add(ref vecRef, 12);
-            Vector4 tmp2 = Unsafe.Add(ref vecRef, 4) + Unsafe.Add(ref vecRef, 10);
-            Vector4 tmp5 = Unsafe.Add(ref vecRef, 4) - Unsafe.Add(ref vecRef, 10);
-            Vector4 tmp3 = Unsafe.Add(ref vecRef, 6) + Unsafe.Add(ref vecRef, 8);
-            Vector4 tmp4 = Unsafe.Add(ref vecRef, 6) - Unsafe.Add(ref vecRef, 8);
+            var tmp0 = Unsafe.Add(ref vecRef, 0) + Unsafe.Add(ref vecRef, 14);
+            var tmp7 = Unsafe.Add(ref vecRef, 0) - Unsafe.Add(ref vecRef, 14);
+            var tmp1 = Unsafe.Add(ref vecRef, 2) + Unsafe.Add(ref vecRef, 12);
+            var tmp6 = Unsafe.Add(ref vecRef, 2) - Unsafe.Add(ref vecRef, 12);
+            var tmp2 = Unsafe.Add(ref vecRef, 4) + Unsafe.Add(ref vecRef, 10);
+            var tmp5 = Unsafe.Add(ref vecRef, 4) - Unsafe.Add(ref vecRef, 10);
+            var tmp3 = Unsafe.Add(ref vecRef, 6) + Unsafe.Add(ref vecRef, 8);
+            var tmp4 = Unsafe.Add(ref vecRef, 6) - Unsafe.Add(ref vecRef, 8);
 
             // Even part
-            Vector4 tmp10 = tmp0 + tmp3;
-            Vector4 tmp13 = tmp0 - tmp3;
-            Vector4 tmp11 = tmp1 + tmp2;
-            Vector4 tmp12 = tmp1 - tmp2;
+            var tmp10 = tmp0 + tmp3;
+            var tmp13 = tmp0 - tmp3;
+            var tmp11 = tmp1 + tmp2;
+            var tmp12 = tmp1 - tmp2;
 
             Unsafe.Add(ref vecRef, 0) = tmp10 + tmp11;
             Unsafe.Add(ref vecRef, 8) = tmp10 - tmp11;
 
-            Vector4 z1 = (tmp12 + tmp13) * mm128_F_0_7071;
+            var z1 = (tmp12 + tmp13) * mm128_F_0_7071;
             Unsafe.Add(ref vecRef, 4) = tmp13 + z1;
             Unsafe.Add(ref vecRef, 12) = tmp13 - z1;
 
@@ -262,13 +262,13 @@ internal static partial class FastFloatingPointDCT
             tmp11 = tmp5 + tmp6;
             tmp12 = tmp6 + tmp7;
 
-            Vector4 z5 = (tmp10 - tmp12) * mm128_F_0_3826;
-            Vector4 z2 = (mm128_F_0_5411 * tmp10) + z5;
-            Vector4 z4 = (mm128_F_1_3065 * tmp12) + z5;
-            Vector4 z3 = tmp11 * mm128_F_0_7071;
+            var z5 = (tmp10 - tmp12) * mm128_F_0_3826;
+            var z2 = (mm128_F_0_5411 * tmp10) + z5;
+            var z4 = (mm128_F_1_3065 * tmp12) + z5;
+            var z3 = tmp11 * mm128_F_0_7071;
 
-            Vector4 z11 = tmp7 + z3;
-            Vector4 z13 = tmp7 - z3;
+            var z11 = tmp7 + z3;
+            var z13 = tmp7 - z3;
 
             Unsafe.Add(ref vecRef, 10) = z13 + z2;
             Unsafe.Add(ref vecRef, 6) = z13 - z2;

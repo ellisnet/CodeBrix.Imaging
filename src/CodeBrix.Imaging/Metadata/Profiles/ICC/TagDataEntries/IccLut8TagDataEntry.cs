@@ -68,7 +68,7 @@ internal sealed class IccLut8TagDataEntry : IccTagDataEntry, IEquatable<IccLut8T
     {
         Guard.NotNull(matrix, nameof(matrix));
 
-        bool is3By3 = matrix.GetLength(0) == 3 && matrix.GetLength(1) == 3;
+        var is3By3 = matrix.GetLength(0) == 3 && matrix.GetLength(1) == 3;
         Guard.IsTrue(is3By3, nameof(matrix), "Matrix must have a size of three by three");
 
         this.Matrix = this.CreateMatrix(matrix);

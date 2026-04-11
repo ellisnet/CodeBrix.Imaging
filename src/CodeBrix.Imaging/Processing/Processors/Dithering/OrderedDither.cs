@@ -27,7 +27,7 @@ public readonly partial struct OrderedDither : IDither, IEquatable<OrderedDither
     {
         Guard.MustBeGreaterThan(length, 0, nameof(length));
 
-        DenseMatrix<uint> ditherMatrix = OrderedDitherFactory.CreateDitherMatrix(length);
+        var ditherMatrix = OrderedDitherFactory.CreateDitherMatrix(length);
 
         // Create a new matrix to run against, that pre-thresholds the values.
         // We don't want to adjust the original matrix generation code as that
@@ -35,9 +35,9 @@ public readonly partial struct OrderedDither : IDither, IEquatable<OrderedDither
         // https://en.wikipedia.org/wiki/Ordered_dithering#Algorithm
         var thresholdMatrix = new DenseMatrix<float>((int)length);
         float m2 = length * length;
-        for (int y = 0; y < length; y++)
+        for (var y = 0; y < length; y++)
         {
-            for (int x = 0; x < length; x++)
+            for (var x = 0; x < length; x++)
             {
                 thresholdMatrix[y, x] = ((ditherMatrix[y, x] + 1) / m2) - .5F;
             }
@@ -117,19 +117,19 @@ public readonly partial struct OrderedDither : IDither, IEquatable<OrderedDither
             ThrowDefaultInstance();
         }
 
-        int spread = CalculatePaletteSpread(destination.Palette.Length);
-        float scale = quantizer.Options.DitherScale;
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var spread = CalculatePaletteSpread(destination.Palette.Length);
+        var scale = quantizer.Options.DitherScale;
+        var sourceBuffer = source.PixelBuffer;
 
-        for (int y = bounds.Top; y < bounds.Bottom; y++)
+        for (var y = bounds.Top; y < bounds.Bottom; y++)
         {
             ReadOnlySpan<TPixel> sourceRow = sourceBuffer.DangerousGetRowSpan(y).Slice(bounds.X, bounds.Width);
-            Span<byte> destRow = destination.GetWritablePixelRowSpanUnsafe(y - bounds.Y).Slice(0, sourceRow.Length);
+            var destRow = destination.GetWritablePixelRowSpanUnsafe(y - bounds.Y).Slice(0, sourceRow.Length);
 
-            for (int x = 0; x < sourceRow.Length; x++)
+            for (var x = 0; x < sourceRow.Length; x++)
             {
-                TPixel dithered = this.Dither(sourceRow[x], x, y, spread, scale);
-                destRow[x] = quantizer.GetQuantizedColor(dithered, out TPixel _);
+                var dithered = this.Dither(sourceRow[x], x, y, spread, scale);
+                destRow[x] = quantizer.GetQuantizedColor(dithered, out var _);
             }
         }
     }
@@ -148,18 +148,18 @@ public readonly partial struct OrderedDither : IDither, IEquatable<OrderedDither
             ThrowDefaultInstance();
         }
 
-        int spread = CalculatePaletteSpread(processor.Palette.Length);
-        float scale = processor.DitherScale;
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var spread = CalculatePaletteSpread(processor.Palette.Length);
+        var scale = processor.DitherScale;
+        var sourceBuffer = source.PixelBuffer;
 
-        for (int y = bounds.Top; y < bounds.Bottom; y++)
+        for (var y = bounds.Top; y < bounds.Bottom; y++)
         {
-            Span<TPixel> row = sourceBuffer.DangerousGetRowSpan(y).Slice(bounds.X, bounds.Width);
+            var row = sourceBuffer.DangerousGetRowSpan(y).Slice(bounds.X, bounds.Width);
 
-            for (int x = 0; x < row.Length; x++)
+            for (var x = 0; x < row.Length; x++)
             {
-                ref TPixel sourcePixel = ref row[x];
-                TPixel dithered = this.Dither(sourcePixel, x, y, spread, scale);
+                ref var sourcePixel = ref row[x];
+                var dithered = this.Dither(sourcePixel, x, y, spread, scale);
                 sourcePixel = processor.GetPaletteColor(dithered);
             }
         }
@@ -186,7 +186,7 @@ public readonly partial struct OrderedDither : IDither, IEquatable<OrderedDither
         source.ToRgba32(ref rgba);
         Unsafe.SkipInit(out Rgba32 attempt);
 
-        float factor = spread * this.thresholdMatrix[y % this.modulusY, x % this.modulusX] * scale;
+        var factor = spread * this.thresholdMatrix[y % this.modulusY, x % this.modulusX] * scale;
 
         attempt.R = (byte)Numerics.Clamp(rgba.R + factor, byte.MinValue, byte.MaxValue);
         attempt.G = (byte)Numerics.Clamp(rgba.G + factor, byte.MinValue, byte.MaxValue);

@@ -26,7 +26,7 @@ internal class GaussianSharpenProcessor<TPixel> : ImageProcessor<TPixel>
         Rectangle sourceRectangle)
         : base(configuration, source, sourceRectangle)
     {
-        int kernelSize = (definition.Radius * 2) + 1;
+        var kernelSize = (definition.Radius * 2) + 1;
         this.Kernel = ConvolutionProcessorHelpers.CreateGaussianSharpenKernel(kernelSize, definition.Sigma);
     }
 

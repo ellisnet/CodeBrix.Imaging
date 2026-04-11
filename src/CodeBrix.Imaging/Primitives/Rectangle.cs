@@ -208,10 +208,10 @@ public struct Rectangle : IEquatable<Rectangle>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Rectangle Intersect(Rectangle a, Rectangle b)
     {
-        int x1 = Math.Max(a.X, b.X);
-        int x2 = Math.Min(a.Right, b.Right);
-        int y1 = Math.Max(a.Y, b.Y);
-        int y2 = Math.Min(a.Bottom, b.Bottom);
+        var x1 = Math.Max(a.X, b.X);
+        var x2 = Math.Min(a.Right, b.Right);
+        var y1 = Math.Max(a.Y, b.Y);
+        var y2 = Math.Min(a.Bottom, b.Bottom);
 
         if (x2 >= x1 && y2 >= y1)
         {
@@ -231,7 +231,7 @@ public struct Rectangle : IEquatable<Rectangle>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Rectangle Inflate(Rectangle rectangle, int x, int y)
     {
-        Rectangle r = rectangle;
+        var r = rectangle;
         r.Inflate(x, y);
         return r;
     }
@@ -312,10 +312,10 @@ public struct Rectangle : IEquatable<Rectangle>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Rectangle Union(Rectangle a, Rectangle b)
     {
-        int x1 = Math.Min(a.X, b.X);
-        int x2 = Math.Max(a.Right, b.Right);
-        int y1 = Math.Min(a.Y, b.Y);
-        int y2 = Math.Max(a.Bottom, b.Bottom);
+        var x1 = Math.Min(a.X, b.X);
+        var x2 = Math.Max(a.Right, b.Right);
+        var y1 = Math.Min(a.Y, b.Y);
+        var y2 = Math.Max(a.Bottom, b.Bottom);
 
         return new Rectangle(x1, y1, x2 - x1, y2 - y1);
     }
@@ -342,7 +342,7 @@ public struct Rectangle : IEquatable<Rectangle>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Intersect(Rectangle rectangle)
     {
-        Rectangle result = Intersect(rectangle, this);
+        var result = Intersect(rectangle, this);
 
         this.X = result.X;
         this.Y = result.Y;

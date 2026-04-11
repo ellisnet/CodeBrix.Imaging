@@ -31,20 +31,20 @@ internal class Rgb24PlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
         Span<byte> buffer = stackalloc byte[4];
-        int bufferStartIdx = this.isBigEndian ? 1 : 0;
+        var bufferStartIdx = this.isBigEndian ? 1 : 0;
 
-        Span<byte> redData = data[0].GetSpan();
-        Span<byte> greenData = data[1].GetSpan();
-        Span<byte> blueData = data[2].GetSpan();
-        Span<byte> bufferSpan = buffer.Slice(bufferStartIdx);
+        var redData = data[0].GetSpan();
+        var greenData = data[1].GetSpan();
+        var blueData = data[2].GetSpan();
+        var bufferSpan = buffer.Slice(bufferStartIdx);
 
-        int offset = 0;
-        for (int y = top; y < top + height; y++)
+        var offset = 0;
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     redData.Slice(offset, 3).CopyTo(bufferSpan);
                     ulong r = TiffUtils.ConvertToUIntBigEndian(buffer);
@@ -60,7 +60,7 @@ internal class Rgb24PlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
             }
             else
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     redData.Slice(offset, 3).CopyTo(bufferSpan);
                     ulong r = TiffUtils.ConvertToUIntLittleEndian(buffer);

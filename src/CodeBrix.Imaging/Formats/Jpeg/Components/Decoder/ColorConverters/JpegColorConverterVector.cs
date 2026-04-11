@@ -32,12 +32,12 @@ internal abstract partial class JpegColorConverterBase
         {
             DebugGuard.IsTrue(this.IsAvailable, $"{this.GetType().Name} converter is not supported on current hardware.");
 
-            int length = values.Component0.Length;
-            int remainder = (int)((uint)length % (uint)Vector<float>.Count);
+            var length = values.Component0.Length;
+            var remainder = (int)((uint)length % (uint)Vector<float>.Count);
 
             // Jpeg images are guaranteed to have pixel strides at least 8 pixels wide
             // Thus there's no need to check whether simdCount is greater than zero
-            int simdCount = length - remainder;
+            var simdCount = length - remainder;
             this.ConvertCoreVectorizedInplace(values.Slice(0, simdCount));
 
             // Jpeg images width is always divisible by 8 without a remainder

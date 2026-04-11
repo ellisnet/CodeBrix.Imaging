@@ -109,10 +109,10 @@ internal sealed class TiffLzwEncoder : IDisposable
     {
         this.Reset();
 
-        Span<int> childrenSpan = this.children.GetSpan();
-        Span<int> suffixesSpan = this.suffixes.GetSpan();
-        Span<int> siblingsSpan = this.siblings.GetSpan();
-        int length = data.Length;
+        var childrenSpan = this.children.GetSpan();
+        var suffixesSpan = this.suffixes.GetSpan();
+        var siblingsSpan = this.siblings.GetSpan();
+        var length = data.Length;
 
         if (length == 0)
         {
@@ -129,7 +129,7 @@ internal sealed class TiffLzwEncoder : IDisposable
         while (this.bufferPosition < data.Length)
         {
             int value = this.ReadNextByte(data);
-            int child = childrenSpan[this.parent];
+            var child = childrenSpan[this.parent];
 
             if (child > 0)
             {
@@ -139,7 +139,7 @@ internal sealed class TiffLzwEncoder : IDisposable
                 }
                 else
                 {
-                    int sibling = child;
+                    var sibling = child;
 
                     while (true)
                     {
@@ -245,7 +245,7 @@ internal sealed class TiffLzwEncoder : IDisposable
 
         while (this.bitPos >= 8)
         {
-            int b = (this.bits >> (this.bitPos - 8)) & 0xff;
+            var b = (this.bits >> (this.bitPos - 8)) & 0xff;
             stream.WriteByte((byte)b);
             this.bitPos -= 8;
         }

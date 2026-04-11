@@ -281,7 +281,7 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromL8(L8 source)
     {
-        ushort rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.PackedValue);
+        var rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.PackedValue);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -302,7 +302,7 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromLa16(La16 source)
     {
-        ushort rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.L);
+        var rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.L);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -368,10 +368,10 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Rgba32 ToRgba32()
     {
-        byte r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
-        byte g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
-        byte b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
-        byte a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
+        var r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
+        var g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
+        var b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
+        var a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
         return new Rgba32(r, g, b, a);
     }
 
@@ -382,10 +382,10 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Bgra32 ToBgra32()
     {
-        byte r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
-        byte g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
-        byte b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
-        byte a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
+        var r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
+        var g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
+        var b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
+        var a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
         return new Bgra32(r, g, b, a);
     }
 
@@ -396,10 +396,10 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Argb32 ToArgb32()
     {
-        byte r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
-        byte g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
-        byte b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
-        byte a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
+        var r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
+        var g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
+        var b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
+        var a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
         return new Argb32(r, g, b, a);
     }
 
@@ -410,10 +410,10 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Abgr32 ToAbgr32()
     {
-        byte r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
-        byte g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
-        byte b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
-        byte a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
+        var r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
+        var g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
+        var b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
+        var a = ColorNumerics.DownScaleFrom16BitTo8Bit(this.A);
         return new Abgr32(r, g, b, a);
     }
 
@@ -424,9 +424,9 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Rgb24 ToRgb24()
     {
-        byte r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
-        byte g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
-        byte b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
+        var r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
+        var g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
+        var b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
         return new Rgb24(r, g, b);
     }
 
@@ -437,9 +437,9 @@ public partial struct Rgba64 : IPixel<Rgba64>, IPackedVector<ulong>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Bgr24 ToBgr24()
     {
-        byte r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
-        byte g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
-        byte b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
+        var r = ColorNumerics.DownScaleFrom16BitTo8Bit(this.R);
+        var g = ColorNumerics.DownScaleFrom16BitTo8Bit(this.G);
+        var b = ColorNumerics.DownScaleFrom16BitTo8Bit(this.B);
         return new Bgr24(r, g, b);
     }
 

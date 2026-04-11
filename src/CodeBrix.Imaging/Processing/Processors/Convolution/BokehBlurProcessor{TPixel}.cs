@@ -55,7 +55,7 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         this.kernelSize = (definition.Radius * 2) + 1;
 
         // Get the bokeh blur data
-        BokehBlurKernelData data = BokehBlurKernelDataProvider.GetBokehBlurKernelData(
+        var data = BokehBlurKernelDataProvider.GetBokehBlurKernelData(
             definition.Radius,
             this.kernelSize,
             definition.Components);
@@ -98,7 +98,7 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         }
 
         // Create a 0-filled buffer to use to store the result of the component convolutions
-        using Buffer2D<Vector4> processingBuffer = this.Configuration.MemoryAllocator.Allocate2D<Vector4>(source.Size(), AllocationOptions.Clean);
+        using var processingBuffer = this.Configuration.MemoryAllocator.Allocate2D<Vector4>(source.Size(), AllocationOptions.Clean);
 
         // Perform the 1D convolutions on all the kernel components and accumulate the results
         this.OnFrameApplyCore(source, sourceRectangle, this.Configuration, processingBuffer);
@@ -136,7 +136,7 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         Buffer2D<Vector4> processingBuffer)
     {
         // Allocate the buffer with the intermediate convolution results
-        using Buffer2D<ComplexVector4> firstPassBuffer = configuration.MemoryAllocator.Allocate2D<ComplexVector4>(source.Size());
+        using var firstPassBuffer = configuration.MemoryAllocator.Allocate2D<ComplexVector4>(source.Size());
 
         // Unlike in the standard 2 pass convolution processor, we use a rectangle of 1x the interest width
         // to speedup the actual convolution, by applying bulk pixel conversion and clamping calculation.
@@ -152,15 +152,15 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
 
         mapXY.BuildSamplingOffsetMap(this.kernelSize, this.kernelSize, sourceRectangle);
 
-        ref Complex64[] baseRef = ref MemoryMarshal.GetReference(this.kernels.AsSpan());
-        ref Vector4 paramsRef = ref MemoryMarshal.GetReference(this.kernelParameters.AsSpan());
+        ref var baseRef = ref MemoryMarshal.GetReference(this.kernels.AsSpan());
+        ref var paramsRef = ref MemoryMarshal.GetReference(this.kernelParameters.AsSpan());
 
         // Perform two 1D convolutions for each component in the current instance
-        for (int i = 0; i < this.kernels.Length; i++)
+        for (var i = 0; i < this.kernels.Length; i++)
         {
             // Compute the resulting complex buffer for the current component
-            Complex64[] kernel = Unsafe.Add(ref baseRef, i);
-            Vector4 parameters = Unsafe.Add(ref paramsRef, i);
+            var kernel = Unsafe.Add(ref baseRef, i);
+            var parameters = Unsafe.Add(ref paramsRef, i);
 
             // Horizontal convolution
             var horizontalOperation = new FirstPassConvolutionRowOperation(
@@ -226,33 +226,33 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<Vector4> span)
         {
-            int boundsX = this.bounds.X;
-            int boundsWidth = this.bounds.Width;
-            int kernelSize = this.kernel.Length;
+            var boundsX = this.bounds.X;
+            var boundsWidth = this.bounds.Width;
+            var kernelSize = this.kernel.Length;
 
             // Clear the target buffer for each row run
-            Span<ComplexVector4> targetBuffer = this.targetValues.DangerousGetRowSpan(y);
+            var targetBuffer = this.targetValues.DangerousGetRowSpan(y);
             targetBuffer.Clear();
 
             // Execute the bulk pixel format conversion for the current row
-            Span<TPixel> sourceRow = this.sourcePixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
+            var sourceRow = this.sourcePixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, sourceRow, span);
 
-            ref Vector4 sourceBase = ref MemoryMarshal.GetReference(span);
-            ref ComplexVector4 targetStart = ref MemoryMarshal.GetReference(targetBuffer);
-            ref ComplexVector4 targetEnd = ref Unsafe.Add(ref targetStart, span.Length);
-            ref Complex64 kernelBase = ref this.kernel[0];
-            ref Complex64 kernelEnd = ref Unsafe.Add(ref kernelBase, kernelSize);
-            ref int sampleColumnBase = ref MemoryMarshal.GetReference(this.map.GetColumnOffsetSpan());
+            ref var sourceBase = ref MemoryMarshal.GetReference(span);
+            ref var targetStart = ref MemoryMarshal.GetReference(targetBuffer);
+            ref var targetEnd = ref Unsafe.Add(ref targetStart, span.Length);
+            ref var kernelBase = ref this.kernel[0];
+            ref var kernelEnd = ref Unsafe.Add(ref kernelBase, kernelSize);
+            ref var sampleColumnBase = ref MemoryMarshal.GetReference(this.map.GetColumnOffsetSpan());
 
             while (Unsafe.IsAddressLessThan(ref targetStart, ref targetEnd))
             {
-                ref Complex64 kernelStart = ref kernelBase;
-                ref int sampleColumnStart = ref sampleColumnBase;
+                ref var kernelStart = ref kernelBase;
+                ref var sampleColumnStart = ref sampleColumnBase;
 
                 while (Unsafe.IsAddressLessThan(ref kernelStart, ref kernelEnd))
                 {
-                    Vector4 sample = Unsafe.Add(ref sourceBase, sampleColumnStart - boundsX);
+                    var sample = Unsafe.Add(ref sourceBase, sampleColumnStart - boundsX);
 
                     targetStart.Sum(kernelStart * sample);
 
@@ -295,13 +295,13 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<Vector4> span)
         {
-            Span<TPixel> targetRowSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
+            var targetRowSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, targetRowSpan.Slice(0, span.Length), span, PixelConversionModifiers.Premultiply);
-            ref Vector4 baseRef = ref MemoryMarshal.GetReference(span);
+            ref var baseRef = ref MemoryMarshal.GetReference(span);
 
-            for (int x = 0; x < this.bounds.Width; x++)
+            for (var x = 0; x < this.bounds.Width; x++)
             {
-                ref Vector4 v = ref Unsafe.Add(ref baseRef, x);
+                ref var v = ref Unsafe.Add(ref baseRef, x);
                 v.X = MathF.Pow(v.X, this.gamma);
                 v.Y = MathF.Pow(v.Y, this.gamma);
                 v.Z = MathF.Pow(v.Z, this.gamma);
@@ -335,7 +335,7 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<Vector4> span)
         {
-            Span<TPixel> targetRowSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
+            var targetRowSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
 
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, targetRowSpan.Slice(0, span.Length), span, PixelConversionModifiers.Premultiply);
 
@@ -375,17 +375,17 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Vector4 low = Vector4.Zero;
+            var low = Vector4.Zero;
             var high = new Vector4(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
 
-            Span<TPixel> targetPixelSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
-            Span<Vector4> sourceRowSpan = this.sourceValues.DangerousGetRowSpan(y).Slice(this.bounds.X);
-            ref Vector4 sourceRef = ref MemoryMarshal.GetReference(sourceRowSpan);
+            var targetPixelSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
+            var sourceRowSpan = this.sourceValues.DangerousGetRowSpan(y).Slice(this.bounds.X);
+            ref var sourceRef = ref MemoryMarshal.GetReference(sourceRowSpan);
 
-            for (int x = 0; x < this.bounds.Width; x++)
+            for (var x = 0; x < this.bounds.Width; x++)
             {
-                ref Vector4 v = ref Unsafe.Add(ref sourceRef, x);
-                Vector4 clamp = Numerics.Clamp(v, low, high);
+                ref var v = ref Unsafe.Add(ref sourceRef, x);
+                var clamp = Numerics.Clamp(v, low, high);
                 v.X = MathF.Pow(clamp.X, this.inverseGamma);
                 v.Y = MathF.Pow(clamp.Y, this.inverseGamma);
                 v.Z = MathF.Pow(clamp.Z, this.inverseGamma);
@@ -422,13 +422,13 @@ internal class BokehBlurProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public unsafe void Invoke(int y)
         {
-            Span<Vector4> sourceRowSpan = this.sourceValues.DangerousGetRowSpan(y).Slice(this.bounds.X, this.bounds.Width);
-            ref Vector4 sourceRef = ref MemoryMarshal.GetReference(sourceRowSpan);
+            var sourceRowSpan = this.sourceValues.DangerousGetRowSpan(y).Slice(this.bounds.X, this.bounds.Width);
+            ref var sourceRef = ref MemoryMarshal.GetReference(sourceRowSpan);
 
             Numerics.Clamp(MemoryMarshal.Cast<Vector4, float>(sourceRowSpan), 0, float.PositiveInfinity);
             Numerics.CubeRootOnXYZ(sourceRowSpan);
 
-            Span<TPixel> targetPixelSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
+            var targetPixelSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X);
 
             PixelOperations<TPixel>.Instance.FromVector4Destructive(this.configuration, sourceRowSpan.Slice(0, this.bounds.Width), targetPixelSpan, PixelConversionModifiers.Premultiply);
         }

@@ -42,8 +42,8 @@ internal sealed class DeflateCompressor : TiffBaseCompressor
             stream.Flush();
         }
 
-        int size = (int)this.memoryStream.Position;
-        byte[] buffer = this.memoryStream.GetBuffer();
+        var size = (int)this.memoryStream.Position;
+        var buffer = this.memoryStream.GetBuffer();
         this.Output.Write(buffer, 0, size);
     }
 

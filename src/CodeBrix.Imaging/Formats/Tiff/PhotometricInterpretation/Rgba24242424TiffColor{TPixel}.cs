@@ -37,20 +37,20 @@ internal class Rgba24242424TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
 
-        bool hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
-        int offset = 0;
+        var hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
+        var offset = 0;
 
         Span<byte> buffer = stackalloc byte[4];
-        int bufferStartIdx = this.isBigEndian ? 1 : 0;
+        var bufferStartIdx = this.isBigEndian ? 1 : 0;
 
-        Span<byte> bufferSpan = buffer.Slice(bufferStartIdx);
-        for (int y = top; y < top + height; y++)
+        var bufferSpan = buffer.Slice(bufferStartIdx);
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
 
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     data.Slice(offset, 3).CopyTo(bufferSpan);
                     ulong r = TiffUtils.ConvertToUIntBigEndian(buffer);
@@ -75,7 +75,7 @@ internal class Rgba24242424TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
             }
             else
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     data.Slice(offset, 3).CopyTo(bufferSpan);
                     ulong r = TiffUtils.ConvertToUIntLittleEndian(buffer);

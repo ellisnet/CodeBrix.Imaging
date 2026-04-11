@@ -54,26 +54,26 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
     public void ApplyTransform<TResampler>(in TResampler sampler)
         where TResampler : struct, IResampler
     {
-        Configuration configuration = this.Configuration;
-        Image<TPixel> source = this.Source;
-        Image<TPixel> destination = this.destination;
-        Rectangle sourceRectangle = this.SourceRectangle;
-        Rectangle destinationRectangle = this.destinationRectangle;
-        bool compand = this.options.Compand;
-        bool premultiplyAlpha = this.options.PremultiplyAlpha;
-        TPixel fillColor = this.options.PadColor.ToPixel<TPixel>();
-        bool shouldFill = (this.options.Mode == ResizeMode.BoxPad || this.options.Mode == ResizeMode.Pad)
-                          && this.options.PadColor != default;
+        var configuration = this.Configuration;
+        var source = this.Source;
+        var destination = this.destination;
+        var sourceRectangle = this.SourceRectangle;
+        var destinationRectangle = this.destinationRectangle;
+        var compand = this.options.Compand;
+        var premultiplyAlpha = this.options.PremultiplyAlpha;
+        var fillColor = this.options.PadColor.ToPixel<TPixel>();
+        var shouldFill = (this.options.Mode == ResizeMode.BoxPad || this.options.Mode == ResizeMode.Pad)
+                         && this.options.PadColor != default;
 
         // Handle resize dimensions identical to the original
         if (source.Width == destination.Width
             && source.Height == destination.Height
             && sourceRectangle == destinationRectangle)
         {
-            for (int i = 0; i < source.Frames.Count; i++)
+            for (var i = 0; i < source.Frames.Count; i++)
             {
-                ImageFrame<TPixel> sourceFrame = source.Frames[i];
-                ImageFrame<TPixel> destinationFrame = destination.Frames[i];
+                var sourceFrame = source.Frames[i];
+                var destinationFrame = destination.Frames[i];
 
                 // The cloned will be blank here copy all the pixel data over
                 sourceFrame.GetPixelMemoryGroup().CopyTo(destinationFrame.GetPixelMemoryGroup());
@@ -86,10 +86,10 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
 
         if (sampler is NearestNeighborResampler)
         {
-            for (int i = 0; i < source.Frames.Count; i++)
+            for (var i = 0; i < source.Frames.Count; i++)
             {
-                ImageFrame<TPixel> sourceFrame = source.Frames[i];
-                ImageFrame<TPixel> destinationFrame = destination.Frames[i];
+                var sourceFrame = source.Frames[i];
+                var destinationFrame = destination.Frames[i];
 
                 if (shouldFill)
                 {
@@ -110,7 +110,7 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
 
         // Since all image frame dimensions have to be the same we can calculate
         // the kernel maps and reuse for all frames.
-        MemoryAllocator allocator = configuration.MemoryAllocator;
+        var allocator = configuration.MemoryAllocator;
         using var horizontalKernelMap = ResizeKernelMap.Calculate(
             in sampler,
             destinationRectangle.Width,
@@ -123,10 +123,10 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
             sourceRectangle.Height,
             allocator);
 
-        for (int i = 0; i < source.Frames.Count; i++)
+        for (var i = 0; i < source.Frames.Count; i++)
         {
-            ImageFrame<TPixel> sourceFrame = source.Frames[i];
-            ImageFrame<TPixel> destinationFrame = destination.Frames[i];
+            var sourceFrame = source.Frames[i];
+            var destinationFrame = destination.Frames[i];
 
             if (shouldFill)
             {
@@ -156,8 +156,8 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
         Rectangle interest)
     {
         // Scaling factors
-        float widthFactor = sourceRectangle.Width / (float)destinationRectangle.Width;
-        float heightFactor = sourceRectangle.Height / (float)destinationRectangle.Height;
+        var widthFactor = sourceRectangle.Width / (float)destinationRectangle.Width;
+        var heightFactor = sourceRectangle.Height / (float)destinationRectangle.Height;
 
         var operation = new NNRowOperation(
             sourceRectangle,
@@ -198,14 +198,14 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
         bool compand,
         bool premultiplyAlpha)
     {
-        PixelAlphaRepresentation? alphaRepresentation = PixelOperations<TPixel>.Instance.GetPixelTypeInfo()?.AlphaRepresentation;
+        var alphaRepresentation = PixelOperations<TPixel>.Instance.GetPixelTypeInfo()?.AlphaRepresentation;
 
         // Premultiply only if alpha representation is unknown or Unassociated:
-        bool needsPremultiplication = alphaRepresentation == null || alphaRepresentation.Value == PixelAlphaRepresentation.Unassociated;
+        var needsPremultiplication = alphaRepresentation == null || alphaRepresentation.Value == PixelAlphaRepresentation.Unassociated;
         premultiplyAlpha &= needsPremultiplication;
-        PixelConversionModifiers conversionModifiers = GetModifiers(compand, premultiplyAlpha);
+        var conversionModifiers = GetModifiers(compand, premultiplyAlpha);
 
-        Buffer2DRegion<TPixel> sourceRegion = source.PixelBuffer.GetRegion(sourceRectangle);
+        var sourceRegion = source.PixelBuffer.GetRegion(sourceRectangle);
 
         // To reintroduce parallel processing, we would launch multiple workers
         // for different row intervals of the image.
@@ -255,18 +255,18 @@ internal class ResizeProcessor<TPixel> : TransformProcessor<TPixel>, IResampling
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            int sourceX = this.sourceBounds.X;
-            int sourceY = this.sourceBounds.Y;
-            int destOriginX = this.destinationBounds.X;
-            int destOriginY = this.destinationBounds.Y;
-            int destLeft = this.interest.Left;
-            int destRight = this.interest.Right;
+            var sourceX = this.sourceBounds.X;
+            var sourceY = this.sourceBounds.Y;
+            var destOriginX = this.destinationBounds.X;
+            var destOriginY = this.destinationBounds.Y;
+            var destLeft = this.interest.Left;
+            var destRight = this.interest.Right;
 
             // Y coordinates of source points
-            Span<TPixel> sourceRow = this.source.DangerousGetRowSpan((int)(((y - destOriginY) * this.heightFactor) + sourceY));
-            Span<TPixel> targetRow = this.destination.DangerousGetRowSpan(y);
+            var sourceRow = this.source.DangerousGetRowSpan((int)(((y - destOriginY) * this.heightFactor) + sourceY));
+            var targetRow = this.destination.DangerousGetRowSpan(y);
 
-            for (int x = destLeft; x < destRight; x++)
+            for (var x = destLeft; x < destRight; x++)
             {
                 // X coordinates of source points
                 targetRow[x] = sourceRow[(int)(((x - destOriginX) * this.widthFactor) + sourceX)];

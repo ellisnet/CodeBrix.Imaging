@@ -33,21 +33,21 @@ internal class BackgroundColorProcessor<TPixel> : ImageProcessor<TPixel>
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        TPixel color = this.definition.Color.ToPixel<TPixel>();
-        GraphicsOptions graphicsOptions = this.definition.GraphicsOptions;
+        var color = this.definition.Color.ToPixel<TPixel>();
+        var graphicsOptions = this.definition.GraphicsOptions;
 
         var interest = Rectangle.Intersect(this.SourceRectangle, source.Bounds());
 
-        Configuration configuration = this.Configuration;
-        MemoryAllocator memoryAllocator = configuration.MemoryAllocator;
+        var configuration = this.Configuration;
+        var memoryAllocator = configuration.MemoryAllocator;
 
-        using IMemoryOwner<TPixel> colors = memoryAllocator.Allocate<TPixel>(interest.Width);
-        using IMemoryOwner<float> amount = memoryAllocator.Allocate<float>(interest.Width);
+        using var colors = memoryAllocator.Allocate<TPixel>(interest.Width);
+        using var amount = memoryAllocator.Allocate<float>(interest.Width);
 
         colors.GetSpan().Fill(color);
         amount.GetSpan().Fill(graphicsOptions.BlendPercentage);
 
-        PixelBlender<TPixel> blender = PixelOperations<TPixel>.Instance.GetPixelBlender(graphicsOptions);
+        var blender = PixelOperations<TPixel>.Instance.GetPixelBlender(graphicsOptions);
 
         var operation = new RowOperation(configuration, interest, blender, amount, colors, source.PixelBuffer);
         ParallelRowIterator.IterateRows(
@@ -85,7 +85,7 @@ internal class BackgroundColorProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixel> destination =
+            var destination =
                 this.source.DangerousGetRowSpan(y)
                     .Slice(this.bounds.X, this.bounds.Width);
 

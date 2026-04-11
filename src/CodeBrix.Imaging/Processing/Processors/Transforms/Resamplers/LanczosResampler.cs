@@ -50,7 +50,7 @@ public readonly struct LanczosResampler : IResampler
             x = -x;
         }
 
-        float radius = this.Radius;
+        var radius = this.Radius;
         if (x < radius)
         {
             return Numerics.SinC(x) * Numerics.SinC(x / radius);

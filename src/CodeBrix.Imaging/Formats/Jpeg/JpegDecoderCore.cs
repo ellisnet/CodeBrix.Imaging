@@ -158,7 +158,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     /// <returns>The <see cref="JpegFileMarker"/></returns>
     public static JpegFileMarker FindNextFileMarker(byte[] marker, BufferedReadStream stream)
     {
-        int value = stream.Read(marker, 0, 2);
+        var value = stream.Read(marker, 0, 2);
 
         if (value == 0)
         {
@@ -172,7 +172,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             int m = marker[1];
             while (m == JpegConstants.Markers.XFF)
             {
-                int suffix = stream.ReadByte();
+                var suffix = stream.ReadByte();
                 if (suffix == -1)
                 {
                     return new JpegFileMarker(JpegConstants.Markers.EOI, stream.Length - 2);
@@ -218,7 +218,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         this.InitXmpProfile();
         this.InitDerivedMetadataProperties();
 
-        Size pixelSize = this.Frame.PixelSize;
+        var pixelSize = this.Frame.PixelSize;
         return new ImageInfo(
             new PixelTypeInfo(this.Frame.BitsPerPixel), 
             pixelSize.Width, 
@@ -248,7 +248,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         using var stream = new BufferedReadStream(this.Configuration, ms);
 
         // Check for the Start Of Image marker.
-        int bytesRead = stream.Read(this.markerBuffer, 0, 2);
+        var bytesRead = stream.Read(this.markerBuffer, 0, 2);
         var fileMarker = new JpegFileMarker(this.markerBuffer[1], 0);
         if (fileMarker.Marker != JpegConstants.Markers.SOI)
         {
@@ -264,7 +264,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             if (!fileMarker.Invalid)
             {
                 // Get the marker length.
-                int markerContentByteSize = this.ReadUint16(stream) - 2;
+                var markerContentByteSize = this.ReadUint16(stream) - 2;
 
                 // Check whether stream actually has enought bytes to read
                 // markerContentByteSize is always positive so we cast
@@ -314,7 +314,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     /// <param name="cancellationToken">The token to monitor cancellation.</param>
     internal void ParseStream(BufferedReadStream stream, HuffmanScanDecoder scanDecoder, CancellationToken cancellationToken)
     {
-        bool metadataOnly = scanDecoder == null;
+        var metadataOnly = scanDecoder == null;
 
         this.scanDecoder = scanDecoder;
 
@@ -329,7 +329,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
 
         stream.ReadExactly(this.markerBuffer, 0, 2);
-        byte marker = this.markerBuffer[1];
+        var marker = this.markerBuffer[1];
         fileMarker = new JpegFileMarker(marker, (int)stream.Position - 2);
         this.QuantizationTables ??= new Block8x8F[4];
 
@@ -343,7 +343,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             if (!fileMarker.Invalid)
             {
                 // Get the marker length.
-                int markerContentByteSize = this.ReadUint16(stream) - 2;
+                var markerContentByteSize = this.ReadUint16(stream) - 2;
 
                 // Check whether stream actually has enought bytes to read
                 // markerContentByteSize is always positive so we cast
@@ -700,8 +700,8 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
         else if (this.hasExif)
         {
-            double horizontalValue = this.GetExifResolutionValue(ExifTag.XResolution);
-            double verticalValue = this.GetExifResolutionValue(ExifTag.YResolution);
+            var horizontalValue = this.GetExifResolutionValue(ExifTag.XResolution);
+            var verticalValue = this.GetExifResolutionValue(ExifTag.YResolution);
 
             if (horizontalValue > 0 && verticalValue > 0)
             {
@@ -714,7 +714,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
 
     private double GetExifResolutionValue(ExifTag<Rational> tag)
     {
-        IExifValue<Rational> resolution = this.Metadata.ExifProfile.GetValue(tag);
+        var resolution = this.Metadata.ExifProfile.GetValue(tag);
 
         return resolution is null ? 0 : resolution.Value.ToDouble();
     }
@@ -726,7 +726,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     /// <param name="extension">The array containing addition profile data.</param>
     private void ExtendProfile(ref byte[] profile, byte[] extension)
     {
-        int currentLength = profile.Length;
+        var currentLength = profile.Length;
 
         Array.Resize(ref profile, currentLength + extension.Length);
         Buffer.BlockCopy(extension, 0, profile, currentLength, extension.Length);
@@ -796,7 +796,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         if (ProfileResolver.IsProfile(this.temp, ProfileResolver.ExifMarker))
         {
             this.hasExif = true;
-            byte[] profile = new byte[remaining];
+            var profile = new byte[remaining];
             stream.ReadExactly(profile, 0, remaining);
 
             if (this.exifData is null)
@@ -827,7 +827,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             if (ProfileResolver.IsProfile(this.temp, ProfileResolver.XmpMarker))
             {
                 this.hasXmp = true;
-                byte[] profile = new byte[remaining];
+                var profile = new byte[remaining];
                 stream.ReadExactly(profile, 0, remaining);
 
                 if (this.xmpData is null)
@@ -863,14 +863,14 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             return;
         }
 
-        byte[] identifier = new byte[Icclength];
+        var identifier = new byte[Icclength];
         stream.ReadExactly(identifier, 0, Icclength);
         remaining -= Icclength; // We have read it by this point
 
         if (ProfileResolver.IsProfile(identifier, ProfileResolver.IccMarker))
         {
             this.hasIcc = true;
-            byte[] profile = new byte[remaining];
+            var profile = new byte[remaining];
             stream.ReadExactly(profile, 0, remaining);
 
             if (this.iccData is null)
@@ -908,9 +908,9 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         remaining -= ProfileResolver.AdobePhotoshopApp13Marker.Length;
         if (ProfileResolver.IsProfile(this.temp, ProfileResolver.AdobePhotoshopApp13Marker))
         {
-            byte[] resourceBlockData = new byte[remaining];
+            var resourceBlockData = new byte[remaining];
             stream.ReadExactly(resourceBlockData, 0, remaining);
-            Span<byte> blockDataSpan = resourceBlockData.AsSpan();
+            var blockDataSpan = resourceBlockData.AsSpan();
 
             while (blockDataSpan.Length > 12)
             {
@@ -920,12 +920,12 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
                 }
 
                 blockDataSpan = blockDataSpan.Slice(4);
-                Span<byte> imageResourceBlockId = blockDataSpan.Slice(0, 2);
+                var imageResourceBlockId = blockDataSpan.Slice(0, 2);
                 if (ProfileResolver.IsProfile(imageResourceBlockId, ProfileResolver.AdobeIptcMarker))
                 {
-                    int resourceBlockNameLength = ReadImageResourceNameLength(blockDataSpan);
-                    int resourceDataSize = ReadResourceDataLength(blockDataSpan, resourceBlockNameLength);
-                    int dataStartIdx = 2 + resourceBlockNameLength + 4;
+                    var resourceBlockNameLength = ReadImageResourceNameLength(blockDataSpan);
+                    var resourceDataSize = ReadResourceDataLength(blockDataSpan, resourceBlockNameLength);
+                    var dataStartIdx = 2 + resourceBlockNameLength + 4;
                     if (resourceDataSize > 0 && blockDataSpan.Length >= dataStartIdx + resourceDataSize)
                     {
                         this.hasIptc = true;
@@ -935,9 +935,9 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
                 }
                 else
                 {
-                    int resourceBlockNameLength = ReadImageResourceNameLength(blockDataSpan);
-                    int resourceDataSize = ReadResourceDataLength(blockDataSpan, resourceBlockNameLength);
-                    int dataStartIdx = 2 + resourceBlockNameLength + 4;
+                    var resourceBlockNameLength = ReadImageResourceNameLength(blockDataSpan);
+                    var resourceDataSize = ReadResourceDataLength(blockDataSpan, resourceBlockNameLength);
+                    var dataStartIdx = 2 + resourceBlockNameLength + 4;
                     if (blockDataSpan.Length < dataStartIdx + resourceDataSize)
                     {
                         // Not enough data or the resource data size is wrong.
@@ -963,8 +963,8 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int ReadImageResourceNameLength(Span<byte> blockDataSpan)
     {
-        byte nameLength = blockDataSpan[2];
-        int nameDataSize = nameLength == 0 ? 2 : nameLength;
+        var nameLength = blockDataSpan[2];
+        var nameDataSize = nameLength == 0 ? 2 : nameLength;
         if (nameDataSize % 2 != 0)
         {
             nameDataSize++;
@@ -1020,16 +1020,16 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     /// </exception>
     private void ProcessDefineQuantizationTablesMarker(BufferedReadStream stream, int remaining)
     {
-        JpegMetadata jpegMetadata = this.Metadata.GetFormatMetadata(JpegFormat.Instance);
+        var jpegMetadata = this.Metadata.GetFormatMetadata(JpegFormat.Instance);
 
         while (remaining > 0)
         {
             // 1 byte: quantization table spec
             // bit 0..3: table index (0..3)
             // bit 4..7: table precision (0 = 8 bit, 1 = 16 bit)
-            int quantizationTableSpec = stream.ReadByte();
-            int tableIndex = quantizationTableSpec & 15;
-            int tablePrecision = quantizationTableSpec >> 4;
+            var quantizationTableSpec = stream.ReadByte();
+            var tableIndex = quantizationTableSpec & 15;
+            var tablePrecision = quantizationTableSpec >> 4;
 
             // Validate:
             if (tableIndex > 3)
@@ -1040,7 +1040,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             remaining--;
 
             // Decoding single 8x8 table
-            ref Block8x8F table = ref this.QuantizationTables[tableIndex];
+            ref var table = ref this.QuantizationTables[tableIndex];
             switch (tablePrecision)
             {
                 // 8 bit values
@@ -1056,7 +1056,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
                     remaining -= 64;
 
                     // Parsing quantization table & saving it in natural order
-                    for (int j = 0; j < 64; j++)
+                    for (var j = 0; j < 64; j++)
                     {
                         table[ZigZag.ZigZagOrder[j]] = this.temp[j];
                     }
@@ -1077,7 +1077,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
                     remaining -= 128;
 
                     // Parsing quantization table & saving it in natural order
-                    for (int j = 0; j < 64; j++)
+                    for (var j = 0; j < 64; j++)
                     {
                         table[ZigZag.ZigZagOrder[j]] = (this.temp[2 * j] << 8) | this.temp[(2 * j) + 1];
                     }
@@ -1140,7 +1140,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         stream.ReadExactly(this.temp, 0, length);
 
         // 1 byte: Bits/sample precision
-        byte precision = this.temp[0];
+        var precision = this.temp[0];
 
         // Validate: only 8-bit and 12-bit precisions are supported
         if (Array.IndexOf(this.supportedPrecisions, precision) == -1)
@@ -1149,10 +1149,10 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
 
         // 2 byte: Height
-        int frameHeight = (this.temp[1] << 8) | this.temp[2];
+        var frameHeight = (this.temp[1] << 8) | this.temp[2];
 
         // 2 byte: Width
-        int frameWidth = (this.temp[3] << 8) | this.temp[4];
+        var frameWidth = (this.temp[3] << 8) | this.temp[4];
 
         // Validate: width/height > 0 (they are upper-bounded by 2 byte max value so no need to check that)
         if (frameHeight == 0 || frameWidth == 0)
@@ -1161,7 +1161,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
 
         // 1 byte: Number of components
-        byte componentCount = this.temp[5];
+        var componentCount = this.temp[5];
 
         // Validate: componentCount more than 4 can lead to a buffer overflow during stream
         // reading so we must limit it to 4
@@ -1190,18 +1190,18 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         this.Frame.ComponentOrder = new byte[componentCount];
         this.Frame.Components = new JpegComponent[componentCount];
 
-        int maxH = 0;
-        int maxV = 0;
-        int index = 0;
-        for (int i = 0; i < componentCount; i++)
+        var maxH = 0;
+        var maxV = 0;
+        var index = 0;
+        for (var i = 0; i < componentCount; i++)
         {
             // 1 byte: component identifier
-            byte componentId = this.temp[index];
+            var componentId = this.temp[index];
 
             // 1 byte: component sampling factors
-            byte hv = this.temp[index + 1];
-            int h = (hv >> 4) & 15;
-            int v = hv & 15;
+            var hv = this.temp[index + 1];
+            var h = (hv >> 4) & 15;
+            var v = hv & 15;
 
             // Validate: 1-4 range
             if (Numerics.IsOutOfRange(h, 1, 4))
@@ -1226,7 +1226,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
             }
 
             // 1 byte: quantization table destination selector
-            byte quantTableIndex = this.temp[index + 2];
+            var quantTableIndex = this.temp[index + 2];
 
             // Validate: 0-3 range
             if (quantTableIndex > 3)
@@ -1264,19 +1264,19 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         const int codeValuesMaxByteSize = 256;
         const int totalBufferSize = codeLengthsByteSize + codeValuesMaxByteSize + HuffmanTable.WorkspaceByteSize;
 
-        int length = remaining;
-        using (IMemoryOwner<byte> buffer = this.Configuration.MemoryAllocator.Allocate<byte>(totalBufferSize))
+        var length = remaining;
+        using (var buffer = this.Configuration.MemoryAllocator.Allocate<byte>(totalBufferSize))
         {
-            Span<byte> bufferSpan = buffer.GetSpan();
-            Span<byte> huffmanLegthsSpan = bufferSpan.Slice(0, codeLengthsByteSize);
-            Span<byte> huffmanValuesSpan = bufferSpan.Slice(codeLengthsByteSize, codeValuesMaxByteSize);
-            Span<uint> tableWorkspace = MemoryMarshal.Cast<byte, uint>(bufferSpan.Slice(codeLengthsByteSize + codeValuesMaxByteSize));
+            var bufferSpan = buffer.GetSpan();
+            var huffmanLegthsSpan = bufferSpan.Slice(0, codeLengthsByteSize);
+            var huffmanValuesSpan = bufferSpan.Slice(codeLengthsByteSize, codeValuesMaxByteSize);
+            var tableWorkspace = MemoryMarshal.Cast<byte, uint>(bufferSpan.Slice(codeLengthsByteSize + codeValuesMaxByteSize));
 
-            for (int i = 2; i < remaining;)
+            for (var i = 2; i < remaining;)
             {
-                byte huffmanTableSpec = (byte)stream.ReadByte();
-                int tableType = huffmanTableSpec >> 4;
-                int tableIndex = huffmanTableSpec & 15;
+                var huffmanTableSpec = (byte)stream.ReadByte();
+                var tableType = huffmanTableSpec >> 4;
+                var tableIndex = huffmanTableSpec & 15;
 
                 // Types 0..1 DC..AC
                 if (tableType > 1)
@@ -1292,8 +1292,8 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
 
                 stream.Read(huffmanLegthsSpan, 1, 16);
 
-                int codeLengthSum = 0;
-                for (int j = 1; j < 17; j++)
+                var codeLengthSum = 0;
+                for (var j = 1; j < 17; j++)
                 {
                     codeLengthSum += huffmanLegthsSpan[j];
                 }
@@ -1346,7 +1346,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
 
         // 1 byte: Number of components in scan
-        int selectorsCount = stream.ReadByte();
+        var selectorsCount = stream.ReadByte();
 
         // Validate: 0 < count <= totalComponents
         if (selectorsCount == 0 || selectorsCount > this.Frame.ComponentCount)
@@ -1356,7 +1356,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
 
         // Validate: marker must contain exactly (4 + selectorsCount*2) bytes
-        int selectorsBytes = selectorsCount * 2;
+        var selectorsBytes = selectorsCount * 2;
         if (remaining != 4 + selectorsBytes)
         {
             JpegThrowHelper.ThrowBadMarker(nameof(JpegConstants.Markers.SOS), remaining);
@@ -1366,15 +1366,15 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         stream.ReadExactly(this.temp, 0, selectorsBytes);
 
         this.Frame.MultiScan = this.Frame.ComponentCount != selectorsCount;
-        for (int i = 0; i < selectorsBytes; i += 2)
+        for (var i = 0; i < selectorsBytes; i += 2)
         {
             // 1 byte: Component id
             int componentSelectorId = this.temp[i];
 
-            int componentIndex = -1;
-            for (int j = 0; j < this.Frame.ComponentIds.Length; j++)
+            var componentIndex = -1;
+            for (var j = 0; j < this.Frame.ComponentIds.Length; j++)
             {
-                byte id = this.Frame.ComponentIds[j];
+                var id = this.Frame.ComponentIds[j];
                 if (componentSelectorId == id)
                 {
                     componentIndex = j;
@@ -1391,14 +1391,14 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
 
             this.Frame.ComponentOrder[i / 2] = (byte)componentIndex;
 
-            JpegComponent component = this.Frame.Components[componentIndex];
+            var component = this.Frame.Components[componentIndex];
 
             // 1 byte: Huffman table selectors.
             // 4 bits - dc
             // 4 bits - ac
             int tableSpec = this.temp[i + 1];
-            int dcTableIndex = tableSpec >> 4;
-            int acTableIndex = tableSpec & 15;
+            var dcTableIndex = tableSpec >> 4;
+            var acTableIndex = tableSpec & 15;
 
             // Validate: both must be < 4
             if (dcTableIndex >= 4 || acTableIndex >= 4)
@@ -1412,7 +1412,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
         }
 
         // 3 bytes: Progressive scan decoding data.
-        int bytesRead = stream.Read(this.temp, 0, 3);
+        var bytesRead = stream.Read(this.temp, 0, 3);
         if (bytesRead != 3)
         {
             JpegThrowHelper.ThrowInvalidImageContentException("Not enough data to read progressive scan decoding data");
@@ -1439,7 +1439,7 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     [MethodImpl(InliningOptions.ShortMethod)]
     private ushort ReadUint16(BufferedReadStream stream)
     {
-        int bytesRead = stream.Read(this.markerBuffer, 0, 2);
+        var bytesRead = stream.Read(this.markerBuffer, 0, 2);
         if (bytesRead != 2)
         {
             JpegThrowHelper.ThrowInvalidImageContentException("jpeg stream does not contain enough data, could not read ushort.");

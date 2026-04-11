@@ -70,7 +70,7 @@ internal sealed class PbmEncoderCore : IImageEncoderInternals
 
         this.DeduceOptions(image);
 
-        byte signature = this.DeduceSignature();
+        var signature = this.DeduceSignature();
         this.WriteHeader(stream, signature, image.Size());
 
         this.WritePixels(stream, image.Frames.RootFrame);
@@ -82,7 +82,7 @@ internal sealed class PbmEncoderCore : IImageEncoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         this.configuration = image.GetConfiguration();
-        PbmMetadata metadata = image.Metadata.GetPbmMetadata();
+        var metadata = image.Metadata.GetPbmMetadata();
         this.encoding = this.options.Encoding ?? metadata.Encoding;
         this.colorType = this.options.ColorType ?? metadata.ColorType;
         if (this.colorType != PbmColorType.BlackAndWhite)
@@ -140,12 +140,12 @@ internal sealed class PbmEncoderCore : IImageEncoderInternals
     {
         Span<byte> buffer = stackalloc byte[128];
 
-        int written = 3;
+        var written = 3;
         buffer[0] = P;
         buffer[1] = signature;
         buffer[2] = NewLine;
 
-        Utf8Formatter.TryFormat(pixelSize.Width, buffer.Slice(written), out int bytesWritten);
+        Utf8Formatter.TryFormat(pixelSize.Width, buffer.Slice(written), out var bytesWritten);
         written += bytesWritten;
         buffer[written++] = Space;
         Utf8Formatter.TryFormat(pixelSize.Height, buffer.Slice(written), out bytesWritten);
@@ -154,7 +154,7 @@ internal sealed class PbmEncoderCore : IImageEncoderInternals
 
         if (this.colorType != PbmColorType.BlackAndWhite)
         {
-            int maxPixelValue = this.componentType == PbmComponentType.Short ? 65535 : 255;
+            var maxPixelValue = this.componentType == PbmComponentType.Short ? 65535 : 255;
             Utf8Formatter.TryFormat(maxPixelValue, buffer.Slice(written), out bytesWritten);
             written += bytesWritten;
             buffer[written++] = NewLine;

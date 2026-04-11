@@ -38,21 +38,21 @@ internal sealed class CieXyzToCieLuvConverter
     public CieLuv Convert(in CieXyz input)
     {
         // Conversion algorithm described here: http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
-        float yr = input.Y / this.LuvWhitePoint.Y;
-        float up = ComputeUp(input);
-        float vp = ComputeVp(input);
-        float upr = ComputeUp(this.LuvWhitePoint);
-        float vpr = ComputeVp(this.LuvWhitePoint);
+        var yr = input.Y / this.LuvWhitePoint.Y;
+        var up = ComputeUp(input);
+        var vp = ComputeVp(input);
+        var upr = ComputeUp(this.LuvWhitePoint);
+        var vpr = ComputeVp(this.LuvWhitePoint);
 
-        float l = yr > CieConstants.Epsilon ? ((116 * MathF.Pow(yr, 0.3333333F)) - 16F) : (CieConstants.Kappa * yr);
+        var l = yr > CieConstants.Epsilon ? ((116 * MathF.Pow(yr, 0.3333333F)) - 16F) : (CieConstants.Kappa * yr);
 
         if (float.IsNaN(l) || l < 0)
         {
             l = 0;
         }
 
-        float u = 13 * l * (up - upr);
-        float v = 13 * l * (vp - vpr);
+        var u = 13 * l * (up - upr);
+        var v = 13 * l * (vp - vpr);
 
         if (float.IsNaN(u))
         {

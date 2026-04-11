@@ -17,7 +17,7 @@ internal partial struct Block8x8F
     [MethodImpl(InliningOptions.ShortMethod)]
     public void ScaledCopyTo(in Buffer2DRegion<float> region, int horizontalScale, int verticalScale)
     {
-        ref float areaOrigin = ref region.GetReferenceToOrigin();
+        ref var areaOrigin = ref region.GetReferenceToOrigin();
         this.ScaledCopyTo(ref areaOrigin, region.Stride, horizontalScale, verticalScale);
     }
 
@@ -42,9 +42,9 @@ internal partial struct Block8x8F
 
     public void Copy1x1Scale(ref float areaOrigin, int areaStride)
     {
-        ref byte selfBase = ref Unsafe.As<Block8x8F, byte>(ref this);
-        ref byte destBase = ref Unsafe.As<float, byte>(ref areaOrigin);
-        int destStride = areaStride * sizeof(float);
+        ref var selfBase = ref Unsafe.As<Block8x8F, byte>(ref this);
+        ref var destBase = ref Unsafe.As<float, byte>(ref areaOrigin);
+        var destStride = areaStride * sizeof(float);
 
         CopyRowImpl(ref selfBase, ref destBase, destStride, 0);
         CopyRowImpl(ref selfBase, ref destBase, destStride, 1);
@@ -59,15 +59,15 @@ internal partial struct Block8x8F
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CopyRowImpl(ref byte selfBase, ref byte destBase, int destStride, int row)
     {
-        ref byte s = ref Unsafe.Add(ref selfBase, row * 8 * sizeof(float));
-        ref byte d = ref Unsafe.Add(ref destBase, row * destStride);
+        ref var s = ref Unsafe.Add(ref selfBase, row * 8 * sizeof(float));
+        ref var d = ref Unsafe.Add(ref destBase, row * destStride);
         Unsafe.CopyBlock(ref d, ref s, 8 * sizeof(float));
     }
 
     private void Copy2x2Scale(ref float areaOrigin, int areaStride)
     {
-        ref Vector2 destBase = ref Unsafe.As<float, Vector2>(ref areaOrigin);
-        int destStride = areaStride / 2;
+        ref var destBase = ref Unsafe.As<float, Vector2>(ref areaOrigin);
+        var destStride = areaStride / 2;
 
         this.WidenCopyRowImpl2x2(ref destBase, 0, destStride);
         this.WidenCopyRowImpl2x2(ref destBase, 1, destStride);
@@ -82,12 +82,12 @@ internal partial struct Block8x8F
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WidenCopyRowImpl2x2(ref Vector2 destBase, int row, int destStride)
     {
-        ref Vector4 sLeft = ref Unsafe.Add(ref this.V0L, 2 * row);
-        ref Vector4 sRight = ref Unsafe.Add(ref sLeft, 1);
+        ref var sLeft = ref Unsafe.Add(ref this.V0L, 2 * row);
+        ref var sRight = ref Unsafe.Add(ref sLeft, 1);
 
-        int offset = 2 * row * destStride;
-        ref Vector4 dTopLeft = ref Unsafe.As<Vector2, Vector4>(ref Unsafe.Add(ref destBase, offset));
-        ref Vector4 dBottomLeft = ref Unsafe.As<Vector2, Vector4>(ref Unsafe.Add(ref destBase, offset + destStride));
+        var offset = 2 * row * destStride;
+        ref var dTopLeft = ref Unsafe.As<Vector2, Vector4>(ref Unsafe.Add(ref destBase, offset));
+        ref var dBottomLeft = ref Unsafe.As<Vector2, Vector4>(ref Unsafe.Add(ref destBase, offset + destStride));
 
         var xyLeft = new Vector4(sLeft.X);
         xyLeft.Z = sLeft.Y;
@@ -119,22 +119,22 @@ internal partial struct Block8x8F
     [MethodImpl(InliningOptions.ColdPath)]
     private void CopyArbitraryScale(ref float areaOrigin, int areaStride, int horizontalScale, int verticalScale)
     {
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            int yy = y * verticalScale;
-            int y8 = y * 8;
+            var yy = y * verticalScale;
+            var y8 = y * 8;
 
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
-                int xx = x * horizontalScale;
+                var xx = x * horizontalScale;
 
-                float value = this[y8 + x];
+                var value = this[y8 + x];
 
-                for (int i = 0; i < verticalScale; i++)
+                for (var i = 0; i < verticalScale; i++)
                 {
-                    int baseIdx = ((yy + i) * areaStride) + xx;
+                    var baseIdx = ((yy + i) * areaStride) + xx;
 
-                    for (int j = 0; j < horizontalScale; j++)
+                    for (var j = 0; j < horizontalScale; j++)
                     {
                         // area[xx + j, yy + i] = value;
                         Unsafe.Add(ref areaOrigin, baseIdx + j) = value;

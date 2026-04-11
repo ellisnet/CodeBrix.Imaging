@@ -23,15 +23,15 @@ internal sealed class HunterLabToCieXyzConverter : CieXyzAndHunterLabConverterBa
         float l = input.L, a = input.A, b = input.B;
         float xn = input.WhitePoint.X, yn = input.WhitePoint.Y, zn = input.WhitePoint.Z;
 
-        float ka = ComputeKa(input.WhitePoint);
-        float kb = ComputeKb(input.WhitePoint);
+        var ka = ComputeKa(input.WhitePoint);
+        var kb = ComputeKb(input.WhitePoint);
 
-        float pow = Numerics.Pow2(l / 100F);
-        float sqrtPow = MathF.Sqrt(pow);
-        float y = pow * yn;
+        var pow = Numerics.Pow2(l / 100F);
+        var sqrtPow = MathF.Sqrt(pow);
+        var y = pow * yn;
 
-        float x = (((a / ka) * sqrtPow) + pow) * xn;
-        float z = (((b / kb) * sqrtPow) - pow) * (-zn);
+        var x = (((a / ka) * sqrtPow) + pow) * xn;
+        var z = (((b / kb) * sqrtPow) - pow) * (-zn);
 
         return new CieXyz(x, y, z);
     }

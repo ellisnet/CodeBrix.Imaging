@@ -27,7 +27,7 @@ internal class TiffEncoderEntriesCollector
 
     public void AddOrReplace(IExifValue entry)
     {
-        int index = this.Entries.FindIndex(t => t.Tag == entry.Tag);
+        var index = this.Entries.FindIndex(t => t.Tag == entry.Tag);
         if (index >= 0)
         {
             this.Entries[index] = entry;
@@ -56,9 +56,9 @@ internal class TiffEncoderEntriesCollector
 
         public void Process(Image image)
         {
-            ImageFrame rootFrame = image.Frames.RootFrame;
-            ExifProfile rootFrameExifProfile = rootFrame.Metadata.ExifProfile ?? new ExifProfile();
-            XmpProfile rootFrameXmpProfile = rootFrame.Metadata.XmpProfile;
+            var rootFrame = image.Frames.RootFrame;
+            var rootFrameExifProfile = rootFrame.Metadata.ExifProfile ?? new ExifProfile();
+            var rootFrameXmpProfile = rootFrame.Metadata.XmpProfile;
 
             this.ProcessProfiles(image.Metadata, rootFrameExifProfile, rootFrameXmpProfile);
             this.ProcessMetadata(rootFrameExifProfile);
@@ -109,7 +109,7 @@ internal class TiffEncoderEntriesCollector
 
         private void ProcessMetadata(ExifProfile exifProfile)
         {
-            foreach (IExifValue entry in exifProfile.Values)
+            foreach (var entry in exifProfile.Values)
             {
                 // todo: skip subIfd
                 if (entry.DataType == ExifDataType.Ifd)
@@ -154,11 +154,11 @@ internal class TiffEncoderEntriesCollector
         {
             if (exifProfile != null && exifProfile.Parts != ExifParts.None)
             {
-                foreach (IExifValue entry in exifProfile.Values)
+                foreach (var entry in exifProfile.Values)
                 {
                     if (!this.Collector.Entries.Exists(t => t.Tag == entry.Tag) && entry.GetValue() != null)
                     {
-                        ExifParts entryPart = ExifTags.GetPart(entry.Tag);
+                        var entryPart = ExifTags.GetPart(entry.Tag);
                         if (entryPart != ExifParts.None && exifProfile.Parts.HasFlag(entryPart))
                         {
                             this.Collector.AddOrReplace(entry.DeepClone());
@@ -240,7 +240,7 @@ internal class TiffEncoderEntriesCollector
 
         private void ProcessResolution(ImageMetadata imageMetadata)
         {
-            ExifResolutionValues resolution = UnitConverter.GetExifResolutionValues(
+            var resolution = UnitConverter.GetExifResolutionValues(
                 imageMetadata.ResolutionUnits,
                 imageMetadata.HorizontalResolution,
                 imageMetadata.VerticalResolution);
@@ -284,13 +284,13 @@ internal class TiffEncoderEntriesCollector
                 Value = GetSamplesPerPixel(encoder)
             };
 
-            ushort[] bitsPerSampleValue = GetBitsPerSampleValue(encoder);
+            var bitsPerSampleValue = GetBitsPerSampleValue(encoder);
             var bitPerSample = new ExifShortArray(ExifTagValue.BitsPerSample)
             {
                 Value = bitsPerSampleValue
             };
 
-            ushort compressionType = GetCompressionType(encoder);
+            var compressionType = GetCompressionType(encoder);
             var compression = new ExifShort(ExifTagValue.Compression)
             {
                 Value = compressionType

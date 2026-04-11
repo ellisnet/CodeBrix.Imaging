@@ -119,30 +119,30 @@ internal partial class ResizeKernelMap : IDisposable
         MemoryAllocator memoryAllocator)
         where TResampler : struct, IResampler
     {
-        double ratio = (double)sourceSize / destinationSize;
-        double scale = ratio;
+        var ratio = (double)sourceSize / destinationSize;
+        var scale = ratio;
 
         if (scale < 1)
         {
             scale = 1;
         }
 
-        int radius = (int)TolerantMath.Ceiling(scale * sampler.Radius);
+        var radius = (int)TolerantMath.Ceiling(scale * sampler.Radius);
 
         // 'ratio' is a rational number.
         // Multiplying it by destSize/GCD(sourceSize, destSize) will result in a whole number "again".
         // This value is determining the length of the periods in repeating kernel map rows.
-        int period = destinationSize / Numerics.GreatestCommonDivisor(sourceSize, destinationSize);
+        var period = destinationSize / Numerics.GreatestCommonDivisor(sourceSize, destinationSize);
 
         // the center position at i == 0:
-        double center0 = (ratio - 1) * 0.5;
-        double firstNonNegativeLeftVal = (radius - center0 - 1) / ratio;
+        var center0 = (ratio - 1) * 0.5;
+        var firstNonNegativeLeftVal = (radius - center0 - 1) / ratio;
 
         // The number of rows building a "stairway" at the top and the bottom of the kernel map
         // corresponding to the corners of the image.
         // If we do not normalize the kernel values, these rows also fit the periodic logic,
         // however, it's just simpler to calculate them separately.
-        int cornerInterval = (int)TolerantMath.Ceiling(firstNonNegativeLeftVal);
+        var cornerInterval = (int)TolerantMath.Ceiling(firstNonNegativeLeftVal);
 
         // If firstNonNegativeLeftVal was an integral value, we need firstNonNegativeLeftVal+1
         // instead of Ceiling:
@@ -153,9 +153,9 @@ internal partial class ResizeKernelMap : IDisposable
 
         // If 'cornerInterval' is too big compared to 'period', we can't apply the periodic optimization.
         // If we don't have at least 2 periods, we go with the basic implementation:
-        bool hasAtLeast2Periods = 2 * (cornerInterval + period) < destinationSize;
+        var hasAtLeast2Periods = 2 * (cornerInterval + period) < destinationSize;
 
-        ResizeKernelMap result = hasAtLeast2Periods
+        var result = hasAtLeast2Periods
             ? new PeriodicKernelMap(
                 memoryAllocator,
                 sourceSize,
@@ -185,7 +185,7 @@ internal partial class ResizeKernelMap : IDisposable
     protected internal virtual void Initialize<TResampler>(in TResampler sampler)
         where TResampler : struct, IResampler
     {
-        for (int i = 0; i < this.DestinationLength; i++)
+        for (var i = 0; i < this.DestinationLength; i++)
         {
             this.kernels[i] = this.BuildKernel(in sampler, i, i);
         }
@@ -199,27 +199,27 @@ internal partial class ResizeKernelMap : IDisposable
     private ResizeKernel BuildKernel<TResampler>(in TResampler sampler, int destRowIndex, int dataRowIndex)
         where TResampler : struct, IResampler
     {
-        double center = ((destRowIndex + .5) * this.ratio) - .5;
+        var center = ((destRowIndex + .5) * this.ratio) - .5;
 
         // Keep inside bounds.
-        int left = (int)TolerantMath.Ceiling(center - this.radius);
+        var left = (int)TolerantMath.Ceiling(center - this.radius);
         if (left < 0)
         {
             left = 0;
         }
 
-        int right = (int)TolerantMath.Floor(center + this.radius);
+        var right = (int)TolerantMath.Floor(center + this.radius);
         if (right > this.sourceLength - 1)
         {
             right = this.sourceLength - 1;
         }
 
-        ResizeKernel kernel = this.CreateKernel(dataRowIndex, left, right);
+        var kernel = this.CreateKernel(dataRowIndex, left, right);
 
-        Span<double> kernelValues = this.tempValues.AsSpan(0, kernel.Length);
+        var kernelValues = this.tempValues.AsSpan(0, kernel.Length);
         double sum = 0;
 
-        for (int j = left; j <= right; j++)
+        for (var j = left; j <= right; j++)
         {
             double value = sampler.GetValue((float)((j - center) / this.scale));
             sum += value;
@@ -230,10 +230,10 @@ internal partial class ResizeKernelMap : IDisposable
         // Normalize, best to do it here rather than in the pixel loop later on.
         if (sum > 0)
         {
-            for (int j = 0; j < kernel.Length; j++)
+            for (var j = 0; j < kernel.Length; j++)
             {
                 // weights[w] = weights[w] / sum:
-                ref double kRef = ref kernelValues[j];
+                ref var kRef = ref kernelValues[j];
                 kRef /= sum;
             }
         }
@@ -249,13 +249,13 @@ internal partial class ResizeKernelMap : IDisposable
     /// </summary>
     private unsafe ResizeKernel CreateKernel(int dataRowIndex, int left, int right)
     {
-        int length = right - left + 1;
+        var length = right - left + 1;
         this.ValidateSizesForCreateKernel(length, dataRowIndex, left, right);
 
-        Span<float> rowSpan = this.data.DangerousGetRowSpan(dataRowIndex);
+        var rowSpan = this.data.DangerousGetRowSpan(dataRowIndex);
 
-        ref float rowReference = ref MemoryMarshal.GetReference(rowSpan);
-        float* rowPtr = (float*)Unsafe.AsPointer(ref rowReference);
+        ref var rowReference = ref MemoryMarshal.GetReference(rowSpan);
+        var rowPtr = (float*)Unsafe.AsPointer(ref rowReference);
         return new ResizeKernel(left, rowPtr, length);
     }
 

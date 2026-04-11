@@ -66,14 +66,14 @@ internal struct UnmanagedMemoryHandle : IEquatable<UnmanagedMemoryHandle>
 
     public static UnmanagedMemoryHandle Allocate(int lengthInBytes)
     {
-        IntPtr handle = AllocateHandle(lengthInBytes);
+        var handle = AllocateHandle(lengthInBytes);
         return new UnmanagedMemoryHandle(handle, lengthInBytes);
     }
 
     private static IntPtr AllocateHandle(int lengthInBytes)
     {
-        int counter = 0;
-        IntPtr handle = IntPtr.Zero;
+        var counter = 0;
+        var handle = IntPtr.Zero;
         while (handle == IntPtr.Zero)
         {
             try
@@ -106,7 +106,7 @@ internal struct UnmanagedMemoryHandle : IEquatable<UnmanagedMemoryHandle>
 
     public void Free()
     {
-        IntPtr h = Interlocked.Exchange(ref this.handle, IntPtr.Zero);
+        var h = Interlocked.Exchange(ref this.handle, IntPtr.Zero);
 
         if (h == IntPtr.Zero)
         {

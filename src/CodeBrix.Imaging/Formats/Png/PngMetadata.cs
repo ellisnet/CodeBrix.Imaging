@@ -34,7 +34,7 @@ public class PngMetadata : IDeepCloneable
         this.TransparentRgb24 = other.TransparentRgb24;
         this.TransparentRgb48 = other.TransparentRgb48;
 
-        for (int i = 0; i < other.TextData.Count; i++)
+        for (var i = 0; i < other.TextData.Count; i++)
         {
             this.TextData.Add(other.TextData[i]);
         }

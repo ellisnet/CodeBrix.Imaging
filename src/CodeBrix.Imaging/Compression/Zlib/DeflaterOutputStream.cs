@@ -88,7 +88,7 @@ internal sealed class DeflaterOutputStream : Stream
     {
         while (flushing || !this.deflater.IsNeedingInput)
         {
-            int deflateCount = this.deflater.Deflate(this.buffer.Span, 0, BufferLength);
+            var deflateCount = this.deflater.Deflate(this.buffer.Span, 0, BufferLength);
 
             if (deflateCount <= 0)
             {
@@ -109,7 +109,7 @@ internal sealed class DeflaterOutputStream : Stream
         this.deflater.Finish();
         while (!this.deflater.IsFinished)
         {
-            int len = this.deflater.Deflate(this.buffer.Span, 0, BufferLength);
+            var len = this.deflater.Deflate(this.buffer.Span, 0, BufferLength);
             if (len <= 0)
             {
                 break;

@@ -109,9 +109,9 @@ internal ref struct YCbCrForwardConverter444<TPixel>
 
         PixelOperations<TPixel>.Instance.ToRgb24(this.config, this.pixelSpan, this.rgbSpan);
 
-        ref Block8x8F yBlock = ref this.Y;
-        ref Block8x8F cbBlock = ref this.Cb;
-        ref Block8x8F crBlock = ref this.Cr;
+        ref var yBlock = ref this.Y;
+        ref var cbBlock = ref this.Cb;
+        ref var crBlock = ref this.Cr;
 
         if (RgbToYCbCrConverterVectorized.IsSupported)
         {

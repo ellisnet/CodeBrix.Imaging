@@ -32,12 +32,12 @@ internal class BinaryThresholdProcessor<TPixel> : ImageProcessor<TPixel>
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        byte threshold = (byte)MathF.Round(this.definition.Threshold * 255F);
-        TPixel upper = this.definition.UpperColor.ToPixel<TPixel>();
-        TPixel lower = this.definition.LowerColor.ToPixel<TPixel>();
+        var threshold = (byte)MathF.Round(this.definition.Threshold * 255F);
+        var upper = this.definition.UpperColor.ToPixel<TPixel>();
+        var lower = this.definition.LowerColor.ToPixel<TPixel>();
 
-        Rectangle sourceRectangle = this.SourceRectangle;
-        Configuration configuration = this.Configuration;
+        var sourceRectangle = this.SourceRectangle;
+        var configuration = this.Configuration;
 
         var interest = Rectangle.Intersect(sourceRectangle, source.Bounds());
         var operation = new RowOperation(
@@ -91,22 +91,22 @@ internal class BinaryThresholdProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invoke(int y, Span<Rgb24> span)
         {
-            TPixel upper = this.upper;
-            TPixel lower = this.lower;
+            var upper = this.upper;
+            var lower = this.lower;
 
-            Span<TPixel> rowSpan = this.source.DangerousGetRowSpan(y).Slice(this.startX, span.Length);
+            var rowSpan = this.source.DangerousGetRowSpan(y).Slice(this.startX, span.Length);
             PixelOperations<TPixel>.Instance.ToRgb24(this.configuration, rowSpan, span);
 
             switch (this.mode)
             {
                 case BinaryThresholdMode.Luminance:
                 {
-                    byte threshold = this.threshold;
-                    for (int x = 0; x < rowSpan.Length; x++)
+                    var threshold = this.threshold;
+                    for (var x = 0; x < rowSpan.Length; x++)
                     {
-                        Rgb24 rgb = span[x];
-                        byte luminance = ColorNumerics.Get8BitBT709Luminance(rgb.R, rgb.G, rgb.B);
-                        ref TPixel color = ref rowSpan[x];
+                        var rgb = span[x];
+                        var luminance = ColorNumerics.Get8BitBT709Luminance(rgb.R, rgb.G, rgb.B);
+                        ref var color = ref rowSpan[x];
                         color = luminance >= threshold ? upper : lower;
                     }
 
@@ -115,11 +115,11 @@ internal class BinaryThresholdProcessor<TPixel> : ImageProcessor<TPixel>
 
                 case BinaryThresholdMode.Saturation:
                 {
-                    float threshold = this.threshold / 255F;
-                    for (int x = 0; x < rowSpan.Length; x++)
+                    var threshold = this.threshold / 255F;
+                    for (var x = 0; x < rowSpan.Length; x++)
                     {
-                        float saturation = GetSaturation(span[x]);
-                        ref TPixel color = ref rowSpan[x];
+                        var saturation = GetSaturation(span[x]);
+                        ref var color = ref rowSpan[x];
                         color = saturation >= threshold ? upper : lower;
                     }
 
@@ -128,11 +128,11 @@ internal class BinaryThresholdProcessor<TPixel> : ImageProcessor<TPixel>
 
                 case BinaryThresholdMode.MaxChroma:
                 {
-                    float threshold = this.threshold / 2F;
-                    for (int x = 0; x < rowSpan.Length; x++)
+                    var threshold = this.threshold / 2F;
+                    for (var x = 0; x < rowSpan.Length; x++)
                     {
-                        float chroma = GetMaxChroma(span[x]);
-                        ref TPixel color = ref rowSpan[x];
+                        var chroma = GetMaxChroma(span[x]);
+                        ref var color = ref rowSpan[x];
                         color = chroma >= threshold ? upper : lower;
                     }
 
@@ -145,20 +145,20 @@ internal class BinaryThresholdProcessor<TPixel> : ImageProcessor<TPixel>
         private static float GetSaturation(Rgb24 rgb)
         {
             // Slimmed down RGB => HSL formula. See HslAndRgbConverter.
-            float r = rgb.R / 255F;
-            float g = rgb.G / 255F;
-            float b = rgb.B / 255F;
+            var r = rgb.R / 255F;
+            var g = rgb.G / 255F;
+            var b = rgb.B / 255F;
 
-            float max = MathF.Max(r, MathF.Max(g, b));
-            float min = MathF.Min(r, MathF.Min(g, b));
-            float chroma = max - min;
+            var max = MathF.Max(r, MathF.Max(g, b));
+            var min = MathF.Min(r, MathF.Min(g, b));
+            var chroma = max - min;
 
             if (MathF.Abs(chroma) < Constants.Epsilon)
             {
                 return 0F;
             }
 
-            float l = (max + min) / 2F;
+            var l = (max + min) / 2F;
 
             if (l <= .5F)
             {
@@ -179,8 +179,8 @@ internal class BinaryThresholdProcessor<TPixel> : ImageProcessor<TPixel>
             float b = rgb.B;
             const float achromatic = 127.5F;
 
-            float cb = 128F + ((-0.168736F * r) - (0.331264F * g) + (0.5F * b));
-            float cr = 128F + ((0.5F * r) - (0.418688F * g) - (0.081312F * b));
+            var cb = 128F + ((-0.168736F * r) - (0.331264F * g) + (0.5F * b));
+            var cr = 128F + ((0.5F * r) - (0.418688F * g) - (0.081312F * b));
 
             return MathF.Max(MathF.Abs(cb - achromatic), MathF.Abs(cr - achromatic));
         }

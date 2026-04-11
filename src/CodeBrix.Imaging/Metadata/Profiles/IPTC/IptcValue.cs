@@ -97,11 +97,11 @@ public sealed class IptcValue : IDeepCloneable<IptcValue>
             }
             else
             {
-                int maxLength = this.Tag.MaxLength();
+                var maxLength = this.Tag.MaxLength();
                 byte[] valueBytes;
                 if (this.Strict && value.Length > maxLength)
                 {
-                    string cappedValue = value.Substring(0, maxLength);
+                    var cappedValue = value.Substring(0, maxLength);
                     valueBytes = this.encoding.GetBytes(cappedValue);
 
                     // It is still possible that the bytes of the string exceed the limit.
@@ -170,7 +170,7 @@ public sealed class IptcValue : IDeepCloneable<IptcValue>
             return false;
         }
 
-        for (int i = 0; i < this.data.Length; i++)
+        for (var i = 0; i < this.data.Length; i++)
         {
             if (this.data[i] != other.data[i])
             {

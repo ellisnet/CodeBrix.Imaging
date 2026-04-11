@@ -33,11 +33,11 @@ internal readonly struct GifXmpApplicationExtension : IGifExtension
     /// <exception cref="ImageFormatException">Thrown if the XMP block is not properly terminated.</exception>
     public static GifXmpApplicationExtension Read(Stream stream, MemoryAllocator allocator)
     {
-        byte[] xmpBytes = ReadXmpData(stream, allocator);
+        var xmpBytes = ReadXmpData(stream, allocator);
 
         // Exclude the "magic trailer", see XMP Specification Part 3, 1.1.2 GIF
-        int xmpLength = xmpBytes.Length - 256; // 257 - unread 0x0
-        byte[] buffer = Array.Empty<byte>();
+        var xmpLength = xmpBytes.Length - 256; // 257 - unread 0x0
+        var buffer = Array.Empty<byte>();
         if (xmpLength > 0)
         {
             buffer = new byte[xmpLength];
@@ -50,11 +50,11 @@ internal readonly struct GifXmpApplicationExtension : IGifExtension
 
     public int WriteTo(Span<byte> buffer)
     {
-        int bytesWritten = 0;
+        var bytesWritten = 0;
         buffer[bytesWritten++] = GifConstants.ApplicationBlockSize;
 
         // Write "XMP DataXMP"
-        ReadOnlySpan<byte> idBytes = GifConstants.XmpApplicationIdentificationBytes;
+        var idBytes = GifConstants.XmpApplicationIdentificationBytes;
         idBytes.CopyTo(buffer.Slice(bytesWritten));
         bytesWritten += idBytes.Length;
 
@@ -85,7 +85,7 @@ internal readonly struct GifXmpApplicationExtension : IGifExtension
         // with writing from a non fixed-size buffer.
         while (true)
         {
-            int b = stream.ReadByte();
+            var b = stream.ReadByte();
             if (b <= 0)
             {
                 return bytes.ToArray();

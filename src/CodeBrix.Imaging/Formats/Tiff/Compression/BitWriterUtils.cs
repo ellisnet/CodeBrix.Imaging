@@ -9,14 +9,14 @@ internal static class BitWriterUtils
 {
     public static void WriteBits(Span<byte> buffer, int pos, uint count, byte value)
     {
-        int bitPos = pos % 8;
-        int bufferPos = pos / 8;
-        int startIdx = bufferPos + bitPos;
-        int endIdx = (int)(startIdx + count);
+        var bitPos = pos % 8;
+        var bufferPos = pos / 8;
+        var startIdx = bufferPos + bitPos;
+        var endIdx = (int)(startIdx + count);
 
         if (value == 1)
         {
-            for (int i = startIdx; i < endIdx; i++)
+            for (var i = startIdx; i < endIdx; i++)
             {
                 WriteBit(buffer, bufferPos, bitPos);
 
@@ -30,7 +30,7 @@ internal static class BitWriterUtils
         }
         else
         {
-            for (int i = startIdx; i < endIdx; i++)
+            for (var i = startIdx; i < endIdx; i++)
             {
                 WriteZeroBit(buffer, bufferPos, bitPos);
 

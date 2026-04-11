@@ -73,7 +73,7 @@ internal sealed class T6BitReader : T4BitReader
     {
         this.Code = None;
         this.Reset();
-        uint value = this.ReadValue(1);
+        var value = this.ReadValue(1);
 
         do
         {
@@ -130,7 +130,7 @@ internal sealed class T6BitReader : T4BitReader
                     break;
             }
 
-            uint currBit = this.ReadValue(1);
+            var currBit = this.ReadValue(1);
             value = (value << 1) | currBit;
         }
         while (!this.IsEndOfScanLine);

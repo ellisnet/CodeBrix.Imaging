@@ -134,13 +134,13 @@ internal sealed class ZlibInflateStream : Stream
             }
         }
 
-        int bytesToRead = Math.Min(count, this.currentDataRemaining);
+        var bytesToRead = Math.Min(count, this.currentDataRemaining);
         this.currentDataRemaining -= bytesToRead;
-        int totalBytesRead = this.innerStream.Read(buffer, offset, bytesToRead);
-        long innerStreamLength = this.innerStream.Length;
+        var totalBytesRead = this.innerStream.Read(buffer, offset, bytesToRead);
+        var innerStreamLength = this.innerStream.Length;
 
         // Keep reading data until we've reached the end of the stream or filled the buffer.
-        int bytesRead = 0;
+        var bytesRead = 0;
         offset += totalBytesRead;
         while (this.currentDataRemaining == 0 && totalBytesRead < count)
         {
@@ -220,8 +220,8 @@ internal sealed class ZlibInflateStream : Stream
         // +---+---+
         // |CMF|FLG|
         // +---+---+
-        int cmf = this.innerStream.ReadByte();
-        int flag = this.innerStream.ReadByte();
+        var cmf = this.innerStream.ReadByte();
+        var flag = this.innerStream.ReadByte();
         this.currentDataRemaining -= 2;
         if (cmf == -1 || flag == -1)
         {
@@ -231,7 +231,7 @@ internal sealed class ZlibInflateStream : Stream
         if ((cmf & 0x0F) == 8)
         {
             // CINFO is the base-2 logarithm of the LZ77 window size, minus eight.
-            int cinfo = (cmf & 0xF0) >> 4;
+            var cinfo = (cmf & 0xF0) >> 4;
 
             if (cinfo > 7)
             {
@@ -255,7 +255,7 @@ internal sealed class ZlibInflateStream : Stream
         }
 
         // The preset dictionary.
-        bool fdict = (flag & 32) != 0;
+        var fdict = (flag & 32) != 0;
         if (fdict)
         {
             // We don't need this for inflate so simply skip by the next four bytes.

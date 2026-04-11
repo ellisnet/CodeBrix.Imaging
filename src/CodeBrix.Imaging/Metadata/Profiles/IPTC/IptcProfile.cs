@@ -51,7 +51,7 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
         {
             this.values = new Collection<IptcValue>();
 
-            foreach (IptcValue value in other.Values)
+            foreach (var value in other.Values)
             {
                 this.values.Add(value.DeepClone());
             }
@@ -92,7 +92,7 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
     public List<IptcValue> GetValues(IptcTag tag)
     {
         var iptcValues = new List<IptcValue>();
-        foreach (IptcValue iptcValue in this.Values)
+        foreach (var iptcValue in this.Values)
         {
             if (iptcValue.Tag == tag)
             {
@@ -112,8 +112,8 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
     {
         this.Initialize();
 
-        bool removed = false;
-        for (int i = this.values.Count - 1; i >= 0; i--)
+        var removed = false;
+        for (var i = this.values.Count - 1; i >= 0; i--)
         {
             if (this.values[i].Tag == tag)
             {
@@ -135,8 +135,8 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
     {
         this.Initialize();
 
-        bool removed = false;
-        for (int i = this.values.Count - 1; i >= 0; i--)
+        var removed = false;
+        for (var i = this.values.Count - 1; i >= 0; i--)
         {
             if (this.values[i].Tag == tag && this.values[i].Value.Equals(value))
             {
@@ -156,7 +156,7 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
     {
         Guard.NotNull(encoding, nameof(encoding));
 
-        foreach (IptcValue value in this.Values)
+        foreach (var value in this.Values)
         {
             value.Encoding = encoding;
         }
@@ -179,7 +179,7 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
 
         if (!tag.IsRepeatable())
         {
-            foreach (IptcValue iptcValue in this.Values)
+            foreach (var iptcValue in this.Values)
             {
                 if (iptcValue.Tag == tag)
                 {
@@ -211,7 +211,7 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
             throw new ArgumentException("iptc tag is not a time or date type");
         }
 
-        string formattedDate = tag.IsDate()
+        var formattedDate = tag.IsDate()
             ? dateTimeOffset.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture)
             : dateTimeOffset.ToString("HHmmsszzzz", System.Globalization.CultureInfo.InvariantCulture)
                 .Replace(":", string.Empty);
@@ -235,16 +235,16 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
     /// </summary>
     public void UpdateData()
     {
-        int length = 0;
-        foreach (IptcValue value in this.Values)
+        var length = 0;
+        foreach (var value in this.Values)
         {
             length += value.Length + 5;
         }
 
         this.Data = new byte[length];
 
-        int i = 0;
-        foreach (IptcValue value in this.Values)
+        var i = 0;
+        foreach (var value in this.Values)
         {
             // Standard DataSet Tag
             // +-----------+----------------+---------------------------------------------------------------------------------+
@@ -290,14 +290,14 @@ public sealed class IptcProfile : IDeepCloneable<IptcProfile>
             return;
         }
 
-        int offset = 0;
+        var offset = 0;
         while (offset < this.Data.Length - 4)
         {
-            bool isValidTagMarker = this.Data[offset++] == IptcTagMarkerByte;
-            byte recordNumber = this.Data[offset++];
-            bool isValidRecordNumber = recordNumber is >= 1 and <= 9;
+            var isValidTagMarker = this.Data[offset++] == IptcTagMarkerByte;
+            var recordNumber = this.Data[offset++];
+            var isValidRecordNumber = recordNumber is >= 1 and <= 9;
             var tag = (IptcTag)this.Data[offset++];
-            bool isValidEntry = isValidTagMarker && isValidRecordNumber;
+            var isValidEntry = isValidTagMarker && isValidRecordNumber;
 
             uint byteCount = BinaryPrimitives.ReadUInt16BigEndian(this.Data.AsSpan(offset, 2));
             offset += 2;

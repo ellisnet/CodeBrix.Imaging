@@ -175,9 +175,9 @@ public partial struct HalfVector4 : IPixel<HalfVector4>, IPackedVector<ulong>
     private static ulong Pack(ref Vector4 vector)
     {
         ulong num4 = HalfTypeHelper.Pack(vector.X);
-        ulong num3 = (ulong)HalfTypeHelper.Pack(vector.Y) << 0x10;
-        ulong num2 = (ulong)HalfTypeHelper.Pack(vector.Z) << 0x20;
-        ulong num1 = (ulong)HalfTypeHelper.Pack(vector.W) << 0x30;
+        var num3 = (ulong)HalfTypeHelper.Pack(vector.Y) << 0x10;
+        var num2 = (ulong)HalfTypeHelper.Pack(vector.Z) << 0x20;
+        var num1 = (ulong)HalfTypeHelper.Pack(vector.W) << 0x30;
         return num4 | num3 | num2 | num1;
     }
 }

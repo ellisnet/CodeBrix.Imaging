@@ -61,22 +61,22 @@ internal class RgbaPlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
     public override void Decode(IMemoryOwner<byte>[] data, Buffer2D<TPixel> pixels, int left, int top, int width, int height)
     {
         var color = default(TPixel);
-        bool hasAssociatedAlpha = this.extraSampleType.HasValue && this.extraSampleType == TiffExtraSampleType.AssociatedAlphaData;
+        var hasAssociatedAlpha = this.extraSampleType.HasValue && this.extraSampleType == TiffExtraSampleType.AssociatedAlphaData;
 
         var rBitReader = new BitReader(data[0].GetSpan());
         var gBitReader = new BitReader(data[1].GetSpan());
         var bBitReader = new BitReader(data[2].GetSpan());
         var aBitReader = new BitReader(data[3].GetSpan());
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                float r = rBitReader.ReadBits(this.bitsPerSampleR) / this.rFactor;
-                float g = gBitReader.ReadBits(this.bitsPerSampleG) / this.gFactor;
-                float b = bBitReader.ReadBits(this.bitsPerSampleB) / this.bFactor;
-                float a = aBitReader.ReadBits(this.bitsPerSampleA) / this.aFactor;
+                var r = rBitReader.ReadBits(this.bitsPerSampleR) / this.rFactor;
+                var g = gBitReader.ReadBits(this.bitsPerSampleG) / this.gFactor;
+                var b = bBitReader.ReadBits(this.bitsPerSampleB) / this.bFactor;
+                var a = aBitReader.ReadBits(this.bitsPerSampleA) / this.aFactor;
 
                 var vec = new Vector4(r, g, b, a);
                 if (hasAssociatedAlpha)

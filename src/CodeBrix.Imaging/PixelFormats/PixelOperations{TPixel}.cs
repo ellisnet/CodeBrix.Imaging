@@ -117,25 +117,25 @@ public partial class PixelOperations<TPixel>
         where TSourcePixel : unmanaged, IPixel<TSourcePixel>
     {
         const int sliceLength = 1024;
-        int numberOfSlices = sourcePixels.Length / sliceLength;
+        var numberOfSlices = sourcePixels.Length / sliceLength;
 
-        using IMemoryOwner<Vector4> tempVectors = configuration.MemoryAllocator.Allocate<Vector4>(sliceLength);
-        Span<Vector4> vectorSpan = tempVectors.GetSpan();
-        for (int i = 0; i < numberOfSlices; i++)
+        using var tempVectors = configuration.MemoryAllocator.Allocate<Vector4>(sliceLength);
+        var vectorSpan = tempVectors.GetSpan();
+        for (var i = 0; i < numberOfSlices; i++)
         {
-            int start = i * sliceLength;
-            ReadOnlySpan<TSourcePixel> s = sourcePixels.Slice(start, sliceLength);
-            Span<TPixel> d = destinationPixels.Slice(start, sliceLength);
+            var start = i * sliceLength;
+            var s = sourcePixels.Slice(start, sliceLength);
+            var d = destinationPixels.Slice(start, sliceLength);
             PixelOperations<TSourcePixel>.Instance.ToVector4(configuration, s, vectorSpan, PixelConversionModifiers.Scale);
             this.FromVector4Destructive(configuration, vectorSpan, d, PixelConversionModifiers.Scale);
         }
 
-        int endOfCompleteSlices = numberOfSlices * sliceLength;
-        int remainder = sourcePixels.Length - endOfCompleteSlices;
+        var endOfCompleteSlices = numberOfSlices * sliceLength;
+        var remainder = sourcePixels.Length - endOfCompleteSlices;
         if (remainder > 0)
         {
-            ReadOnlySpan<TSourcePixel> s = sourcePixels.Slice(endOfCompleteSlices);
-            Span<TPixel> d = destinationPixels.Slice(endOfCompleteSlices);
+            var s = sourcePixels.Slice(endOfCompleteSlices);
+            var d = destinationPixels.Slice(endOfCompleteSlices);
             vectorSpan = vectorSpan.Slice(0, remainder);
             PixelOperations<TSourcePixel>.Instance.ToVector4(configuration, s, vectorSpan, PixelConversionModifiers.Scale);
             this.FromVector4Destructive(configuration, vectorSpan, d, PixelConversionModifiers.Scale);
@@ -180,16 +180,16 @@ public partial class PixelOperations<TPixel>
     {
         Guard.NotNull(configuration, nameof(configuration));
 
-        int count = redChannel.Length;
+        var count = redChannel.Length;
         GuardPackFromRgbPlanes(greenChannel, blueChannel, destination, count);
 
         Rgb24 rgb24 = default;
-        ref byte r = ref MemoryMarshal.GetReference(redChannel);
-        ref byte g = ref MemoryMarshal.GetReference(greenChannel);
-        ref byte b = ref MemoryMarshal.GetReference(blueChannel);
-        ref TPixel d = ref MemoryMarshal.GetReference(destination);
+        ref var r = ref MemoryMarshal.GetReference(redChannel);
+        ref var g = ref MemoryMarshal.GetReference(greenChannel);
+        ref var b = ref MemoryMarshal.GetReference(blueChannel);
+        ref var d = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             rgb24.R = Unsafe.Add(ref r, i);
             rgb24.G = Unsafe.Add(ref g, i);

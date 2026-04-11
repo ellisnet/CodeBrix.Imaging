@@ -51,21 +51,21 @@ public abstract class PixelBlender<TPixel>
         Guard.MustBeGreaterThanOrEqualTo(source.Length, destination.Length, nameof(source.Length));
         Guard.MustBeBetweenOrEqualTo(amount, 0, 1, nameof(amount));
 
-        using (IMemoryOwner<Vector4> buffer =
+        using (var buffer =
                configuration.MemoryAllocator.Allocate<Vector4>(destination.Length * 3))
         {
-            Span<Vector4> destinationSpan = buffer.Slice(0, destination.Length);
-            Span<Vector4> backgroundSpan = buffer.Slice(destination.Length, destination.Length);
-            Span<Vector4> sourceSpan = buffer.Slice(destination.Length * 2, destination.Length);
+            var destinationSpan = buffer.Slice(0, destination.Length);
+            var backgroundSpan = buffer.Slice(destination.Length, destination.Length);
+            var sourceSpan = buffer.Slice(destination.Length * 2, destination.Length);
 
-            ReadOnlySpan<TPixel> sourcePixels = background.Slice(0, background.Length);
+            var sourcePixels = background.Slice(0, background.Length);
             PixelOperations<TPixel>.Instance.ToVector4(configuration, sourcePixels, backgroundSpan, PixelConversionModifiers.Scale);
-            ReadOnlySpan<TPixelSrc> sourcePixels1 = source.Slice(0, background.Length);
+            var sourcePixels1 = source.Slice(0, background.Length);
             PixelOperations<TPixelSrc>.Instance.ToVector4(configuration, sourcePixels1, sourceSpan, PixelConversionModifiers.Scale);
 
             this.BlendFunction(destinationSpan, backgroundSpan, sourceSpan, amount);
 
-            Span<Vector4> sourceVectors = destinationSpan.Slice(0, background.Length);
+            var sourceVectors = destinationSpan.Slice(0, background.Length);
             PixelOperations<TPixel>.Instance.FromVector4Destructive(configuration, sourceVectors, destination, PixelConversionModifiers.Scale);
         }
     }
@@ -113,21 +113,21 @@ public abstract class PixelBlender<TPixel>
         Guard.MustBeGreaterThanOrEqualTo(source.Length, destination.Length, nameof(source.Length));
         Guard.MustBeGreaterThanOrEqualTo(amount.Length, destination.Length, nameof(amount.Length));
 
-        using (IMemoryOwner<Vector4> buffer =
+        using (var buffer =
                configuration.MemoryAllocator.Allocate<Vector4>(destination.Length * 3))
         {
-            Span<Vector4> destinationSpan = buffer.Slice(0, destination.Length);
-            Span<Vector4> backgroundSpan = buffer.Slice(destination.Length, destination.Length);
-            Span<Vector4> sourceSpan = buffer.Slice(destination.Length * 2, destination.Length);
+            var destinationSpan = buffer.Slice(0, destination.Length);
+            var backgroundSpan = buffer.Slice(destination.Length, destination.Length);
+            var sourceSpan = buffer.Slice(destination.Length * 2, destination.Length);
 
-            ReadOnlySpan<TPixel> sourcePixels = background.Slice(0, background.Length);
+            var sourcePixels = background.Slice(0, background.Length);
             PixelOperations<TPixel>.Instance.ToVector4(configuration, sourcePixels, backgroundSpan, PixelConversionModifiers.Scale);
-            ReadOnlySpan<TPixelSrc> sourcePixels1 = source.Slice(0, background.Length);
+            var sourcePixels1 = source.Slice(0, background.Length);
             PixelOperations<TPixelSrc>.Instance.ToVector4(configuration, sourcePixels1, sourceSpan, PixelConversionModifiers.Scale);
 
             this.BlendFunction(destinationSpan, backgroundSpan, sourceSpan, amount);
 
-            Span<Vector4> sourceVectors = destinationSpan.Slice(0, background.Length);
+            var sourceVectors = destinationSpan.Slice(0, background.Length);
             PixelOperations<TPixel>.Instance.FromVector4Destructive(configuration, sourceVectors, destination, PixelConversionModifiers.Scale);
         }
     }

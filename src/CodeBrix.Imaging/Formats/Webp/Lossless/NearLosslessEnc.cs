@@ -15,13 +15,13 @@ internal static class NearLosslessEnc
 
     public static void ApplyNearLossless(int xSize, int ySize, int quality, Span<uint> argbSrc, Span<uint> argbDst, int stride)
     {
-        uint[] copyBuffer = new uint[xSize * 3];
-        int limitBits = LosslessUtils.NearLosslessBits(quality);
+        var copyBuffer = new uint[xSize * 3];
+        var limitBits = LosslessUtils.NearLosslessBits(quality);
 
         // For small icon images, don't attempt to apply near-lossless compression.
         if ((xSize < MinDimForNearLossless && ySize < MinDimForNearLossless) || ySize < 3)
         {
-            for (int i = 0; i < ySize; i++)
+            for (var i = 0; i < ySize; i++)
             {
                 argbSrc.Slice(i * stride, xSize).CopyTo(argbDst.Slice(i * xSize, xSize));
             }
@@ -30,7 +30,7 @@ internal static class NearLosslessEnc
         }
 
         NearLossless(xSize, ySize, argbSrc, stride, limitBits, copyBuffer, argbDst);
-        for (int i = limitBits - 1; i != 0; i--)
+        for (var i = limitBits - 1; i != 0; i--)
         {
             NearLossless(xSize, ySize, argbDst, xSize, i, copyBuffer, argbDst);
         }
@@ -40,15 +40,15 @@ internal static class NearLosslessEnc
     private static void NearLossless(int xSize, int ySize, Span<uint> argbSrc, int stride, int limitBits, Span<uint> copyBuffer, Span<uint> argbDst)
     {
         int y;
-        int limit = 1 << limitBits;
-        Span<uint> prevRow = copyBuffer;
-        Span<uint> currRow = copyBuffer.Slice(xSize, xSize);
-        Span<uint> nextRow = copyBuffer.Slice(xSize * 2, xSize);
+        var limit = 1 << limitBits;
+        var prevRow = copyBuffer;
+        var currRow = copyBuffer.Slice(xSize, xSize);
+        var nextRow = copyBuffer.Slice(xSize * 2, xSize);
         argbSrc.Slice(0, xSize).CopyTo(currRow);
         argbSrc.Slice(xSize, xSize).CopyTo(nextRow);
 
-        int srcOffset = 0;
-        int dstOffset = 0;
+        var srcOffset = 0;
+        var dstOffset = 0;
         for (y = 0; y < ySize; y++)
         {
             if (y == 0 || y == ySize - 1)
@@ -60,7 +60,7 @@ internal static class NearLosslessEnc
                 argbSrc.Slice(srcOffset + stride, xSize).CopyTo(nextRow);
                 argbDst[dstOffset] = argbSrc[srcOffset];
                 argbDst[dstOffset + xSize - 1] = argbSrc[srcOffset + xSize - 1];
-                for (int x = 1; x < xSize - 1; x++)
+                for (var x = 1; x < xSize - 1; x++)
                 {
                     if (IsSmooth(prevRow, currRow, nextRow, x, limit))
                     {
@@ -73,7 +73,7 @@ internal static class NearLosslessEnc
                 }
             }
 
-            Span<uint> temp = prevRow;
+            var temp = prevRow;
             prevRow = currRow;
             currRow = nextRow;
             nextRow = temp;
@@ -91,8 +91,8 @@ internal static class NearLosslessEnc
 
     private static uint FindClosestDiscretized(uint a, int bits)
     {
-        uint mask = (1u << bits) - 1;
-        uint biased = a + (mask >> 1) + ((a >> bits) & 1);
+        var mask = (1u << bits) - 1;
+        var biased = a + (mask >> 1) + ((a >> bits) & 1);
         if (biased > 0xff)
         {
             return 0xff;
@@ -110,9 +110,9 @@ internal static class NearLosslessEnc
     // Checks if distance between corresponding channel values of pixels a and b is within the given limit.
     private static bool IsNear(uint a, uint b, int limit)
     {
-        for (int k = 0; k < 4; ++k)
+        for (var k = 0; k < 4; ++k)
         {
-            int delta = (int)((a >> (k * 8)) & 0xff) - (int)((b >> (k * 8)) & 0xff);
+            var delta = (int)((a >> (k * 8)) & 0xff) - (int)((b >> (k * 8)) & 0xff);
             if (delta >= limit || delta <= -limit)
             {
                 return false;

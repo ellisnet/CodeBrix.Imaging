@@ -176,10 +176,10 @@ public partial struct NormalizedByte4 : IPixel<NormalizedByte4>, IPackedVector<u
     {
         vector = Numerics.Clamp(vector, MinusOne, Vector4.One) * Half;
 
-        uint byte4 = ((uint)Convert.ToInt16(MathF.Round(vector.X)) & 0xFF) << 0;
-        uint byte3 = ((uint)Convert.ToInt16(MathF.Round(vector.Y)) & 0xFF) << 8;
-        uint byte2 = ((uint)Convert.ToInt16(MathF.Round(vector.Z)) & 0xFF) << 16;
-        uint byte1 = ((uint)Convert.ToInt16(MathF.Round(vector.W)) & 0xFF) << 24;
+        var byte4 = ((uint)Convert.ToInt16(MathF.Round(vector.X)) & 0xFF) << 0;
+        var byte3 = ((uint)Convert.ToInt16(MathF.Round(vector.Y)) & 0xFF) << 8;
+        var byte2 = ((uint)Convert.ToInt16(MathF.Round(vector.Z)) & 0xFF) << 16;
+        var byte1 = ((uint)Convert.ToInt16(MathF.Round(vector.W)) & 0xFF) << 24;
 
         return byte4 | byte3 | byte2 | byte1;
     }

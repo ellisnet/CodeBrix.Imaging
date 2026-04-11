@@ -113,9 +113,9 @@ internal static partial class PorterDuffFunctions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector4 Overlay(Vector4 backdrop, Vector4 source)
     {
-        float cr = OverlayValueFunction(backdrop.X, source.X);
-        float cg = OverlayValueFunction(backdrop.Y, source.Y);
-        float cb = OverlayValueFunction(backdrop.Z, source.Z);
+        var cr = OverlayValueFunction(backdrop.X, source.X);
+        var cg = OverlayValueFunction(backdrop.Y, source.Y);
+        var cb = OverlayValueFunction(backdrop.Z, source.Z);
 
         return Vector4.Min(Vector4.One, new Vector4(cr, cg, cb, 0));
     }
@@ -129,9 +129,9 @@ internal static partial class PorterDuffFunctions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector4 HardLight(Vector4 backdrop, Vector4 source)
     {
-        float cr = OverlayValueFunction(source.X, backdrop.X);
-        float cg = OverlayValueFunction(source.Y, backdrop.Y);
-        float cb = OverlayValueFunction(source.Z, backdrop.Z);
+        var cr = OverlayValueFunction(source.X, backdrop.X);
+        var cg = OverlayValueFunction(source.Y, backdrop.Y);
+        var cb = OverlayValueFunction(source.Z, backdrop.Z);
 
         return Vector4.Min(Vector4.One, new Vector4(cr, cg, cb, 0));
     }
@@ -159,15 +159,15 @@ internal static partial class PorterDuffFunctions
     public static Vector4 Over(Vector4 destination, Vector4 source, Vector4 blend)
     {
         // calculate weights
-        float blendW = destination.W * source.W;
-        float dstW = destination.W - blendW;
-        float srcW = source.W - blendW;
+        var blendW = destination.W * source.W;
+        var dstW = destination.W - blendW;
+        var srcW = source.W - blendW;
 
         // calculate final alpha
-        float alpha = dstW + source.W;
+        var alpha = dstW + source.W;
 
         // calculate final color
-        Vector4 color = (destination * dstW) + (source * srcW) + (blend * blendW);
+        var color = (destination * dstW) + (source * srcW) + (blend * blendW);
 
         // unpremultiply
         color /= MathF.Max(alpha, Constants.Epsilon);
@@ -187,14 +187,14 @@ internal static partial class PorterDuffFunctions
     public static Vector4 Atop(Vector4 destination, Vector4 source, Vector4 blend)
     {
         // calculate weights
-        float blendW = destination.W * source.W;
-        float dstW = destination.W - blendW;
+        var blendW = destination.W * source.W;
+        var dstW = destination.W - blendW;
 
         // calculate final alpha
-        float alpha = destination.W;
+        var alpha = destination.W;
 
         // calculate final color
-        Vector4 color = (destination * dstW) + (blend * blendW);
+        var color = (destination * dstW) + (blend * blendW);
 
         // unpremultiply
         color /= MathF.Max(alpha, Constants.Epsilon);
@@ -212,9 +212,9 @@ internal static partial class PorterDuffFunctions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector4 In(Vector4 destination, Vector4 source)
     {
-        float alpha = destination.W * source.W;
+        var alpha = destination.W * source.W;
 
-        Vector4 color = source * alpha;                    // premultiply
+        var color = source * alpha;                    // premultiply
         color /= MathF.Max(alpha, Constants.Epsilon);   // unpremultiply
         color.W = alpha;
 
@@ -230,9 +230,9 @@ internal static partial class PorterDuffFunctions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector4 Out(Vector4 destination, Vector4 source)
     {
-        float alpha = (1 - destination.W) * source.W;
+        var alpha = (1 - destination.W) * source.W;
 
-        Vector4 color = source * alpha;                    // premultiply
+        var color = source * alpha;                    // premultiply
         color /= MathF.Max(alpha, Constants.Epsilon);   // unpremultiply
         color.W = alpha;
 
@@ -248,11 +248,11 @@ internal static partial class PorterDuffFunctions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector4 Xor(Vector4 destination, Vector4 source)
     {
-        float srcW = 1 - destination.W;
-        float dstW = 1 - source.W;
+        var srcW = 1 - destination.W;
+        var dstW = 1 - source.W;
 
-        float alpha = (source.W * srcW) + (destination.W * dstW);
-        Vector4 color = (source.W * source * srcW) + (destination.W * destination * dstW);
+        var alpha = (source.W * srcW) + (destination.W * dstW);
+        var color = (source.W * source * srcW) + (destination.W * destination * dstW);
 
         // unpremultiply
         color /= MathF.Max(alpha, Constants.Epsilon);

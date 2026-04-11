@@ -56,14 +56,14 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        int sourceWidth = source.Width;
-        int sourceHeight = source.Height;
-        int tileWidth = (int)MathF.Ceiling(sourceWidth / (float)this.Tiles);
-        int tileHeight = (int)MathF.Ceiling(sourceHeight / (float)this.Tiles);
-        int tileCount = this.Tiles;
-        int halfTileWidth = tileWidth / 2;
-        int halfTileHeight = tileHeight / 2;
-        int luminanceLevels = this.LuminanceLevels;
+        var sourceWidth = source.Width;
+        var sourceHeight = source.Height;
+        var tileWidth = (int)MathF.Ceiling(sourceWidth / (float)this.Tiles);
+        var tileHeight = (int)MathF.Ceiling(sourceHeight / (float)this.Tiles);
+        var tileCount = this.Tiles;
+        var halfTileWidth = tileWidth / 2;
+        var halfTileHeight = tileHeight / 2;
+        var luminanceLevels = this.LuminanceLevels;
 
         // The image is split up into tiles. For each tile the cumulative distribution function will be calculated.
         using (var cdfData = new CdfTileData(this.Configuration, sourceWidth, sourceHeight, this.Tiles, this.Tiles, tileWidth, tileHeight, luminanceLevels))
@@ -71,9 +71,9 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
             cdfData.CalculateLookupTables(source, this);
 
             var tileYStartPositions = new List<(int Y, int CdfY)>();
-            int cdfY = 0;
-            int yStart = halfTileHeight;
-            for (int tile = 0; tile < tileCount - 1; tile++)
+            var cdfY = 0;
+            var yStart = halfTileHeight;
+            for (var tile = 0; tile < tileCount - 1; tile++)
             {
                 tileYStartPositions.Add((yStart, cdfY));
                 cdfY++;
@@ -90,14 +90,14 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
             ProcessBorderColumn(source.PixelBuffer, cdfData, 0, sourceHeight, this.Tiles, tileHeight, xStart: 0, xEnd: halfTileWidth, luminanceLevels);
 
             // Fix right column
-            int rightBorderStartX = ((this.Tiles - 1) * tileWidth) + halfTileWidth;
+            var rightBorderStartX = ((this.Tiles - 1) * tileWidth) + halfTileWidth;
             ProcessBorderColumn(source.PixelBuffer, cdfData, this.Tiles - 1, sourceHeight, this.Tiles, tileHeight, xStart: rightBorderStartX, xEnd: sourceWidth, luminanceLevels);
 
             // Fix top row
             ProcessBorderRow(source.PixelBuffer, cdfData, 0, sourceWidth, this.Tiles, tileWidth, yStart: 0, yEnd: halfTileHeight, luminanceLevels);
 
             // Fix bottom row
-            int bottomBorderStartY = ((this.Tiles - 1) * tileHeight) + halfTileHeight;
+            var bottomBorderStartY = ((this.Tiles - 1) * tileHeight) + halfTileHeight;
             ProcessBorderRow(source.PixelBuffer, cdfData, this.Tiles - 1, sourceWidth, this.Tiles, tileWidth, yStart: bottomBorderStartY, yEnd: sourceHeight, luminanceLevels);
 
             // Left top corner
@@ -140,13 +140,13 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         int yEnd,
         int luminanceLevels)
     {
-        for (int dy = yStart; dy < yEnd; dy++)
+        for (var dy = yStart; dy < yEnd; dy++)
         {
-            Span<TPixel> rowSpan = source.DangerousGetRowSpan(dy);
-            for (int dx = xStart; dx < xEnd; dx++)
+            var rowSpan = source.DangerousGetRowSpan(dy);
+            for (var dx = xStart; dx < xEnd; dx++)
             {
-                ref TPixel pixel = ref rowSpan[dx];
-                float luminanceEqualized = cdfData.RemapGreyValue(cdfX, cdfY, GetLuminance(pixel, luminanceLevels));
+                ref var pixel = ref rowSpan[dx];
+                var luminanceEqualized = cdfData.RemapGreyValue(cdfX, cdfY, GetLuminance(pixel, luminanceLevels));
                 pixel.FromVector4(new Vector4(luminanceEqualized, luminanceEqualized, luminanceEqualized, pixel.ToVector4().W));
             }
         }
@@ -178,21 +178,21 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         int xEnd,
         int luminanceLevels)
     {
-        int halfTileHeight = tileHeight / 2;
+        var halfTileHeight = tileHeight / 2;
 
-        int cdfY = 0;
-        int y = halfTileHeight;
-        for (int tile = 0; tile < tileCount - 1; tile++)
+        var cdfY = 0;
+        var y = halfTileHeight;
+        for (var tile = 0; tile < tileCount - 1; tile++)
         {
-            int yLimit = Math.Min(y + tileHeight, sourceHeight - 1);
-            int tileY = 0;
-            for (int dy = y; dy < yLimit; dy++)
+            var yLimit = Math.Min(y + tileHeight, sourceHeight - 1);
+            var tileY = 0;
+            for (var dy = y; dy < yLimit; dy++)
             {
-                Span<TPixel> rowSpan = source.DangerousGetRowSpan(dy);
-                for (int dx = xStart; dx < xEnd; dx++)
+                var rowSpan = source.DangerousGetRowSpan(dy);
+                for (var dx = xStart; dx < xEnd; dx++)
                 {
-                    ref TPixel pixel = ref rowSpan[dx];
-                    float luminanceEqualized = InterpolateBetweenTwoTiles(pixel, cdfData, cdfX, cdfY, cdfX, cdfY + 1, tileY, tileHeight, luminanceLevels);
+                    ref var pixel = ref rowSpan[dx];
+                    var luminanceEqualized = InterpolateBetweenTwoTiles(pixel, cdfData, cdfX, cdfY, cdfX, cdfY + 1, tileY, tileHeight, luminanceLevels);
                     pixel.FromVector4(new Vector4(luminanceEqualized, luminanceEqualized, luminanceEqualized, pixel.ToVector4().W));
                 }
 
@@ -230,21 +230,21 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         int yEnd,
         int luminanceLevels)
     {
-        int halfTileWidth = tileWidth / 2;
+        var halfTileWidth = tileWidth / 2;
 
-        int cdfX = 0;
-        int x = halfTileWidth;
-        for (int tile = 0; tile < tileCount - 1; tile++)
+        var cdfX = 0;
+        var x = halfTileWidth;
+        for (var tile = 0; tile < tileCount - 1; tile++)
         {
-            for (int dy = yStart; dy < yEnd; dy++)
+            for (var dy = yStart; dy < yEnd; dy++)
             {
-                Span<TPixel> rowSpan = source.DangerousGetRowSpan(dy);
-                int tileX = 0;
-                int xLimit = Math.Min(x + tileWidth, sourceWidth - 1);
-                for (int dx = x; dx < xLimit; dx++)
+                var rowSpan = source.DangerousGetRowSpan(dy);
+                var tileX = 0;
+                var xLimit = Math.Min(x + tileWidth, sourceWidth - 1);
+                for (var dx = x; dx < xLimit; dx++)
                 {
-                    ref TPixel pixel = ref rowSpan[dx];
-                    float luminanceEqualized = InterpolateBetweenTwoTiles(pixel, cdfData, cdfX, cdfY, cdfX + 1, cdfY, tileX, tileWidth, luminanceLevels);
+                    ref var pixel = ref rowSpan[dx];
+                    var luminanceEqualized = InterpolateBetweenTwoTiles(pixel, cdfData, cdfX, cdfY, cdfX + 1, cdfY, tileX, tileWidth, luminanceLevels);
                     pixel.FromVector4(new Vector4(luminanceEqualized, luminanceEqualized, luminanceEqualized, pixel.ToVector4().W));
                     tileX++;
                 }
@@ -287,19 +287,19 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         int tileHeight,
         int luminanceLevels)
     {
-        int luminance = GetLuminance(sourcePixel, luminanceLevels);
-        float tx = tileX / (float)(tileWidth - 1);
-        float ty = tileY / (float)(tileHeight - 1);
+        var luminance = GetLuminance(sourcePixel, luminanceLevels);
+        var tx = tileX / (float)(tileWidth - 1);
+        var ty = tileY / (float)(tileHeight - 1);
 
-        int yTop = cdfY;
-        int yBottom = Math.Min(tileCountY - 1, yTop + 1);
-        int xLeft = cdfX;
-        int xRight = Math.Min(tileCountX - 1, xLeft + 1);
+        var yTop = cdfY;
+        var yBottom = Math.Min(tileCountY - 1, yTop + 1);
+        var xLeft = cdfX;
+        var xRight = Math.Min(tileCountX - 1, xLeft + 1);
 
-        float cdfLeftTopLuminance = cdfData.RemapGreyValue(xLeft, yTop, luminance);
-        float cdfRightTopLuminance = cdfData.RemapGreyValue(xRight, yTop, luminance);
-        float cdfLeftBottomLuminance = cdfData.RemapGreyValue(xLeft, yBottom, luminance);
-        float cdfRightBottomLuminance = cdfData.RemapGreyValue(xRight, yBottom, luminance);
+        var cdfLeftTopLuminance = cdfData.RemapGreyValue(xLeft, yTop, luminance);
+        var cdfRightTopLuminance = cdfData.RemapGreyValue(xRight, yTop, luminance);
+        var cdfLeftBottomLuminance = cdfData.RemapGreyValue(xLeft, yBottom, luminance);
+        var cdfRightBottomLuminance = cdfData.RemapGreyValue(xRight, yBottom, luminance);
         return BilinearInterpolation(tx, ty, cdfLeftTopLuminance, cdfRightTopLuminance, cdfLeftBottomLuminance, cdfRightBottomLuminance);
     }
 
@@ -331,11 +331,11 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         int tileWidth,
         int luminanceLevels)
     {
-        int luminance = GetLuminance(sourcePixel, luminanceLevels);
-        float tx = tilePos / (float)(tileWidth - 1);
+        var luminance = GetLuminance(sourcePixel, luminanceLevels);
+        var tx = tilePos / (float)(tileWidth - 1);
 
-        float cdfLuminance1 = cdfData.RemapGreyValue(tileX1, tileY1, luminance);
-        float cdfLuminance2 = cdfData.RemapGreyValue(tileX2, tileY2, luminance);
+        var cdfLuminance1 = cdfData.RemapGreyValue(tileX1, tileY1, luminance);
+        var cdfLuminance2 = cdfData.RemapGreyValue(tileX2, tileY2, luminance);
         return LinearInterpolation(cdfLuminance1, cdfLuminance2, tx);
     }
 
@@ -404,27 +404,27 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(in RowInterval rows)
         {
-            for (int index = rows.Min; index < rows.Max; index++)
+            for (var index = rows.Min; index < rows.Max; index++)
             {
-                (int Y, int CdfY) tileYStartPosition = this.tileYStartPositions[index];
-                int y = tileYStartPosition.Y;
-                int cdfYY = tileYStartPosition.CdfY;
+                var tileYStartPosition = this.tileYStartPositions[index];
+                var y = tileYStartPosition.Y;
+                var cdfYY = tileYStartPosition.CdfY;
 
-                int cdfX = 0;
-                int x = this.halfTileWidth;
-                for (int tile = 0; tile < this.tileCount - 1; tile++)
+                var cdfX = 0;
+                var x = this.halfTileWidth;
+                for (var tile = 0; tile < this.tileCount - 1; tile++)
                 {
-                    int tileY = 0;
-                    int yEnd = Math.Min(y + this.tileHeight, this.sourceHeight);
-                    int xEnd = Math.Min(x + this.tileWidth, this.sourceWidth);
-                    for (int dy = y; dy < yEnd; dy++)
+                    var tileY = 0;
+                    var yEnd = Math.Min(y + this.tileHeight, this.sourceHeight);
+                    var xEnd = Math.Min(x + this.tileWidth, this.sourceWidth);
+                    for (var dy = y; dy < yEnd; dy++)
                     {
-                        Span<TPixel> rowSpan = this.source.DangerousGetRowSpan(dy);
-                        int tileX = 0;
-                        for (int dx = x; dx < xEnd; dx++)
+                        var rowSpan = this.source.DangerousGetRowSpan(dy);
+                        var tileX = 0;
+                        for (var dx = x; dx < xEnd; dx++)
                         {
-                            ref TPixel pixel = ref rowSpan[dx];
-                            float luminanceEqualized = InterpolateBetweenFourTiles(
+                            ref var pixel = ref rowSpan[dx];
+                            var luminanceEqualized = InterpolateBetweenFourTiles(
                                 pixel,
                                 this.cdfData,
                                 this.tileCount,
@@ -497,8 +497,8 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
 
             // Calculate the start positions and rent buffers.
             this.tileYStartPositions = new List<(int Y, int CdfY)>();
-            int cdfY = 0;
-            for (int y = 0; y < sourceHeight; y += tileHeight)
+            var cdfY = 0;
+            for (var y = 0; y < sourceHeight; y += tileHeight)
             {
                 this.tileYStartPositions.Add((y, cdfY));
                 cdfY++;
@@ -537,8 +537,8 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
         [MethodImpl(InliningOptions.ShortMethod)]
         public float RemapGreyValue(int tilesX, int tilesY, int luminance)
         {
-            int cdfMin = this.cdfMinBuffer2D[tilesX, tilesY];
-            Span<int> cdfSpan = this.GetCdfLutSpan(tilesX, tilesY);
+            var cdfMin = this.cdfMinBuffer2D[tilesX, tilesY];
+            var cdfSpan = this.GetCdfLutSpan(tilesX, tilesY);
             return (this.pixelsInTile - cdfMin) == 0
                 ? cdfSpan[luminance] / this.pixelsInTile
                 : cdfSpan[luminance] / (float)(this.pixelsInTile - cdfMin);
@@ -593,32 +593,32 @@ internal class AdaptiveHistogramEqualizationProcessor<TPixel> : HistogramEqualiz
             [MethodImpl(InliningOptions.ShortMethod)]
             public void Invoke(in RowInterval rows)
             {
-                for (int index = rows.Min; index < rows.Max; index++)
+                for (var index = rows.Min; index < rows.Max; index++)
                 {
-                    int cdfX = 0;
-                    int cdfY = this.tileYStartPositions[index].CdfY;
-                    int y = this.tileYStartPositions[index].Y;
-                    int endY = Math.Min(y + this.tileHeight, this.sourceHeight);
-                    Span<int> cdfMinSpan = this.cdfMinBuffer2D.DangerousGetRowSpan(cdfY);
+                    var cdfX = 0;
+                    var cdfY = this.tileYStartPositions[index].CdfY;
+                    var y = this.tileYStartPositions[index].Y;
+                    var endY = Math.Min(y + this.tileHeight, this.sourceHeight);
+                    var cdfMinSpan = this.cdfMinBuffer2D.DangerousGetRowSpan(cdfY);
                     cdfMinSpan.Clear();
 
-                    using IMemoryOwner<int> histogramBuffer = this.allocator.Allocate<int>(this.luminanceLevels);
-                    Span<int> histogram = histogramBuffer.GetSpan();
-                    ref int histogramBase = ref MemoryMarshal.GetReference(histogram);
+                    using var histogramBuffer = this.allocator.Allocate<int>(this.luminanceLevels);
+                    var histogram = histogramBuffer.GetSpan();
+                    ref var histogramBase = ref MemoryMarshal.GetReference(histogram);
 
-                    for (int x = 0; x < this.sourceWidth; x += this.tileWidth)
+                    for (var x = 0; x < this.sourceWidth; x += this.tileWidth)
                     {
                         histogram.Clear();
-                        Span<int> cdfLutSpan = this.cdfLutBuffer2D.DangerousGetRowSpan(index).Slice(cdfX * this.luminanceLevels, this.luminanceLevels);
-                        ref int cdfBase = ref MemoryMarshal.GetReference(cdfLutSpan);
+                        var cdfLutSpan = this.cdfLutBuffer2D.DangerousGetRowSpan(index).Slice(cdfX * this.luminanceLevels, this.luminanceLevels);
+                        ref var cdfBase = ref MemoryMarshal.GetReference(cdfLutSpan);
 
-                        int xlimit = Math.Min(x + this.tileWidth, this.sourceWidth);
-                        for (int dy = y; dy < endY; dy++)
+                        var xlimit = Math.Min(x + this.tileWidth, this.sourceWidth);
+                        for (var dy = y; dy < endY; dy++)
                         {
-                            Span<TPixel> rowSpan = this.source.DangerousGetRowSpan(dy);
-                            for (int dx = x; dx < xlimit; dx++)
+                            var rowSpan = this.source.DangerousGetRowSpan(dy);
+                            for (var dx = x; dx < xlimit; dx++)
                             {
-                                int luminance = GetLuminance(rowSpan[dx], this.luminanceLevels);
+                                var luminance = GetLuminance(rowSpan[dx], this.luminanceLevels);
                                 histogram[luminance]++;
                             }
                         }

@@ -35,23 +35,23 @@ internal class Rgba16PlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel
     {
         // Note: due to an issue with netcore 2.1 and default values and unpredictable behavior with those,
         // we define our own defaults as a workaround. See: https://github.com/dotnet/runtime/issues/55623
-        Rgba64 rgba = TiffUtils.Rgba64Default;
+        var rgba = TiffUtils.Rgba64Default;
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
 
-        Span<byte> redData = data[0].GetSpan();
-        Span<byte> greenData = data[1].GetSpan();
-        Span<byte> blueData = data[2].GetSpan();
-        Span<byte> alphaData = data[3].GetSpan();
+        var redData = data[0].GetSpan();
+        var greenData = data[1].GetSpan();
+        var blueData = data[2].GetSpan();
+        var alphaData = data[3].GetSpan();
 
-        bool hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
-        int offset = 0;
-        for (int y = top; y < top + height; y++)
+        var hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
+        var offset = 0;
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     ulong r = TiffUtils.ConvertToUShortBigEndian(redData.Slice(offset, 2));
                     ulong g = TiffUtils.ConvertToUShortBigEndian(greenData.Slice(offset, 2));
@@ -67,7 +67,7 @@ internal class Rgba16PlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel
             }
             else
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     ulong r = TiffUtils.ConvertToUShortLittleEndian(redData.Slice(offset, 2));
                     ulong g = TiffUtils.ConvertToUShortLittleEndian(greenData.Slice(offset, 2));

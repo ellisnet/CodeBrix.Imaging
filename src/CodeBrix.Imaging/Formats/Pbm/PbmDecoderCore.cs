@@ -65,7 +65,7 @@ internal sealed class PbmDecoderCore : IImageDecoderInternals
 
         var image = new Image<TPixel>(this.Configuration, this.PixelSize.Width, this.PixelSize.Height, this.Metadata);
 
-        Buffer2D<TPixel> pixels = image.GetRootFramePixelBuffer();
+        var pixels = image.GetRootFramePixelBuffer();
 
         this.ProcessPixels(stream, pixels);
         if (this.NeedsUpscaling)
@@ -82,7 +82,7 @@ internal sealed class PbmDecoderCore : IImageDecoderInternals
         this.ProcessHeader(stream);
 
         // BlackAndWhite pixels are encoded into a byte.
-        int bitsPerPixel = this.ComponentType == PbmComponentType.Short ? 16 : 8;
+        var bitsPerPixel = this.ComponentType == PbmComponentType.Short ? 16 : 8;
         return new ImageInfo(
             new PixelTypeInfo(bitsPerPixel), 
             this.PixelSize.Width, 
@@ -100,7 +100,7 @@ internal sealed class PbmDecoderCore : IImageDecoderInternals
     {
         Span<byte> buffer = stackalloc byte[2];
 
-        int bytesRead = stream.Read(buffer);
+        var bytesRead = stream.Read(buffer);
         if (bytesRead != 2 || buffer[0] != 'P')
         {
             throw new InvalidImageContentException("Empty or not an PPM image.");
@@ -146,9 +146,9 @@ internal sealed class PbmDecoderCore : IImageDecoderInternals
         }
 
         if (!stream.SkipWhitespaceAndComments() ||
-            !stream.ReadDecimal(out int width) ||
+            !stream.ReadDecimal(out var width) ||
             !stream.SkipWhitespaceAndComments() ||
-            !stream.ReadDecimal(out int height) ||
+            !stream.ReadDecimal(out var height) ||
             !stream.SkipWhitespaceAndComments())
         {
             ThrowPrematureEof();
@@ -179,7 +179,7 @@ internal sealed class PbmDecoderCore : IImageDecoderInternals
 
         this.PixelSize = new Size(width, height);
         this.Metadata = new ImageMetadata(PbmFormat.Instance);
-        PbmMetadata meta = this.Metadata.GetPbmMetadata();
+        var meta = this.Metadata.GetPbmMetadata();
         meta.Encoding = this.Encoding;
         meta.ColorType = this.ColorType;
         meta.ComponentType = this.ComponentType;
@@ -203,7 +203,7 @@ internal sealed class PbmDecoderCore : IImageDecoderInternals
     private void ProcessUpscaling<TPixel>(Image<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int maxAllocationValue = this.ComponentType == PbmComponentType.Short ? 65535 : 255;
+        var maxAllocationValue = this.ComponentType == PbmComponentType.Short ? 65535 : 255;
         float factor = maxAllocationValue / this.maxPixelValue;
         image.Mutate(x => x.Brightness(factor));
     }

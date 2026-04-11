@@ -62,10 +62,10 @@ internal static class HexConverter
         }
 
         // See https://source.dot.net/#System.Private.CoreLib/HexConverter.cs,4681d45a0aa0b361
-        int i = 0;
-        int j = 0;
-        int byteLo = 0;
-        int byteHi = 0;
+        var i = 0;
+        var j = 0;
+        var byteLo = 0;
+        var byteHi = 0;
         while (j < bytes.Length)
         {
             byteLo = FromChar(chars[i + 1]);

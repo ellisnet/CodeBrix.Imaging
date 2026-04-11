@@ -125,11 +125,11 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         Image<TPixel> image = null;
         try
         {
-            int bytesPerColorMapEntry = this.ReadImageHeaders(stream, out bool inverted, out byte[] palette);
+            var bytesPerColorMapEntry = this.ReadImageHeaders(stream, out var inverted, out var palette);
 
             image = new Image<TPixel>(this.Configuration, this.infoHeader.Width, this.infoHeader.Height, this.metadata);
 
-            Buffer2D<TPixel> pixels = image.GetRootFramePixelBuffer();
+            var pixels = image.GetRootFramePixelBuffer();
 
             switch (this.infoHeader.Compression)
             {
@@ -236,7 +236,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     /// </returns>
     private static int CalculatePadding(int width, int componentCount)
     {
-        int padding = (width * componentCount) % 4;
+        var padding = (width * componentCount) % 4;
 
         if (padding != 0)
         {
@@ -297,13 +297,13 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         TPixel color = default;
-        using (IMemoryOwner<byte> buffer = this.memoryAllocator.Allocate<byte>(width * height, AllocationOptions.Clean))
-        using (IMemoryOwner<bool> undefinedPixels = this.memoryAllocator.Allocate<bool>(width * height, AllocationOptions.Clean))
-        using (IMemoryOwner<bool> rowsWithUndefinedPixels = this.memoryAllocator.Allocate<bool>(height, AllocationOptions.Clean))
+        using (var buffer = this.memoryAllocator.Allocate<byte>(width * height, AllocationOptions.Clean))
+        using (var undefinedPixels = this.memoryAllocator.Allocate<bool>(width * height, AllocationOptions.Clean))
+        using (var rowsWithUndefinedPixels = this.memoryAllocator.Allocate<bool>(height, AllocationOptions.Clean))
         {
-            Span<bool> rowsWithUndefinedPixelsSpan = rowsWithUndefinedPixels.Memory.Span;
-            Span<bool> undefinedPixelsSpan = undefinedPixels.Memory.Span;
-            Span<byte> bufferSpan = buffer.Memory.Span;
+            var rowsWithUndefinedPixelsSpan = rowsWithUndefinedPixels.Memory.Span;
+            var undefinedPixelsSpan = undefinedPixels.Memory.Span;
+            var bufferSpan = buffer.Memory.Span;
             if (compression is BmpCompression.RLE8)
             {
                 this.UncompressRle8(width, bufferSpan, undefinedPixelsSpan, rowsWithUndefinedPixelsSpan);
@@ -313,20 +313,20 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 this.UncompressRle4(width, bufferSpan, undefinedPixelsSpan, rowsWithUndefinedPixelsSpan);
             }
 
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int newY = Invert(y, height, inverted);
-                int rowStartIdx = y * width;
-                Span<byte> bufferRow = bufferSpan.Slice(rowStartIdx, width);
-                Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(newY);
+                var newY = Invert(y, height, inverted);
+                var rowStartIdx = y * width;
+                var bufferRow = bufferSpan.Slice(rowStartIdx, width);
+                var pixelRow = pixels.DangerousGetRowSpan(newY);
 
-                bool rowHasUndefinedPixels = rowsWithUndefinedPixelsSpan[y];
+                var rowHasUndefinedPixels = rowsWithUndefinedPixelsSpan[y];
                 if (rowHasUndefinedPixels)
                 {
                     // Slow path with undefined pixels.
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        byte colorIdx = bufferRow[x];
+                        var colorIdx = bufferRow[x];
                         if (undefinedPixelsSpan[rowStartIdx + x])
                         {
                             switch (this.options.RleSkippedPixelHandling)
@@ -355,7 +355,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 else
                 {
                     // Fast path without any undefined pixels.
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
                         color.FromBgr24(Unsafe.As<byte, Bgr24>(ref colors[bufferRow[x] * 4]));
                         pixelRow[x] = color;
@@ -377,28 +377,28 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         TPixel color = default;
-        using (IMemoryOwner<byte> buffer = this.memoryAllocator.Allocate<byte>(width * height * 3, AllocationOptions.Clean))
-        using (IMemoryOwner<bool> undefinedPixels = this.memoryAllocator.Allocate<bool>(width * height, AllocationOptions.Clean))
-        using (IMemoryOwner<bool> rowsWithUndefinedPixels = this.memoryAllocator.Allocate<bool>(height, AllocationOptions.Clean))
+        using (var buffer = this.memoryAllocator.Allocate<byte>(width * height * 3, AllocationOptions.Clean))
+        using (var undefinedPixels = this.memoryAllocator.Allocate<bool>(width * height, AllocationOptions.Clean))
+        using (var rowsWithUndefinedPixels = this.memoryAllocator.Allocate<bool>(height, AllocationOptions.Clean))
         {
-            Span<bool> rowsWithUndefinedPixelsSpan = rowsWithUndefinedPixels.Memory.Span;
-            Span<bool> undefinedPixelsSpan = undefinedPixels.Memory.Span;
-            Span<byte> bufferSpan = buffer.GetSpan();
+            var rowsWithUndefinedPixelsSpan = rowsWithUndefinedPixels.Memory.Span;
+            var undefinedPixelsSpan = undefinedPixels.Memory.Span;
+            var bufferSpan = buffer.GetSpan();
 
             this.UncompressRle24(width, bufferSpan, undefinedPixelsSpan, rowsWithUndefinedPixelsSpan);
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int newY = Invert(y, height, inverted);
-                Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(newY);
-                bool rowHasUndefinedPixels = rowsWithUndefinedPixelsSpan[y];
+                var newY = Invert(y, height, inverted);
+                var pixelRow = pixels.DangerousGetRowSpan(newY);
+                var rowHasUndefinedPixels = rowsWithUndefinedPixelsSpan[y];
                 if (rowHasUndefinedPixels)
                 {
                     // Slow path with undefined pixels.
                     var yMulWidth = y * width;
-                    int rowStartIdx = yMulWidth * 3;
-                    for (int x = 0; x < width; x++)
+                    var rowStartIdx = yMulWidth * 3;
+                    for (var x = 0; x < width; x++)
                     {
-                        int idx = rowStartIdx + (x * 3);
+                        var idx = rowStartIdx + (x * 3);
                         if (undefinedPixelsSpan[yMulWidth + x])
                         {
                             switch (this.options.RleSkippedPixelHandling)
@@ -427,10 +427,10 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 else
                 {
                     // Fast path without any undefined pixels.
-                    int rowStartIdx = y * width * 3;
-                    for (int x = 0; x < width; x++)
+                    var rowStartIdx = y * width * 3;
+                    for (var x = 0; x < width; x++)
                     {
-                        int idx = rowStartIdx + (x * 3);
+                        var idx = rowStartIdx + (x * 3);
                         color.FromBgr24(Unsafe.As<byte, Bgr24>(ref bufferSpan[idx]));
                         pixelRow[x] = color;
                     }
@@ -454,7 +454,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void UncompressRle4(int w, Span<byte> buffer, Span<bool> undefinedPixels, Span<bool> rowsWithUndefinedPixels)
     {
         Span<byte> cmd = stackalloc byte[2];
-        int count = 0;
+        var count = 0;
 
         while (count < buffer.Length)
         {
@@ -468,7 +468,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 switch (cmd[1])
                 {
                     case RleEndOfBitmap:
-                        int skipEoB = buffer.Length - count;
+                        var skipEoB = buffer.Length - count;
                         RleSkipEndOfBitmap(count, w, skipEoB, undefinedPixels, rowsWithUndefinedPixels);
 
                         return;
@@ -479,8 +479,8 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                         break;
 
                     case RleDelta:
-                        int dx = this.stream.ReadByte();
-                        int dy = this.stream.ReadByte();
+                        var dx = this.stream.ReadByte();
+                        var dy = this.stream.ReadByte();
                         count += RleSkipDelta(count, w, dx, dy, undefinedPixels, rowsWithUndefinedPixels);
 
                         break;
@@ -489,31 +489,31 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                         // If the second byte > 2, we are in 'absolute mode'.
                         // The second byte contains the number of color indexes that follow.
                         int max = cmd[1];
-                        int bytesToRead = (max + 1) / 2;
+                        var bytesToRead = (max + 1) / 2;
 
                         var run = new byte[bytesToRead];
 
                         this.stream.ReadExactly(run, 0, run.Length);
 
-                        int idx = 0;
-                        for (int i = 0; i < max; i++)
+                        var idx = 0;
+                        for (var i = 0; i < max; i++)
                         {
-                            byte twoPixels = run[idx];
+                            var twoPixels = run[idx];
                             if (i % 2 == 0)
                             {
-                                byte leftPixel = (byte)((twoPixels >> 4) & 0xF);
+                                var leftPixel = (byte)((twoPixels >> 4) & 0xF);
                                 buffer[count++] = leftPixel;
                             }
                             else
                             {
-                                byte rightPixel = (byte)(twoPixels & 0xF);
+                                var rightPixel = (byte)(twoPixels & 0xF);
                                 buffer[count++] = rightPixel;
                                 idx++;
                             }
                         }
 
                         // Absolute mode data is aligned to two-byte word-boundary.
-                        int padding = bytesToRead & 1;
+                        var padding = bytesToRead & 1;
 
                         this.stream.Skip(padding);
 
@@ -525,11 +525,11 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 int max = cmd[0];
 
                 // The second byte contains two color indexes, one in its high-order 4 bits and one in its low-order 4 bits.
-                byte twoPixels = cmd[1];
-                byte rightPixel = (byte)(twoPixels & 0xF);
-                byte leftPixel = (byte)((twoPixels >> 4) & 0xF);
+                var twoPixels = cmd[1];
+                var rightPixel = (byte)(twoPixels & 0xF);
+                var leftPixel = (byte)((twoPixels >> 4) & 0xF);
 
-                for (int idx = 0; idx < max; idx++)
+                for (var idx = 0; idx < max; idx++)
                 {
                     if (idx % 2 == 0)
                     {
@@ -561,7 +561,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void UncompressRle8(int w, Span<byte> buffer, Span<bool> undefinedPixels, Span<bool> rowsWithUndefinedPixels)
     {
         Span<byte> cmd = stackalloc byte[2];
-        int count = 0;
+        var count = 0;
 
         while (count < buffer.Length)
         {
@@ -575,7 +575,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 switch (cmd[1])
                 {
                     case RleEndOfBitmap:
-                        int skipEoB = buffer.Length - count;
+                        var skipEoB = buffer.Length - count;
                         RleSkipEndOfBitmap(count, w, skipEoB, undefinedPixels, rowsWithUndefinedPixels);
 
                         return;
@@ -586,8 +586,8 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                         break;
 
                     case RleDelta:
-                        int dx = this.stream.ReadByte();
-                        int dy = this.stream.ReadByte();
+                        var dx = this.stream.ReadByte();
+                        var dy = this.stream.ReadByte();
                         count += RleSkipDelta(count, w, dx, dy, undefinedPixels, rowsWithUndefinedPixels);
 
                         break;
@@ -606,7 +606,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                         count += run.Length;
 
                         // Absolute mode data is aligned to two-byte word-boundary.
-                        int padding = length & 1;
+                        var padding = length & 1;
 
                         this.stream.Skip(padding);
 
@@ -615,8 +615,8 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
             }
             else
             {
-                int max = count + cmd[0]; // as we start at the current count in the following loop, max is count + cmd[0]
-                byte colorIdx = cmd[1]; // store the value to avoid the repeated indexer access inside the loop.
+                var max = count + cmd[0]; // as we start at the current count in the following loop, max is count + cmd[0]
+                var colorIdx = cmd[1]; // store the value to avoid the repeated indexer access inside the loop.
 
                 for (; count < max; count++)
                 {
@@ -640,7 +640,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void UncompressRle24(int w, Span<byte> buffer, Span<bool> undefinedPixels, Span<bool> rowsWithUndefinedPixels)
     {
         Span<byte> cmd = stackalloc byte[2];
-        int uncompressedPixels = 0;
+        var uncompressedPixels = 0;
 
         while (uncompressedPixels < buffer.Length)
         {
@@ -654,7 +654,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 switch (cmd[1])
                 {
                     case RleEndOfBitmap:
-                        int skipEoB = (buffer.Length - (uncompressedPixels * 3)) / 3;
+                        var skipEoB = (buffer.Length - (uncompressedPixels * 3)) / 3;
                         RleSkipEndOfBitmap(uncompressedPixels, w, skipEoB, undefinedPixels, rowsWithUndefinedPixels);
 
                         return;
@@ -665,8 +665,8 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                         break;
 
                     case RleDelta:
-                        int dx = this.stream.ReadByte();
-                        int dy = this.stream.ReadByte();
+                        var dx = this.stream.ReadByte();
+                        var dy = this.stream.ReadByte();
                         uncompressedPixels += RleSkipDelta(uncompressedPixels, w, dx, dy, undefinedPixels, rowsWithUndefinedPixels);
 
                         break;
@@ -685,7 +685,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                         uncompressedPixels += length;
 
                         // Absolute mode data is aligned to two-byte word-boundary.
-                        int padding = run.Length & 1;
+                        var padding = run.Length & 1;
 
                         this.stream.Skip(padding);
 
@@ -694,12 +694,12 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
             }
             else
             {
-                int max = uncompressedPixels + cmd[0];
-                byte blueIdx = cmd[1];
-                byte greenIdx = (byte)this.stream.ReadByte();
-                byte redIdx = (byte)this.stream.ReadByte();
+                var max = uncompressedPixels + cmd[0];
+                var blueIdx = cmd[1];
+                var greenIdx = (byte)this.stream.ReadByte();
+                var redIdx = (byte)this.stream.ReadByte();
 
-                int bufferIdx = uncompressedPixels * 3;
+                var bufferIdx = uncompressedPixels * 3;
                 for (; uncompressedPixels < max; uncompressedPixels++)
                 {
                     buffer[bufferIdx++] = blueIdx;
@@ -725,15 +725,15 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         Span<bool> undefinedPixels,
         Span<bool> rowsWithUndefinedPixels)
     {
-        for (int i = count; i < count + skipPixelCount; i++)
+        for (var i = count; i < count + skipPixelCount; i++)
         {
             undefinedPixels[i] = true;
         }
 
-        int skippedRowIdx = count / w;
-        int skippedRows = (skipPixelCount / w) - 1;
-        int lastSkippedRow = Math.Min(skippedRowIdx + skippedRows, rowsWithUndefinedPixels.Length - 1);
-        for (int i = skippedRowIdx; i <= lastSkippedRow; i++)
+        var skippedRowIdx = count / w;
+        var skippedRows = (skipPixelCount / w) - 1;
+        var lastSkippedRow = Math.Min(skippedRowIdx + skippedRows, rowsWithUndefinedPixels.Length - 1);
+        for (var i = skippedRowIdx; i <= lastSkippedRow; i++)
         {
             rowsWithUndefinedPixels[i] = true;
         }
@@ -750,11 +750,11 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private static int RleSkipEndOfLine(int count, int w, Span<bool> undefinedPixels, Span<bool> rowsWithUndefinedPixels)
     {
         rowsWithUndefinedPixels[count / w] = true;
-        int remainingPixelsInRow = count % w;
+        var remainingPixelsInRow = count % w;
         if (remainingPixelsInRow > 0)
         {
-            int skipEoL = w - remainingPixelsInRow;
-            for (int i = count; i < count + skipEoL; i++)
+            var skipEoL = w - remainingPixelsInRow;
+            for (var i = count; i < count + skipEoL; i++)
             {
                 undefinedPixels[i] = true;
             }
@@ -783,15 +783,15 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         Span<bool> undefinedPixels,
         Span<bool> rowsWithUndefinedPixels)
     {
-        int skipDelta = (w * dy) + dx;
-        for (int i = count; i < count + skipDelta; i++)
+        var skipDelta = (w * dy) + dx;
+        for (var i = count; i < count + skipDelta; i++)
         {
             undefinedPixels[i] = true;
         }
 
-        int skippedRowIdx = count / w;
-        int lastSkippedRow = Math.Min(skippedRowIdx + dy, rowsWithUndefinedPixels.Length - 1);
-        for (int i = skippedRowIdx; i <= lastSkippedRow; i++)
+        var skippedRowIdx = count / w;
+        var lastSkippedRow = Math.Min(skippedRowIdx + dy, rowsWithUndefinedPixels.Length - 1);
+        for (var i = skippedRowIdx; i <= lastSkippedRow; i++)
         {
             rowsWithUndefinedPixels[i] = true;
         }
@@ -815,37 +815,37 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // Pixels per byte (bits per pixel).
-        int ppb = 8 / bitsPerPixel;
+        var ppb = 8 / bitsPerPixel;
 
-        int arrayWidth = (width + ppb - 1) / ppb;
+        var arrayWidth = (width + ppb - 1) / ppb;
 
         // Bit mask
-        int mask = 0xFF >> (8 - bitsPerPixel);
+        var mask = 0xFF >> (8 - bitsPerPixel);
 
         // Rows are aligned on 4 byte boundaries.
-        int padding = arrayWidth % 4;
+        var padding = arrayWidth % 4;
         if (padding != 0)
         {
             padding = 4 - padding;
         }
 
-        using IMemoryOwner<byte> row = this.memoryAllocator.Allocate<byte>(arrayWidth + padding, AllocationOptions.Clean);
+        using var row = this.memoryAllocator.Allocate<byte>(arrayWidth + padding, AllocationOptions.Clean);
         TPixel color = default;
-        Span<byte> rowSpan = row.GetSpan();
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            int newY = Invert(y, height, inverted);
+            var newY = Invert(y, height, inverted);
             this.stream.ReadExactly(rowSpan);
-            int offset = 0;
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(newY);
+            var offset = 0;
+            var pixelRow = pixels.DangerousGetRowSpan(newY);
 
-            for (int x = 0; x < arrayWidth; x++)
+            for (var x = 0; x < arrayWidth; x++)
             {
-                int colOffset = x * ppb;
+                var colOffset = x * ppb;
                 for (int shift = 0, newX = colOffset; shift < ppb && newX < width; shift++, newX++)
                 {
-                    int colorIndex = ((rowSpan[offset] >> (8 - bitsPerPixel - (shift * bitsPerPixel))) & mask) * bytesPerColorMapEntry;
+                    var colorIndex = ((rowSpan[offset] >> (8 - bitsPerPixel - (shift * bitsPerPixel))) & mask) * bytesPerColorMapEntry;
 
                     color.FromBgr24(Unsafe.As<byte, Bgr24>(ref colors[colorIndex]));
                     pixelRow[newX] = color;
@@ -870,32 +870,32 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void ReadRgb16<TPixel>(Buffer2D<TPixel> pixels, int width, int height, bool inverted, int redMask = DefaultRgb16RMask, int greenMask = DefaultRgb16GMask, int blueMask = DefaultRgb16BMask)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int padding = CalculatePadding(width, 2);
-        int stride = (width * 2) + padding;
+        var padding = CalculatePadding(width, 2);
+        var stride = (width * 2) + padding;
         TPixel color = default;
 
-        int rightShiftRedMask = CalculateRightShift((uint)redMask);
-        int rightShiftGreenMask = CalculateRightShift((uint)greenMask);
-        int rightShiftBlueMask = CalculateRightShift((uint)blueMask);
+        var rightShiftRedMask = CalculateRightShift((uint)redMask);
+        var rightShiftGreenMask = CalculateRightShift((uint)greenMask);
+        var rightShiftBlueMask = CalculateRightShift((uint)blueMask);
 
         // Each color channel contains either 5 or 6 Bits values.
-        int redMaskBits = CountBits((uint)redMask);
-        int greenMaskBits = CountBits((uint)greenMask);
-        int blueMaskBits = CountBits((uint)blueMask);
+        var redMaskBits = CountBits((uint)redMask);
+        var greenMaskBits = CountBits((uint)greenMask);
+        var blueMaskBits = CountBits((uint)blueMask);
 
-        using IMemoryOwner<byte> buffer = this.memoryAllocator.Allocate<byte>(stride);
-        Span<byte> bufferSpan = buffer.GetSpan();
+        using var buffer = this.memoryAllocator.Allocate<byte>(stride);
+        var bufferSpan = buffer.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             this.stream.ReadExactly(bufferSpan);
-            int newY = Invert(y, height, inverted);
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(newY);
+            var newY = Invert(y, height, inverted);
+            var pixelRow = pixels.DangerousGetRowSpan(newY);
 
-            int offset = 0;
-            for (int x = 0; x < width; x++)
+            var offset = 0;
+            for (var x = 0; x < width; x++)
             {
-                short temp = BinaryPrimitives.ReadInt16LittleEndian(bufferSpan.Slice(offset));
+                var temp = BinaryPrimitives.ReadInt16LittleEndian(bufferSpan.Slice(offset));
 
                 // Rescale values, so the values range from 0 to 255.
                 int r = (redMaskBits == 5) ? GetBytesFrom5BitValue((temp & redMask) >> rightShiftRedMask) : GetBytesFrom6BitValue((temp & redMask) >> rightShiftRedMask);
@@ -937,15 +937,15 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void ReadRgb24<TPixel>(Buffer2D<TPixel> pixels, int width, int height, bool inverted)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int padding = CalculatePadding(width, 3);
-        using IMemoryOwner<byte> row = this.memoryAllocator.AllocatePaddedPixelRowBuffer(width, 3, padding);
-        Span<byte> rowSpan = row.GetSpan();
+        var padding = CalculatePadding(width, 3);
+        using var row = this.memoryAllocator.AllocatePaddedPixelRowBuffer(width, 3, padding);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             this.stream.ReadExactly(rowSpan);
-            int newY = Invert(y, height, inverted);
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(newY);
+            var newY = Invert(y, height, inverted);
+            var pixelSpan = pixels.DangerousGetRowSpan(newY);
             PixelOperations<TPixel>.Instance.FromBgr24Bytes(
                 this.Configuration,
                 rowSpan,
@@ -965,15 +965,15 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void ReadRgb32Fast<TPixel>(Buffer2D<TPixel> pixels, int width, int height, bool inverted)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int padding = CalculatePadding(width, 4);
-        using IMemoryOwner<byte> row = this.memoryAllocator.AllocatePaddedPixelRowBuffer(width, 4, padding);
-        Span<byte> rowSpan = row.GetSpan();
+        var padding = CalculatePadding(width, 4);
+        using var row = this.memoryAllocator.AllocatePaddedPixelRowBuffer(width, 4, padding);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             this.stream.ReadExactly(rowSpan);
-            int newY = Invert(y, height, inverted);
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(newY);
+            var newY = Invert(y, height, inverted);
+            var pixelSpan = pixels.DangerousGetRowSpan(newY);
             PixelOperations<TPixel>.Instance.FromBgra32Bytes(
                 this.Configuration,
                 rowSpan,
@@ -994,18 +994,18 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void ReadRgb32Slow<TPixel>(Buffer2D<TPixel> pixels, int width, int height, bool inverted)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int padding = CalculatePadding(width, 4);
-        using IMemoryOwner<byte> row = this.memoryAllocator.AllocatePaddedPixelRowBuffer(width, 4, padding);
-        using IMemoryOwner<Bgra32> bgraRow = this.memoryAllocator.Allocate<Bgra32>(width);
-        Span<byte> rowSpan = row.GetSpan();
-        Span<Bgra32> bgraRowSpan = bgraRow.GetSpan();
-        long currentPosition = this.stream.Position;
-        bool hasAlpha = false;
+        var padding = CalculatePadding(width, 4);
+        using var row = this.memoryAllocator.AllocatePaddedPixelRowBuffer(width, 4, padding);
+        using var bgraRow = this.memoryAllocator.Allocate<Bgra32>(width);
+        var rowSpan = row.GetSpan();
+        var bgraRowSpan = bgraRow.GetSpan();
+        var currentPosition = this.stream.Position;
+        var hasAlpha = false;
 
         // Loop though the rows checking each pixel. We start by assuming it's
         // an BGR0 image. If we hit a non-zero alpha value, then we know it's
         // actually a BGRA image, and change tactics accordingly.
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             this.stream.ReadExactly(rowSpan);
 
@@ -1016,9 +1016,9 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 width);
 
             // Check each pixel in the row to see if it has an alpha value.
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                Bgra32 bgra = bgraRowSpan[x];
+                var bgra = bgraRowSpan[x];
                 if (bgra.A > 0)
                 {
                     hasAlpha = true;
@@ -1038,12 +1038,12 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         // Process the pixels in bulk taking the raw alpha component value.
         if (hasAlpha)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
                 this.stream.ReadExactly(rowSpan);
 
-                int newY = Invert(y, height, inverted);
-                Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(newY);
+                var newY = Invert(y, height, inverted);
+                var pixelSpan = pixels.DangerousGetRowSpan(newY);
 
                 PixelOperations<TPixel>.Instance.FromBgra32Bytes(
                     this.Configuration,
@@ -1056,7 +1056,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         }
 
         // Slow path. We need to set each alpha component value to fully opaque.
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             this.stream.ReadExactly(rowSpan);
             PixelOperations<Bgra32>.Instance.FromBgra32Bytes(
@@ -1065,14 +1065,14 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 bgraRowSpan,
                 width);
 
-            int newY = Invert(y, height, inverted);
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(newY);
+            var newY = Invert(y, height, inverted);
+            var pixelSpan = pixels.DangerousGetRowSpan(newY);
 
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                Bgra32 bgra = bgraRowSpan[x];
+                var bgra = bgraRowSpan[x];
                 bgra.A = byte.MaxValue;
-                ref TPixel pixel = ref pixelSpan[x];
+                ref var pixel = ref pixelSpan[x];
                 pixel.FromBgra32(bgra);
             }
         }
@@ -1094,46 +1094,46 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         TPixel color = default;
-        int padding = CalculatePadding(width, 4);
-        int stride = (width * 4) + padding;
+        var padding = CalculatePadding(width, 4);
+        var stride = (width * 4) + padding;
 
-        int rightShiftRedMask = CalculateRightShift((uint)redMask);
-        int rightShiftGreenMask = CalculateRightShift((uint)greenMask);
-        int rightShiftBlueMask = CalculateRightShift((uint)blueMask);
-        int rightShiftAlphaMask = CalculateRightShift((uint)alphaMask);
+        var rightShiftRedMask = CalculateRightShift((uint)redMask);
+        var rightShiftGreenMask = CalculateRightShift((uint)greenMask);
+        var rightShiftBlueMask = CalculateRightShift((uint)blueMask);
+        var rightShiftAlphaMask = CalculateRightShift((uint)alphaMask);
 
-        int bitsRedMask = CountBits((uint)redMask);
-        int bitsGreenMask = CountBits((uint)greenMask);
-        int bitsBlueMask = CountBits((uint)blueMask);
-        int bitsAlphaMask = CountBits((uint)alphaMask);
-        float invMaxValueRed = 1.0f / (0xFFFFFFFF >> (32 - bitsRedMask));
-        float invMaxValueGreen = 1.0f / (0xFFFFFFFF >> (32 - bitsGreenMask));
-        float invMaxValueBlue = 1.0f / (0xFFFFFFFF >> (32 - bitsBlueMask));
-        uint maxValueAlpha = 0xFFFFFFFF >> (32 - bitsAlphaMask);
-        float invMaxValueAlpha = 1.0f / maxValueAlpha;
+        var bitsRedMask = CountBits((uint)redMask);
+        var bitsGreenMask = CountBits((uint)greenMask);
+        var bitsBlueMask = CountBits((uint)blueMask);
+        var bitsAlphaMask = CountBits((uint)alphaMask);
+        var invMaxValueRed = 1.0f / (0xFFFFFFFF >> (32 - bitsRedMask));
+        var invMaxValueGreen = 1.0f / (0xFFFFFFFF >> (32 - bitsGreenMask));
+        var invMaxValueBlue = 1.0f / (0xFFFFFFFF >> (32 - bitsBlueMask));
+        var maxValueAlpha = 0xFFFFFFFF >> (32 - bitsAlphaMask);
+        var invMaxValueAlpha = 1.0f / maxValueAlpha;
 
-        bool unusualBitMask = bitsRedMask > 8 || bitsGreenMask > 8 || bitsBlueMask > 8 || invMaxValueAlpha > 8;
+        var unusualBitMask = bitsRedMask > 8 || bitsGreenMask > 8 || bitsBlueMask > 8 || invMaxValueAlpha > 8;
 
-        using IMemoryOwner<byte> buffer = this.memoryAllocator.Allocate<byte>(stride);
-        Span<byte> bufferSpan = buffer.GetSpan();
+        using var buffer = this.memoryAllocator.Allocate<byte>(stride);
+        var bufferSpan = buffer.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             this.stream.ReadExactly(bufferSpan);
-            int newY = Invert(y, height, inverted);
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(newY);
+            var newY = Invert(y, height, inverted);
+            var pixelRow = pixels.DangerousGetRowSpan(newY);
 
-            int offset = 0;
-            for (int x = 0; x < width; x++)
+            var offset = 0;
+            for (var x = 0; x < width; x++)
             {
-                uint temp = BinaryPrimitives.ReadUInt32LittleEndian(bufferSpan.Slice(offset));
+                var temp = BinaryPrimitives.ReadUInt32LittleEndian(bufferSpan.Slice(offset));
 
                 if (unusualBitMask)
                 {
-                    uint r = (uint)(temp & redMask) >> rightShiftRedMask;
-                    uint g = (uint)(temp & greenMask) >> rightShiftGreenMask;
-                    uint b = (uint)(temp & blueMask) >> rightShiftBlueMask;
-                    float alpha = alphaMask != 0 ? invMaxValueAlpha * ((uint)(temp & alphaMask) >> rightShiftAlphaMask) : 1.0f;
+                    var r = (uint)(temp & redMask) >> rightShiftRedMask;
+                    var g = (uint)(temp & greenMask) >> rightShiftGreenMask;
+                    var b = (uint)(temp & blueMask) >> rightShiftBlueMask;
+                    var alpha = alphaMask != 0 ? invMaxValueAlpha * ((uint)(temp & alphaMask) >> rightShiftAlphaMask) : 1.0f;
                     var vector4 = new Vector4(
                         r * invMaxValueRed,
                         g * invMaxValueGreen,
@@ -1143,10 +1143,10 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 }
                 else
                 {
-                    byte r = (byte)((temp & redMask) >> rightShiftRedMask);
-                    byte g = (byte)((temp & greenMask) >> rightShiftGreenMask);
-                    byte b = (byte)((temp & blueMask) >> rightShiftBlueMask);
-                    byte a = alphaMask != 0 ? (byte)((temp & alphaMask) >> rightShiftAlphaMask) : (byte)255;
+                    var r = (byte)((temp & redMask) >> rightShiftRedMask);
+                    var g = (byte)((temp & greenMask) >> rightShiftGreenMask);
+                    var b = (byte)((temp & blueMask) >> rightShiftBlueMask);
+                    var a = alphaMask != 0 ? (byte)((temp & alphaMask) >> rightShiftAlphaMask) : (byte)255;
                     color.FromRgba32(new Rgba32(r, g, b, a));
                 }
 
@@ -1163,7 +1163,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     /// <returns>Number of bits to shift right.</returns>
     private static int CalculateRightShift(uint n)
     {
-        int count = 0;
+        var count = 0;
         while (n > 0)
         {
             if ((1 & n) == 0)
@@ -1188,7 +1188,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     /// <returns>The none zero bits.</returns>
     private static int CountBits(uint n)
     {
-        int count = 0;
+        var count = 0;
         while (n != 0)
         {
             count++;
@@ -1208,7 +1208,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         // Read the header size.
         this.stream.Read(buffer, 0, BmpInfoHeader.HeaderSizeSize);
 
-        int headerSize = BinaryPrimitives.ReadInt32LittleEndian(buffer);
+        var headerSize = BinaryPrimitives.ReadInt32LittleEndian(buffer);
         if (headerSize < BmpInfoHeader.CoreSize || headerSize > BmpInfoHeader.MaxHeaderSize)
         {
             BmpThrowHelper.ThrowNotSupportedException($"ImageSharp does not support this BMP file. HeaderSize is '{headerSize}'.");
@@ -1217,7 +1217,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         // Read the rest of the header.
         this.stream.Read(buffer, BmpInfoHeader.HeaderSizeSize, headerSize - BmpInfoHeader.HeaderSizeSize);
 
-        BmpInfoHeaderType infoHeaderType = BmpInfoHeaderType.WinVersion2;
+        var infoHeaderType = BmpInfoHeaderType.WinVersion2;
         if (headerSize == BmpInfoHeader.CoreSize)
         {
             // 12 bytes
@@ -1242,7 +1242,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
             {
                 var bitfieldsBuffer = new byte[12];
                 this.stream.ReadExactly(bitfieldsBuffer, 0, 12);
-                Span<byte> data = bitfieldsBuffer.AsSpan();
+                var data = bitfieldsBuffer.AsSpan();
                 this.infoHeader.RedMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(0, 4));
                 this.infoHeader.GreenMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
                 this.infoHeader.BlueMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(8, 4));
@@ -1251,7 +1251,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
             {
                 var bitfieldsBuffer = new byte[16];
                 this.stream.ReadExactly(bitfieldsBuffer, 0, 16);
-                Span<byte> data = bitfieldsBuffer.AsSpan();
+                var data = bitfieldsBuffer.AsSpan();
                 this.infoHeader.RedMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(0, 4));
                 this.infoHeader.GreenMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
                 this.infoHeader.BlueMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(8, 4));
@@ -1306,7 +1306,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
 
         this.metadata = meta;
 
-        short bitsPerPixel = this.infoHeader.BitsPerPixel;
+        var bitsPerPixel = this.infoHeader.BitsPerPixel;
         this.bmpMetadata = this.metadata.GetBmpMetadata();
         this.bmpMetadata.InfoHeaderType = infoHeaderType;
         this.bmpMetadata.BitsPerPixel = (BmpBitsPerPixel)bitsPerPixel;
@@ -1320,7 +1320,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         Span<byte> buffer = stackalloc byte[BmpFileHeader.Size];
         this.stream.Read(buffer, 0, BmpFileHeader.Size);
 
-        short fileTypeMarker = BinaryPrimitives.ReadInt16LittleEndian(buffer);
+        var fileTypeMarker = BinaryPrimitives.ReadInt16LittleEndian(buffer);
         switch (fileTypeMarker)
         {
             case BmpConstants.TypeMarkers.Bitmap:
@@ -1371,8 +1371,8 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
             this.infoHeader.Height = -this.infoHeader.Height;
         }
 
-        int bytesPerColorMapEntry = 4;
-        int colorMapSizeBytes = -1;
+        var bytesPerColorMapEntry = 4;
+        var colorMapSizeBytes = -1;
         if (this.infoHeader.ClrUsed == 0)
         {
             if (this.infoHeader.BitsPerPixel == 1
@@ -1383,7 +1383,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
                 {
                     case BmpFileMarkerType.Bitmap:
                         colorMapSizeBytes = this.fileHeader.Offset - BmpFileHeader.Size - this.infoHeader.HeaderSize;
-                        int colorCountForBitDepth = ColorNumerics.GetColorCountForBitDepth(this.infoHeader.BitsPerPixel);
+                        var colorCountForBitDepth = ColorNumerics.GetColorCountForBitDepth(this.infoHeader.BitsPerPixel);
                         bytesPerColorMapEntry = colorMapSizeBytes / colorCountForBitDepth;
 
                         // Edge case for less-than-full-sized palette: bytesPerColorMapEntry should be at least 3.
@@ -1426,7 +1426,7 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
 
         this.infoHeader.VerifyDimensions();
 
-        int skipAmount = this.fileHeader.Offset - (int)this.stream.Position;
+        var skipAmount = this.fileHeader.Offset - (int)this.stream.Position;
         if ((skipAmount + (int)this.stream.Position) > this.stream.Length)
         {
             BmpThrowHelper.ThrowInvalidImageContentException("Invalid fileheader offset found. Offset is greater than the stream length.");

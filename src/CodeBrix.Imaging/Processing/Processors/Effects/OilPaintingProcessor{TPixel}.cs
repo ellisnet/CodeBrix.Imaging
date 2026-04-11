@@ -37,13 +37,13 @@ internal class OilPaintingProcessor<TPixel> : ImageProcessor<TPixel>
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        int brushSize = this.definition.BrushSize;
+        var brushSize = this.definition.BrushSize;
         if (brushSize <= 0 || brushSize > source.Height || brushSize > source.Width)
         {
             throw new ArgumentOutOfRangeException(nameof(brushSize));
         }
 
-        using Buffer2D<TPixel> targetPixels = this.Configuration.MemoryAllocator.Allocate2D<TPixel>(source.Size());
+        using var targetPixels = this.Configuration.MemoryAllocator.Allocate2D<TPixel>(source.Size());
 
         source.CopyTo(targetPixels);
 
@@ -89,8 +89,8 @@ internal class OilPaintingProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(in RowInterval rows)
         {
-            int maxY = this.bounds.Bottom - 1;
-            int maxX = this.bounds.Right - 1;
+            var maxY = this.bounds.Bottom - 1;
+            var maxX = this.bounds.Right - 1;
 
             /* Allocate the two temporary Vector4 buffers, one for the source row and one for the target row.
              * The ParallelHelper.IterateRowsWithTempBuffers overload is not used in this case because
@@ -102,58 +102,58 @@ internal class OilPaintingProcessor<TPixel> : ImageProcessor<TPixel>
              * to create the target bins for all the color channels being processed.
              * This buffer is only rented once outside of the main processing loop, and its contents
              * are cleared for each loop iteration, to avoid the repeated allocation for each processed pixel. */
-            using IMemoryOwner<Vector4> sourceRowBuffer = this.configuration.MemoryAllocator.Allocate<Vector4>(this.source.Width);
-            using IMemoryOwner<Vector4> targetRowBuffer = this.configuration.MemoryAllocator.Allocate<Vector4>(this.source.Width);
-            using IMemoryOwner<float> bins = this.configuration.MemoryAllocator.Allocate<float>(this.levels * 4);
+            using var sourceRowBuffer = this.configuration.MemoryAllocator.Allocate<Vector4>(this.source.Width);
+            using var targetRowBuffer = this.configuration.MemoryAllocator.Allocate<Vector4>(this.source.Width);
+            using var bins = this.configuration.MemoryAllocator.Allocate<float>(this.levels * 4);
 
-            Span<Vector4> sourceRowVector4Span = sourceRowBuffer.Memory.Span;
-            Span<Vector4> sourceRowAreaVector4Span = sourceRowVector4Span.Slice(this.bounds.X, this.bounds.Width);
+            var sourceRowVector4Span = sourceRowBuffer.Memory.Span;
+            var sourceRowAreaVector4Span = sourceRowVector4Span.Slice(this.bounds.X, this.bounds.Width);
 
-            Span<Vector4> targetRowVector4Span = targetRowBuffer.Memory.Span;
-            Span<Vector4> targetRowAreaVector4Span = targetRowVector4Span.Slice(this.bounds.X, this.bounds.Width);
+            var targetRowVector4Span = targetRowBuffer.Memory.Span;
+            var targetRowAreaVector4Span = targetRowVector4Span.Slice(this.bounds.X, this.bounds.Width);
 
-            ref float binsRef = ref bins.GetReference();
-            ref int intensityBinRef = ref Unsafe.As<float, int>(ref binsRef);
-            ref float redBinRef = ref Unsafe.Add(ref binsRef, this.levels);
-            ref float blueBinRef = ref Unsafe.Add(ref redBinRef, this.levels);
-            ref float greenBinRef = ref Unsafe.Add(ref blueBinRef, this.levels);
+            ref var binsRef = ref bins.GetReference();
+            ref var intensityBinRef = ref Unsafe.As<float, int>(ref binsRef);
+            ref var redBinRef = ref Unsafe.Add(ref binsRef, this.levels);
+            ref var blueBinRef = ref Unsafe.Add(ref redBinRef, this.levels);
+            ref var greenBinRef = ref Unsafe.Add(ref blueBinRef, this.levels);
 
-            for (int y = rows.Min; y < rows.Max; y++)
+            for (var y = rows.Min; y < rows.Max; y++)
             {
-                Span<TPixel> sourceRowPixelSpan = this.source.DangerousGetRowSpan(y);
-                Span<TPixel> sourceRowAreaPixelSpan = sourceRowPixelSpan.Slice(this.bounds.X, this.bounds.Width);
+                var sourceRowPixelSpan = this.source.DangerousGetRowSpan(y);
+                var sourceRowAreaPixelSpan = sourceRowPixelSpan.Slice(this.bounds.X, this.bounds.Width);
 
                 PixelOperations<TPixel>.Instance.ToVector4(this.configuration, sourceRowAreaPixelSpan, sourceRowAreaVector4Span);
 
-                for (int x = this.bounds.X; x < this.bounds.Right; x++)
+                for (var x = this.bounds.X; x < this.bounds.Right; x++)
                 {
-                    int maxIntensity = 0;
-                    int maxIndex = 0;
+                    var maxIntensity = 0;
+                    var maxIndex = 0;
 
                     // Clear the current shared buffer before processing each target pixel
                     bins.Memory.Span.Clear();
 
-                    for (int fy = 0; fy <= this.radius; fy++)
+                    for (var fy = 0; fy <= this.radius; fy++)
                     {
-                        int fyr = fy - this.radius;
-                        int offsetY = y + fyr;
+                        var fyr = fy - this.radius;
+                        var offsetY = y + fyr;
                         offsetY = Numerics.Clamp(offsetY, 0, maxY);
 
-                        Span<TPixel> sourceOffsetRow = this.source.DangerousGetRowSpan(offsetY);
+                        var sourceOffsetRow = this.source.DangerousGetRowSpan(offsetY);
 
-                        for (int fx = 0; fx <= this.radius; fx++)
+                        for (var fx = 0; fx <= this.radius; fx++)
                         {
-                            int fxr = fx - this.radius;
-                            int offsetX = x + fxr;
+                            var fxr = fx - this.radius;
+                            var offsetX = x + fxr;
                             offsetX = Numerics.Clamp(offsetX, 0, maxX);
 
                             var vector = sourceOffsetRow[offsetX].ToVector4();
 
-                            float sourceRed = vector.X;
-                            float sourceBlue = vector.Z;
-                            float sourceGreen = vector.Y;
+                            var sourceRed = vector.X;
+                            var sourceBlue = vector.Z;
+                            var sourceGreen = vector.Y;
 
-                            int currentIntensity = (int)MathF.Round((sourceBlue + sourceGreen + sourceRed) / 3F * (this.levels - 1));
+                            var currentIntensity = (int)MathF.Round((sourceBlue + sourceGreen + sourceRed) / 3F * (this.levels - 1));
 
                             Unsafe.Add(ref intensityBinRef, currentIntensity)++;
                             Unsafe.Add(ref redBinRef, currentIntensity) += sourceRed;
@@ -167,16 +167,16 @@ internal class OilPaintingProcessor<TPixel> : ImageProcessor<TPixel>
                             }
                         }
 
-                        float red = MathF.Abs(Unsafe.Add(ref redBinRef, maxIndex) / maxIntensity);
-                        float blue = MathF.Abs(Unsafe.Add(ref blueBinRef, maxIndex) / maxIntensity);
-                        float green = MathF.Abs(Unsafe.Add(ref greenBinRef, maxIndex) / maxIntensity);
-                        float alpha = sourceRowVector4Span[x].W;
+                        var red = MathF.Abs(Unsafe.Add(ref redBinRef, maxIndex) / maxIntensity);
+                        var blue = MathF.Abs(Unsafe.Add(ref blueBinRef, maxIndex) / maxIntensity);
+                        var green = MathF.Abs(Unsafe.Add(ref greenBinRef, maxIndex) / maxIntensity);
+                        var alpha = sourceRowVector4Span[x].W;
 
                         targetRowVector4Span[x] = new Vector4(red, green, blue, alpha);
                     }
                 }
 
-                Span<TPixel> targetRowAreaPixelSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X, this.bounds.Width);
+                var targetRowAreaPixelSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(this.bounds.X, this.bounds.Width);
 
                 PixelOperations<TPixel>.Instance.FromVector4Destructive(this.configuration, targetRowAreaVector4Span, targetRowAreaPixelSpan);
             }

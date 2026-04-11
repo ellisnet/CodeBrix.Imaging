@@ -72,8 +72,8 @@ internal class Vp8LBitReader : BitReaderBase
         this.Eos = false;
 
         ulong currentValue = 0;
-        System.Span<byte> dataSpan = this.Data.Memory.Span;
-        for (int i = 0; i < 8; i++)
+        var dataSpan = this.Data.Memory.Span;
+        for (var i = 0; i < 8; i++)
         {
             currentValue |= (ulong)dataSpan[i] << (8 * i);
         }
@@ -105,8 +105,8 @@ internal class Vp8LBitReader : BitReaderBase
         }
 
         ulong currentValue = 0;
-        System.Span<byte> dataSpan = this.Data.Memory.Span;
-        for (int i = 0; i < length; i++)
+        var dataSpan = this.Data.Memory.Span;
+        for (var i = 0; i < length; i++)
         {
             currentValue |= (ulong)dataSpan[i] << (8 * i);
         }
@@ -132,7 +132,7 @@ internal class Vp8LBitReader : BitReaderBase
 
         if (!this.Eos && nBits <= Vp8LMaxNumBitRead)
         {
-            ulong val = this.PrefetchBits() & BitMask[nBits];
+            var val = this.PrefetchBits() & BitMask[nBits];
             this.bitPos += nBits;
             this.ShiftBytes();
             return (uint)val;
@@ -148,7 +148,7 @@ internal class Vp8LBitReader : BitReaderBase
     [MethodImpl(InliningOptions.ShortMethod)]
     public bool ReadBit()
     {
-        uint bit = this.ReadValue(1);
+        var bit = this.ReadValue(1);
         return bit != 0;
     }
 
@@ -194,7 +194,7 @@ internal class Vp8LBitReader : BitReaderBase
     [MethodImpl(InliningOptions.ShortMethod)]
     private void ShiftBytes()
     {
-        System.Span<byte> dataSpan = this.Data.Memory.Span;
+        var dataSpan = this.Data.Memory.Span;
         while (this.bitPos >= 8 && this.pos < this.len)
         {
             this.value >>= 8;

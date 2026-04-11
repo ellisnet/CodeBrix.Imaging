@@ -37,7 +37,7 @@ internal partial class UniformUnmanagedMemoryPool
         {
             if (!this.pool.Return(this.handles))
             {
-                foreach (UnmanagedMemoryHandle handle in this.handles)
+                foreach (var handle in this.handles)
                 {
                     handle.Free();
                 }

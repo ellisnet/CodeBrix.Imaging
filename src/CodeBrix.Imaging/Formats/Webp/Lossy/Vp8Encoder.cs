@@ -128,10 +128,10 @@ internal class Vp8Encoder : IDisposable
             : method >= WebpEncodingMethod.Level3 ? Vp8RdLevel.RdOptBasic
             : Vp8RdLevel.RdOptNone;
 
-        int pixelCount = width * height;
+        var pixelCount = width * height;
         this.Mbw = (width + 15) >> 4;
         this.Mbh = (height + 15) >> 4;
-        int uvSize = ((width + 1) >> 1) * ((height + 1) >> 1);
+        var uvSize = ((width + 1) >> 1) * ((height + 1) >> 1);
         this.Y = this.memoryAllocator.Allocate<byte>(pixelCount);
         this.U = this.memoryAllocator.Allocate<byte>(uvSize);
         this.V = this.memoryAllocator.Allocate<byte>(uvSize);
@@ -142,24 +142,24 @@ internal class Vp8Encoder : IDisposable
         this.TopDerr = new sbyte[this.Mbw * 4];
 
         // TODO: make partition_limit configurable?
-        int limit = 100; // original code: limit = 100 - config->partition_limit;
+        var limit = 100; // original code: limit = 100 - config->partition_limit;
         this.maxI4HeaderBits =
             256 * 16 * 16 * limit * limit / (100 * 100);  // ... modulated with a quadratic curve.
 
         this.MbInfo = new Vp8MacroBlockInfo[this.Mbw * this.Mbh];
-        for (int i = 0; i < this.MbInfo.Length; i++)
+        for (var i = 0; i < this.MbInfo.Length; i++)
         {
             this.MbInfo[i] = new Vp8MacroBlockInfo();
         }
 
         this.SegmentInfos = new Vp8SegmentInfo[4];
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
             this.SegmentInfos[i] = new Vp8SegmentInfo();
         }
 
         this.FilterHeader = new Vp8FilterHeader();
-        int predSize = (((4 * this.Mbw) + 1) * ((4 * this.Mbh) + 1)) + this.PredsWidth + 1;
+        var predSize = (((4 * this.Mbw) + 1) * ((4 * this.Mbh) + 1)) + this.PredsWidth + 1;
         this.PredsWidth = (4 * this.Mbw) + 1;
         this.Proba = new Vp8EncProba();
         this.Preds = new byte[predSize + this.PredsWidth + this.Mbw];
@@ -296,21 +296,21 @@ internal class Vp8Encoder : IDisposable
     public void Encode<TPixel>(Image<TPixel> image, Stream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        int pixelCount = width * height;
-        Span<byte> y = this.Y.GetSpan();
-        Span<byte> u = this.U.GetSpan();
-        Span<byte> v = this.V.GetSpan();
-        bool hasAlpha = YuvConversion.ConvertRgbToYuv(image, this.configuration, this.memoryAllocator, y, u, v);
+        var width = image.Width;
+        var height = image.Height;
+        var pixelCount = width * height;
+        var y = this.Y.GetSpan();
+        var u = this.U.GetSpan();
+        var v = this.V.GetSpan();
+        var hasAlpha = YuvConversion.ConvertRgbToYuv(image, this.configuration, this.memoryAllocator, y, u, v);
 
-        int yStride = width;
-        int uvStride = (yStride + 1) >> 1;
+        var yStride = width;
+        var uvStride = (yStride + 1) >> 1;
 
         var it = new Vp8EncIterator(this.YTop, this.UvTop, this.Nz, this.MbInfo, this.Preds, this.TopDerr, this.Mbw, this.Mbh);
-        int[] alphas = new int[WebpConstants.MaxAlpha + 1];
+        var alphas = new int[WebpConstants.MaxAlpha + 1];
         this.alpha = this.MacroBlockAnalysis(width, height, it, y, u, v, yStride, uvStride, alphas, out this.uvAlpha);
-        int totalMb = this.Mbw * this.Mbw;
+        var totalMb = this.Mbw * this.Mbw;
         this.alpha /= totalMb;
         this.uvAlpha /= totalMb;
 
@@ -321,14 +321,14 @@ internal class Vp8Encoder : IDisposable
 
         // Initialize the bitwriter.
         int averageBytesPerMacroBlock = AverageBytesPerMb[this.BaseQuant >> 4];
-        int expectedSize = this.Mbw * this.Mbh * averageBytesPerMacroBlock;
+        var expectedSize = this.Mbw * this.Mbh * averageBytesPerMacroBlock;
         this.bitWriter = new Vp8BitWriter(expectedSize, this);
 
         // Extract and encode alpha channel data, if present.
-        int alphaDataSize = 0;
-        bool alphaCompressionSucceeded = false;
+        var alphaDataSize = 0;
+        var alphaCompressionSucceeded = false;
         using var alphaEncoder = new AlphaEncoder();
-        Span<byte> alphaData = Span<byte>.Empty;
+        var alphaData = Span<byte>.Empty;
         IMemoryOwner<byte> encodedAlphaData = null;
         try
         {
@@ -352,7 +352,7 @@ internal class Vp8Encoder : IDisposable
             var residual = new Vp8Residual();
             do
             {
-                bool dontUseSkip = !this.Proba.UseSkipProba;
+                var dontUseSkip = !this.Proba.UseSkipProba;
                 info.Clear();
                 it.Import(y, u, v, yStride, uvStride, width, height, false);
 
@@ -375,7 +375,7 @@ internal class Vp8Encoder : IDisposable
             this.AdjustFilterStrength();
 
             // Write bytes from the bitwriter buffer to the stream.
-            ImageMetadata metadata = image.Metadata;
+            var metadata = image.Metadata;
             metadata.SyncProfiles();
             this.bitWriter.WriteEncodedImageToStream(
                 stream,
@@ -408,13 +408,13 @@ internal class Vp8Encoder : IDisposable
     /// </summary>
     private void StatLoop(int width, int height, int yStride, int uvStride)
     {
-        int targetSize = 0; // TODO: target size is hardcoded.
-        float targetPsnr = 0.0f; // TODO: targetPsnr is hardcoded.
-        bool doSearch = targetSize > 0 || targetPsnr > 0;
-        bool fastProbe = (this.method == 0 || this.method == WebpEncodingMethod.Level3) && !doSearch;
-        int numPassLeft = this.entropyPasses;
-        Vp8RdLevel rdOpt = this.method >= WebpEncodingMethod.Level3 || doSearch ? Vp8RdLevel.RdOptBasic : Vp8RdLevel.RdOptNone;
-        int nbMbs = this.Mbw * this.Mbh;
+        var targetSize = 0; // TODO: target size is hardcoded.
+        var targetPsnr = 0.0f; // TODO: targetPsnr is hardcoded.
+        var doSearch = targetSize > 0 || targetPsnr > 0;
+        var fastProbe = (this.method == 0 || this.method == WebpEncodingMethod.Level3) && !doSearch;
+        var numPassLeft = this.entropyPasses;
+        var rdOpt = this.method >= WebpEncodingMethod.Level3 || doSearch ? Vp8RdLevel.RdOptBasic : Vp8RdLevel.RdOptNone;
+        var nbMbs = this.Mbw * this.Mbh;
 
         var stats = new PassStats(targetSize, targetPsnr, QMin, QMax, this.quality);
         this.Proba.ResetTokenStats();
@@ -435,8 +435,8 @@ internal class Vp8Encoder : IDisposable
 
         while (numPassLeft-- > 0)
         {
-            bool isLastPass = (MathF.Abs(stats.Dq) <= DqLimit) || (numPassLeft == 0) || (this.maxI4HeaderBits == 0);
-            long sizeP0 = this.OneStatPass(width, height, yStride, uvStride, rdOpt, nbMbs, stats);
+            var isLastPass = (MathF.Abs(stats.Dq) <= DqLimit) || (numPassLeft == 0) || (this.maxI4HeaderBits == 0);
+            var sizeP0 = this.OneStatPass(width, height, yStride, uvStride, rdOpt, nbMbs, stats);
             if (sizeP0 == 0)
             {
                 return;
@@ -478,9 +478,9 @@ internal class Vp8Encoder : IDisposable
 
     private long OneStatPass(int width, int height, int yStride, int uvStride, Vp8RdLevel rdOpt, int nbMbs, PassStats stats)
     {
-        Span<byte> y = this.Y.GetSpan();
-        Span<byte> u = this.U.GetSpan();
-        Span<byte> v = this.V.GetSpan();
+        var y = this.Y.GetSpan();
+        var u = this.U.GetSpan();
+        var v = this.V.GetSpan();
         var it = new Vp8EncIterator(this.YTop, this.UvTop, this.Nz, this.MbInfo, this.Preds, this.TopDerr, this.Mbw, this.Mbh);
         long size = 0;
         long sizeP0 = 0;
@@ -540,14 +540,14 @@ internal class Vp8Encoder : IDisposable
     {
         if (this.filterStrength > 0)
         {
-            int maxLevel = 0;
-            for (int s = 0; s < WebpConstants.NumMbSegments; s++)
+            var maxLevel = 0;
+            for (var s = 0; s < WebpConstants.NumMbSegments; s++)
             {
-                Vp8SegmentInfo dqm = this.SegmentInfos[s];
+                var dqm = this.SegmentInfos[s];
 
                 // this '>> 3' accounts for some inverse WHT scaling
-                int delta = (dqm.MaxEdge * dqm.Y2.Q[1]) >> 3;
-                int level = this.FilterStrengthFromDelta(this.FilterHeader.Sharpness, delta);
+                var delta = (dqm.MaxEdge * dqm.Y2.Q[1]) >> 3;
+                var level = this.FilterStrengthFromDelta(this.FilterHeader.Sharpness, delta);
                 if (level > dqm.FStrength)
                 {
                     dqm.FStrength = level;
@@ -565,21 +565,21 @@ internal class Vp8Encoder : IDisposable
 
     private void ResetBoundaryPredictions()
     {
-        Span<byte> top = this.Preds.AsSpan(); // original source top starts at: enc->preds_ - enc->preds_w_
-        Span<byte> left = this.Preds.AsSpan(this.PredsWidth - 1);
-        for (int i = 0; i < 4 * this.Mbw; i++)
+        var top = this.Preds.AsSpan(); // original source top starts at: enc->preds_ - enc->preds_w_
+        var left = this.Preds.AsSpan(this.PredsWidth - 1);
+        for (var i = 0; i < 4 * this.Mbw; i++)
         {
             top[i] = (int)IntraPredictionMode.DcPrediction;
         }
 
-        for (int i = 0; i < 4 * this.Mbh; i++)
+        for (var i = 0; i < 4 * this.Mbh; i++)
         {
             left[i * this.PredsWidth] = (int)IntraPredictionMode.DcPrediction;
         }
 
-        int predsW = (4 * this.Mbw) + 1;
-        int predsH = (4 * this.Mbh) + 1;
-        int predsSize = predsW * predsH;
+        var predsW = (4 * this.Mbw) + 1;
+        var predsH = (4 * this.Mbh) + 1;
+        var predsSize = predsW * predsH;
         this.Preds.AsSpan(predsSize + this.PredsWidth - 4, 4).Clear();
 
         this.Nz[0] = 0;   // constant
@@ -588,26 +588,26 @@ internal class Vp8Encoder : IDisposable
     // Simplified k-Means, to assign Nb segments based on alpha-histogram.
     private void AssignSegments(int[] alphas)
     {
-        int nb = this.SegmentHeader.NumSegments < NumMbSegments ? this.SegmentHeader.NumSegments : NumMbSegments;
-        int[] centers = new int[NumMbSegments];
-        int weightedAverage = 0;
-        int[] map = new int[WebpConstants.MaxAlpha + 1];
+        var nb = this.SegmentHeader.NumSegments < NumMbSegments ? this.SegmentHeader.NumSegments : NumMbSegments;
+        var centers = new int[NumMbSegments];
+        var weightedAverage = 0;
+        var map = new int[WebpConstants.MaxAlpha + 1];
         int n, k;
-        int[] accum = new int[NumMbSegments];
-        int[] distAccum = new int[NumMbSegments];
+        var accum = new int[NumMbSegments];
+        var distAccum = new int[NumMbSegments];
 
         // Bracket the input.
         for (n = 0; n <= WebpConstants.MaxAlpha && alphas[n] == 0; ++n)
         {
         }
 
-        int minA = n;
+        var minA = n;
         for (n = WebpConstants.MaxAlpha; n > minA && alphas[n] == 0; --n)
         {
         }
 
-        int maxA = n;
-        int rangeA = maxA - minA;
+        var maxA = n;
+        var rangeA = maxA - minA;
 
         // Spread initial centers evenly.
         for (k = 0, n = 1; k < nb; ++k, n += 2)
@@ -645,14 +645,14 @@ internal class Vp8Encoder : IDisposable
             }
 
             // All point are classified. Move the centroids to the center of their respective cloud.
-            int displaced = 0;
+            var displaced = 0;
             weightedAverage = 0;
-            int totalWeight = 0;
+            var totalWeight = 0;
             for (n = 0; n < nb; ++n)
             {
                 if (accum[n] != 0)
                 {
-                    int newCenter = (distAccum[n] + (accum[n] / 2)) / accum[n];
+                    var newCenter = (distAccum[n] + (accum[n] / 2)) / accum[n];
                     displaced += Math.Abs(centers[n] - newCenter);
                     centers[n] = newCenter;
                     weightedAverage += newCenter * accum[n];
@@ -670,8 +670,8 @@ internal class Vp8Encoder : IDisposable
         // Map each original value to the closest centroid
         for (n = 0; n < this.Mbw * this.Mbh; ++n)
         {
-            Vp8MacroBlockInfo mb = this.MbInfo[n];
-            int alpha = mb.Alpha;
+            var mb = this.MbInfo[n];
+            var alpha = mb.Alpha;
             mb.Segment = map[alpha];
             mb.Alpha = centers[map[alpha]];
         }
@@ -682,8 +682,8 @@ internal class Vp8Encoder : IDisposable
 
     private void SetSegmentAlphas(int[] centers, int mid)
     {
-        int nb = this.SegmentHeader.NumSegments;
-        Vp8SegmentInfo[] dqm = this.SegmentInfos;
+        var nb = this.SegmentHeader.NumSegments;
+        var dqm = this.SegmentInfos;
         int min = centers[0], max = centers[0];
         int n;
 
@@ -710,8 +710,8 @@ internal class Vp8Encoder : IDisposable
 
         for (n = 0; n < nb; ++n)
         {
-            int alpha = 255 * (centers[n] - mid) / (max - min);
-            int beta = 255 * (centers[n] - min) / (max - min);
+            var alpha = 255 * (centers[n] - mid) / (max - min);
+            var beta = 255 * (centers[n] - min) / (max - min);
             dqm[n].Alpha = Numerics.Clamp(alpha, -127, 127);
             dqm[n].Beta = Numerics.Clamp(beta, 0, 255);
         }
@@ -719,17 +719,17 @@ internal class Vp8Encoder : IDisposable
 
     private void SetSegmentParams(float quality)
     {
-        int nb = this.SegmentHeader.NumSegments;
-        Vp8SegmentInfo[] dqm = this.SegmentInfos;
-        double amp = WebpConstants.SnsToDq * this.spatialNoiseShaping / 100.0d / 128.0d;
-        double cBase = QualityToCompression(quality / 100.0d);
-        for (int i = 0; i < nb; i++)
+        var nb = this.SegmentHeader.NumSegments;
+        var dqm = this.SegmentInfos;
+        var amp = WebpConstants.SnsToDq * this.spatialNoiseShaping / 100.0d / 128.0d;
+        var cBase = QualityToCompression(quality / 100.0d);
+        for (var i = 0; i < nb; i++)
         {
             // We modulate the base coefficient to accommodate for the quantization
             // susceptibility and allow denser segments to be quantized more.
-            double expn = 1.0d - (amp * dqm[i].Alpha);
-            double c = Math.Pow(cBase, expn);
-            int q = (int)(127.0d * (1.0d - c));
+            var expn = 1.0d - (amp * dqm[i].Alpha);
+            var c = Math.Pow(cBase, expn);
+            var q = (int)(127.0d * (1.0d - c));
             dqm[i].Quant = Numerics.Clamp(q, 0, 127);
         }
 
@@ -764,21 +764,21 @@ internal class Vp8Encoder : IDisposable
 
     private void SetupFilterStrength()
     {
-        int filterSharpness = 0; // TODO: filterSharpness is hardcoded
-        int filterType = 1; // TODO: filterType is hardcoded
+        var filterSharpness = 0; // TODO: filterSharpness is hardcoded
+        var filterType = 1; // TODO: filterType is hardcoded
 
         // level0 is in [0..500]. Using '-f 50' as filter_strength is mid-filtering.
-        int level0 = 5 * this.filterStrength;
-        for (int i = 0; i < WebpConstants.NumMbSegments; i++)
+        var level0 = 5 * this.filterStrength;
+        for (var i = 0; i < WebpConstants.NumMbSegments; i++)
         {
-            Vp8SegmentInfo m = this.SegmentInfos[i];
+            var m = this.SegmentInfos[i];
 
             // We focus on the quantization of AC coeffs.
-            int qstep = WebpLookupTables.AcTable[Numerics.Clamp(m.Quant, 0, 127)] >> 2;
-            int baseStrength = this.FilterStrengthFromDelta(this.FilterHeader.Sharpness, qstep);
+            var qstep = WebpLookupTables.AcTable[Numerics.Clamp(m.Quant, 0, 127)] >> 2;
+            var baseStrength = this.FilterStrengthFromDelta(this.FilterHeader.Sharpness, qstep);
 
             // Segments with lower complexity ('beta') will be less filtered.
-            int f = baseStrength * level0 / (256 + m.Beta);
+            var f = baseStrength * level0 / (256 + m.Beta);
             m.FStrength = f < WebpConstants.FilterStrengthCutoff ? 0 : f > 63 ? 63 : f;
         }
 
@@ -790,18 +790,18 @@ internal class Vp8Encoder : IDisposable
 
     private void SetSegmentProbas()
     {
-        int[] p = new int[NumMbSegments];
+        var p = new int[NumMbSegments];
         int n;
 
         for (n = 0; n < this.Mbw * this.Mbh; ++n)
         {
-            Vp8MacroBlockInfo mb = this.MbInfo[n];
+            var mb = this.MbInfo[n];
             ++p[mb.Segment];
         }
 
         if (this.SegmentHeader.NumSegments > 1)
         {
-            byte[] probas = this.Proba.Segments;
+            var probas = this.Proba.Segments;
             probas[0] = (byte)GetProba(p[0] + p[1], p[2] + p[3]);
             probas[1] = (byte)GetProba(p[0], p[1]);
             probas[2] = (byte)GetProba(p[2], p[3]);
@@ -835,18 +835,18 @@ internal class Vp8Encoder : IDisposable
 
     private void ResetStats()
     {
-        Vp8EncProba proba = this.Proba;
+        var proba = this.Proba;
         proba.CalculateLevelCosts();
         proba.NbSkip = 0;
     }
 
     private unsafe void SetupMatrices(Vp8SegmentInfo[] dqm)
     {
-        int tlambdaScale = this.method >= WebpEncodingMethod.Default ? this.spatialNoiseShaping : 0;
-        for (int i = 0; i < dqm.Length; i++)
+        var tlambdaScale = this.method >= WebpEncodingMethod.Default ? this.spatialNoiseShaping : 0;
+        for (var i = 0; i < dqm.Length; i++)
         {
-            Vp8SegmentInfo m = dqm[i];
-            int q = m.Quant;
+            var m = dqm[i];
+            var q = m.Quant;
 
             m.Y1.Q[0] = WebpLookupTables.DcTable[Numerics.Clamp(q + this.DqY1Dc, 0, 127)];
             m.Y1.Q[1] = WebpLookupTables.AcTable[Numerics.Clamp(q, 0, 127)];
@@ -857,9 +857,9 @@ internal class Vp8Encoder : IDisposable
             m.Uv.Q[0] = WebpLookupTables.DcTable[Numerics.Clamp(q + this.DqUvDc, 0, 117)];
             m.Uv.Q[1] = WebpLookupTables.AcTable[Numerics.Clamp(q + this.DqUvAc, 0, 127)];
 
-            int qi4 = m.Y1.Expand(0);
-            int qi16 = m.Y2.Expand(1);
-            int quv = m.Uv.Expand(2);
+            var qi4 = m.Y1.Expand(0);
+            var qi16 = m.Y2.Expand(1);
+            var quv = m.Uv.Expand(2);
 
             m.LambdaI16 = 3 * qi16 * qi16;
             m.LambdaI4 = (3 * qi4 * qi4) >> 7;
@@ -883,14 +883,14 @@ internal class Vp8Encoder : IDisposable
 
     private int MacroBlockAnalysis(int width, int height, Vp8EncIterator it, Span<byte> y, Span<byte> u, Span<byte> v, int yStride, int uvStride, int[] alphas, out int uvAlpha)
     {
-        int alpha = 0;
+        var alpha = 0;
         uvAlpha = 0;
         if (!it.IsDone())
         {
             do
             {
                 it.Import(y, u, v, yStride, uvStride, width, height, true);
-                int bestAlpha = this.MbAnalyze(it, alphas, out int bestUvAlpha);
+                var bestAlpha = this.MbAnalyze(it, alphas, out var bestUvAlpha);
 
                 // Accumulate for later complexity analysis.
                 alpha += bestAlpha;
@@ -963,7 +963,7 @@ internal class Vp8Encoder : IDisposable
             QuantEnc.RefineUsingDistortion(it, this.SegmentInfos, rd, this.method >= WebpEncodingMethod.Level2, this.method >= WebpEncodingMethod.Level1, this.MbHeaderLimit);
         }
 
-        bool isSkipped = rd.Nz == 0;
+        var isSkipped = rd.Nz == 0;
         it.SetSkip(isSkipped);
 
         return isSkipped;
@@ -972,17 +972,17 @@ internal class Vp8Encoder : IDisposable
     private void CodeResiduals(Vp8EncIterator it, Vp8ModeScore rd, Vp8Residual residual)
     {
         int x, y, ch;
-        bool i16 = it.CurrentMacroBlockInfo.MacroBlockType == Vp8MacroBlockType.I16X16;
-        int segment = it.CurrentMacroBlockInfo.Segment;
+        var i16 = it.CurrentMacroBlockInfo.MacroBlockType == Vp8MacroBlockType.I16X16;
+        var segment = it.CurrentMacroBlockInfo.Segment;
 
         it.NzToBytes();
 
-        int pos1 = this.bitWriter.NumBytes();
+        var pos1 = this.bitWriter.NumBytes();
         if (i16)
         {
             residual.Init(0, 1, this.Proba);
             residual.SetCoeffs(rd.YDcLevels);
-            int res = this.bitWriter.PutCoeffs(it.TopNz[8] + it.LeftNz[8], residual);
+            var res = this.bitWriter.PutCoeffs(it.TopNz[8] + it.LeftNz[8], residual);
             it.TopNz[8] = it.LeftNz[8] = res;
             residual.Init(1, 0, this.Proba);
         }
@@ -996,15 +996,15 @@ internal class Vp8Encoder : IDisposable
         {
             for (x = 0; x < 4; x++)
             {
-                int ctx = it.TopNz[x] + it.LeftNz[y];
-                Span<short> coeffs = rd.YAcLevels.AsSpan(16 * (x + (y * 4)), 16);
+                var ctx = it.TopNz[x] + it.LeftNz[y];
+                var coeffs = rd.YAcLevels.AsSpan(16 * (x + (y * 4)), 16);
                 residual.SetCoeffs(coeffs);
-                int res = this.bitWriter.PutCoeffs(ctx, residual);
+                var res = this.bitWriter.PutCoeffs(ctx, residual);
                 it.TopNz[x] = it.LeftNz[y] = res;
             }
         }
 
-        int pos2 = this.bitWriter.NumBytes();
+        var pos2 = this.bitWriter.NumBytes();
 
         // U/V
         residual.Init(0, 2, this.Proba);
@@ -1014,15 +1014,15 @@ internal class Vp8Encoder : IDisposable
             {
                 for (x = 0; x < 2; x++)
                 {
-                    int ctx = it.TopNz[4 + ch + x] + it.LeftNz[4 + ch + y];
+                    var ctx = it.TopNz[4 + ch + x] + it.LeftNz[4 + ch + y];
                     residual.SetCoeffs(rd.UvLevels.AsSpan(16 * ((ch * 2) + x + (y * 2)), 16));
-                    int res = this.bitWriter.PutCoeffs(ctx, residual);
+                    var res = this.bitWriter.PutCoeffs(ctx, residual);
                     it.TopNz[4 + ch + x] = it.LeftNz[4 + ch + y] = res;
                 }
             }
         }
 
-        int pos3 = this.bitWriter.NumBytes();
+        var pos3 = this.bitWriter.NumBytes();
         it.LumaBits = pos2 - pos1;
         it.UvBits = pos3 - pos2;
         it.BitCount[segment, i16 ? 1 : 0] += it.LumaBits;
@@ -1038,7 +1038,7 @@ internal class Vp8Encoder : IDisposable
     {
         int x, y, ch;
         var residual = new Vp8Residual();
-        bool i16 = it.CurrentMacroBlockInfo.MacroBlockType == Vp8MacroBlockType.I16X16;
+        var i16 = it.CurrentMacroBlockInfo.MacroBlockType == Vp8MacroBlockType.I16X16;
 
         it.NzToBytes();
 
@@ -1047,7 +1047,7 @@ internal class Vp8Encoder : IDisposable
             // i16x16
             residual.Init(0, 1, this.Proba);
             residual.SetCoeffs(rd.YDcLevels);
-            int res = residual.RecordCoeffs(it.TopNz[8] + it.LeftNz[8]);
+            var res = residual.RecordCoeffs(it.TopNz[8] + it.LeftNz[8]);
             it.TopNz[8] = res;
             it.LeftNz[8] = res;
             residual.Init(1, 0, this.Proba);
@@ -1062,10 +1062,10 @@ internal class Vp8Encoder : IDisposable
         {
             for (x = 0; x < 4; x++)
             {
-                int ctx = it.TopNz[x] + it.LeftNz[y];
-                Span<short> coeffs = rd.YAcLevels.AsSpan(16 * (x + (y * 4)), 16);
+                var ctx = it.TopNz[x] + it.LeftNz[y];
+                var coeffs = rd.YAcLevels.AsSpan(16 * (x + (y * 4)), 16);
                 residual.SetCoeffs(coeffs);
-                int res = residual.RecordCoeffs(ctx);
+                var res = residual.RecordCoeffs(ctx);
                 it.TopNz[x] = res;
                 it.LeftNz[y] = res;
             }
@@ -1079,9 +1079,9 @@ internal class Vp8Encoder : IDisposable
             {
                 for (x = 0; x < 2; x++)
                 {
-                    int ctx = it.TopNz[4 + ch + x] + it.LeftNz[4 + ch + y];
+                    var ctx = it.TopNz[4 + ch + x] + it.LeftNz[4 + ch + y];
                     residual.SetCoeffs(rd.UvLevels.AsSpan(16 * ((ch * 2) + x + (y * 2)), 16));
-                    int res = residual.RecordCoeffs(ctx);
+                    var res = residual.RecordCoeffs(ctx);
                     it.TopNz[4 + ch + x] = res;
                     it.LeftNz[4 + ch + y] = res;
                 }
@@ -1106,7 +1106,7 @@ internal class Vp8Encoder : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static double QualityToCompression(double c)
     {
-        double linearC = c < 0.75 ? c * (2.0d / 3.0d) : (2.0d * c) - 1.0d;
+        var linearC = c < 0.75 ? c * (2.0d / 3.0d) : (2.0d * c) - 1.0d;
 
         // The file size roughly scales as pow(quantizer, 3.). Actually, the
         // exponent is somewhere between 2.8 and 3.2, but we're mostly interested
@@ -1114,7 +1114,7 @@ internal class Vp8Encoder : IDisposable
         // this power-law: quant ~= compression ^ 1/3. This law holds well for
         // low quant. Finer modeling for high-quant would make use of AcTable[]
         // more explicitly.
-        double v = Math.Pow(linearC, 1 / 3.0d);
+        var v = Math.Pow(linearC, 1 / 3.0d);
 
         return v;
     }
@@ -1122,7 +1122,7 @@ internal class Vp8Encoder : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private int FilterStrengthFromDelta(int sharpness, int delta)
     {
-        int pos = delta < WebpConstants.MaxDelzaSize ? delta : WebpConstants.MaxDelzaSize - 1;
+        var pos = delta < WebpConstants.MaxDelzaSize ? delta : WebpConstants.MaxDelzaSize - 1;
         return WebpLookupTables.LevelsFromDelta[sharpness, pos];
     }
 
@@ -1132,7 +1132,7 @@ internal class Vp8Encoder : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int GetProba(int a, int b)
     {
-        int total = a + b;
+        var total = a + b;
         return total == 0 ? 255 // that's the default probability.
             : ((255 * a) + (total / 2)) / total;  // rounded proba
     }

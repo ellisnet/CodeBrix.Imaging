@@ -90,7 +90,7 @@ internal sealed class UniformUnmanagedMemoryPoolMemoryAllocator : MemoryAllocato
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of negative length={length}.");
         }
 
-        ulong lengthInBytes = (ulong)length * (ulong)Unsafe.SizeOf<T>();
+        var lengthInBytes = (ulong)length * (ulong)Unsafe.SizeOf<T>();
         if (lengthInBytes > (ulong)this.SingleBufferAllocationLimitBytes)
         {
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of length={lengthInBytes} that exceeded the limit {this.SingleBufferAllocationLimitBytes}.");
@@ -109,10 +109,10 @@ internal sealed class UniformUnmanagedMemoryPoolMemoryAllocator : MemoryAllocato
 
         if (lengthInBytes <= (ulong)this.poolBufferSizeInBytes)
         {
-            UnmanagedMemoryHandle mem = this.pool.Rent();
+            var mem = this.pool.Rent();
             if (mem.IsValid)
             {
-                UnmanagedBuffer<T> buffer = this.pool.CreateGuardedBuffer<T>(mem, length, options.Has(AllocationOptions.Clean));
+                var buffer = this.pool.CreateGuardedBuffer<T>(mem, length, options.Has(AllocationOptions.Clean));
                 return buffer;
             }
         }
@@ -136,16 +136,16 @@ internal sealed class UniformUnmanagedMemoryPoolMemoryAllocator : MemoryAllocato
         if (totalLengthInBytes <= this.poolBufferSizeInBytes)
         {
             // Optimized path renting single array from the pool
-            UnmanagedMemoryHandle mem = this.pool.Rent();
+            var mem = this.pool.Rent();
             if (mem.IsValid)
             {
-                UnmanagedBuffer<T> buffer = this.pool.CreateGuardedBuffer<T>(mem, (int)totalLengthInElements, options.Has(AllocationOptions.Clean));
+                var buffer = this.pool.CreateGuardedBuffer<T>(mem, (int)totalLengthInElements, options.Has(AllocationOptions.Clean));
                 return MemoryGroup<T>.CreateContiguous(buffer, options.Has(AllocationOptions.Clean));
             }
         }
 
         // Attempt to rent the whole group from the pool, allocate a group of unmanaged buffers if the attempt fails:
-        if (MemoryGroup<T>.TryAllocate(this.pool, totalLengthInElements, bufferAlignment, options, out MemoryGroup<T> poolGroup))
+        if (MemoryGroup<T>.TryAllocate(this.pool, totalLengthInElements, bufferAlignment, options, out var poolGroup))
         {
             return poolGroup;
         }
@@ -162,7 +162,7 @@ internal sealed class UniformUnmanagedMemoryPoolMemoryAllocator : MemoryAllocato
         // https://github.com/dotnet/runtime/issues/55126#issuecomment-876779327
         if (Environment.Is64BitProcess || !RuntimeInformation.FrameworkDescription.StartsWith(".NET 5.0"))
         {
-            long total = GetTotalAvailableMemoryBytes();
+            var total = GetTotalAvailableMemoryBytes();
 
             // Workaround for https://github.com/dotnet/runtime/issues/65466
             if (total > 0)

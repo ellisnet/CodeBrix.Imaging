@@ -218,7 +218,7 @@ public sealed class Image<TPixel> : Image
     public void ProcessPixelRows(PixelAccessorAction<TPixel> processPixels)
     {
         Guard.NotNull(processPixels, nameof(processPixels));
-        Buffer2D<TPixel> buffer = this.Frames.RootFrame.PixelBuffer;
+        var buffer = this.Frames.RootFrame.PixelBuffer;
         buffer.FastMemoryGroup.IncreaseRefCounts();
 
         try
@@ -246,8 +246,8 @@ public sealed class Image<TPixel> : Image
         Guard.NotNull(image2, nameof(image2));
         Guard.NotNull(processPixels, nameof(processPixels));
 
-        Buffer2D<TPixel> buffer1 = this.Frames.RootFrame.PixelBuffer;
-        Buffer2D<TPixel2> buffer2 = image2.Frames.RootFrame.PixelBuffer;
+        var buffer1 = this.Frames.RootFrame.PixelBuffer;
+        var buffer2 = image2.Frames.RootFrame.PixelBuffer;
 
         buffer1.FastMemoryGroup.IncreaseRefCounts();
         buffer2.FastMemoryGroup.IncreaseRefCounts();
@@ -284,9 +284,9 @@ public sealed class Image<TPixel> : Image
         Guard.NotNull(image3, nameof(image3));
         Guard.NotNull(processPixels, nameof(processPixels));
 
-        Buffer2D<TPixel> buffer1 = this.Frames.RootFrame.PixelBuffer;
-        Buffer2D<TPixel2> buffer2 = image2.Frames.RootFrame.PixelBuffer;
-        Buffer2D<TPixel3> buffer3 = image3.Frames.RootFrame.PixelBuffer;
+        var buffer1 = this.Frames.RootFrame.PixelBuffer;
+        var buffer2 = image2.Frames.RootFrame.PixelBuffer;
+        var buffer3 = image3.Frames.RootFrame.PixelBuffer;
 
         buffer1.FastMemoryGroup.IncreaseRefCounts();
         buffer2.FastMemoryGroup.IncreaseRefCounts();
@@ -333,7 +333,7 @@ public sealed class Image<TPixel> : Image
     /// <returns>The <see cref="bool"/> indicating the success.</returns>
     public bool DangerousTryGetSinglePixelMemory(out Memory<TPixel> memory)
     {
-        IMemoryGroup<TPixel> mg = this.GetPixelMemoryGroup();
+        var mg = this.GetPixelMemoryGroup();
         if (mg.Count > 1)
         {
             memory = default;
@@ -360,7 +360,7 @@ public sealed class Image<TPixel> : Image
         this.EnsureNotDisposed();
 
         var clonedFrames = new ImageFrame<TPixel>[this.frames.Count];
-        for (int i = 0; i < clonedFrames.Length; i++)
+        for (var i = 0; i < clonedFrames.Length; i++)
         {
             clonedFrames[i] = this.frames[i].Clone(configuration);
         }
@@ -379,7 +379,7 @@ public sealed class Image<TPixel> : Image
         this.EnsureNotDisposed();
 
         var clonedFrames = new ImageFrame<TPixel2>[this.frames.Count];
-        for (int i = 0; i < clonedFrames.Length; i++)
+        for (var i = 0; i < clonedFrames.Length; i++)
         {
             clonedFrames[i] = this.frames[i].CloneAs<TPixel2>(configuration);
         }
@@ -425,8 +425,8 @@ public sealed class Image<TPixel> : Image
 
         this.EnsureNotDisposed();
 
-        ImageFrameCollection<TPixel> sourceFrames = pixelSource.Frames;
-        for (int i = 0; i < this.frames.Count; i++)
+        var sourceFrames = pixelSource.Frames;
+        for (var i = 0; i < this.frames.Count; i++)
         {
             this.frames[i].SwapOrCopyPixelsBufferFrom(sourceFrames[i]);
         }
@@ -438,14 +438,14 @@ public sealed class Image<TPixel> : Image
     {
         Guard.NotNull(frames, nameof(frames));
 
-        ImageFrame<TPixel> rootFrame = frames.FirstOrDefault();
+        var rootFrame = frames.FirstOrDefault();
 
         if (rootFrame == null)
         {
             throw new ArgumentException("Must not be empty.", nameof(frames));
         }
 
-        Size rootSize = rootFrame.Size();
+        var rootSize = rootFrame.Size();
 
         if (frames.Any(f => f.Size() != rootSize))
         {

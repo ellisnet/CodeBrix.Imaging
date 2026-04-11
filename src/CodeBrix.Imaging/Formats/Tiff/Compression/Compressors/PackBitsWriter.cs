@@ -12,14 +12,14 @@ internal static class PackBitsWriter
 {
     public static int PackBits(ReadOnlySpan<byte> rowSpan, Span<byte> compressedRowSpan)
     {
-        int maxRunLength = 127;
-        int posInRowSpan = 0;
-        int bytesWritten = 0;
-        int literalRunLength = 0;
+        var maxRunLength = 127;
+        var posInRowSpan = 0;
+        var bytesWritten = 0;
+        var literalRunLength = 0;
 
         while (posInRowSpan < rowSpan.Length)
         {
-            bool useReplicateRun = IsReplicateRun(rowSpan, posInRowSpan);
+            var useReplicateRun = IsReplicateRun(rowSpan, posInRowSpan);
             if (useReplicateRun)
             {
                 if (literalRunLength > 0)
@@ -29,7 +29,7 @@ internal static class PackBitsWriter
                 }
 
                 // Write a run with the same bytes.
-                int runLength = FindRunLength(rowSpan, posInRowSpan, maxRunLength);
+                var runLength = FindRunLength(rowSpan, posInRowSpan, maxRunLength);
                 WriteRun(rowSpan, posInRowSpan, runLength, compressedRowSpan, bytesWritten);
 
                 bytesWritten += 2;
@@ -62,8 +62,8 @@ internal static class PackBitsWriter
     {
         DebugGuard.MustBeLessThanOrEqualTo(literalRunLength, 127, nameof(literalRunLength));
 
-        int literalRunStart = end - literalRunLength;
-        sbyte runLength = (sbyte)(literalRunLength - 1);
+        var literalRunStart = end - literalRunLength;
+        var runLength = (sbyte)(literalRunLength - 1);
         compressedRowSpan[compressedRowPos] = (byte)runLength;
         rowSpan.Slice(literalRunStart, literalRunLength).CopyTo(compressedRowSpan.Slice(compressedRowPos + 1));
     }
@@ -72,7 +72,7 @@ internal static class PackBitsWriter
     {
         DebugGuard.MustBeLessThanOrEqualTo(runLength, 127, nameof(runLength));
 
-        sbyte headerByte = (sbyte)(-runLength + 1);
+        var headerByte = (sbyte)(-runLength + 1);
         compressedRowSpan[compressedRowPos] = (byte)headerByte;
         compressedRowSpan[compressedRowPos + 1] = rowSpan[start];
     }
@@ -80,9 +80,9 @@ internal static class PackBitsWriter
     private static bool IsReplicateRun(ReadOnlySpan<byte> rowSpan, int startPos)
     {
         // We consider run which has at least 3 same consecutive bytes a candidate for a run.
-        byte startByte = rowSpan[startPos];
-        int count = 0;
-        for (int i = startPos + 1; i < rowSpan.Length; i++)
+        var startByte = rowSpan[startPos];
+        var count = 0;
+        for (var i = startPos + 1; i < rowSpan.Length; i++)
         {
             if (rowSpan[i] == startByte)
             {
@@ -104,8 +104,8 @@ internal static class PackBitsWriter
     private static int FindRunLength(ReadOnlySpan<byte> rowSpan, int startPos, int maxRunLength)
     {
         var startByte = rowSpan[startPos];
-        int count = 1;
-        for (int i = startPos + 1; i < rowSpan.Length; i++)
+        var count = 1;
+        for (var i = startPos + 1; i < rowSpan.Length; i++)
         {
             if (rowSpan[i] == startByte)
             {

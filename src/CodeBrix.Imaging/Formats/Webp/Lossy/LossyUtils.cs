@@ -160,14 +160,14 @@ internal static class LossyUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static int Vp8_SseNxN(Span<byte> a, Span<byte> b, int w, int h)
     {
-        int count = 0;
-        int aOffset = 0;
-        int bOffset = 0;
-        for (int y = 0; y < h; y++)
+        var count = 0;
+        var aOffset = 0;
+        var bOffset = 0;
+        for (var y = 0; y < h; y++)
         {
-            for (int x = 0; x < w; x++)
+            for (var x = 0; x < w; x++)
             {
-                int diff = a[aOffset + x] - b[bOffset + x];
+                var diff = a[aOffset + x] - b[bOffset + x];
                 count += diff * diff;
             }
 
@@ -285,8 +285,8 @@ internal static class LossyUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void Copy(Span<byte> src, Span<byte> dst, int w, int h)
     {
-        int offset = 0;
-        for (int y = 0; y < h; y++)
+        var offset = 0;
+        for (var y = 0; y < h; y++)
         {
             src.Slice(offset, w).CopyTo(dst.Slice(offset, w));
             offset += WebpConstants.Bps;
@@ -296,11 +296,11 @@ internal static class LossyUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     public static int Vp8Disto16X16(Span<byte> a, Span<byte> b, Span<ushort> w, Span<int> scratch)
     {
-        int d = 0;
-        int dataSize = (4 * WebpConstants.Bps) - 16;
-        for (int y = 0; y < 16 * WebpConstants.Bps; y += 4 * WebpConstants.Bps)
+        var d = 0;
+        var dataSize = (4 * WebpConstants.Bps) - 16;
+        for (var y = 0; y < 16 * WebpConstants.Bps; y += 4 * WebpConstants.Bps)
         {
-            for (int x = 0; x < 16; x += 4)
+            for (var x = 0; x < 16; x += 4)
             {
                 d += Vp8Disto4X4(a.Slice(x + y, dataSize), b.Slice(x + y, dataSize), w, scratch);
             }
@@ -321,18 +321,18 @@ internal static class LossyUtils
             else
 #endif
         {
-            int sum1 = TTransform(a, w, scratch);
-            int sum2 = TTransform(b, w, scratch);
+            var sum1 = TTransform(a, w, scratch);
+            var sum2 = TTransform(b, w, scratch);
             return Math.Abs(sum2 - sum1) >> 5;
         }
     }
 
     public static void DC16(Span<byte> dst, Span<byte> yuv, int offset)
     {
-        int offsetMinus1 = offset - 1;
-        int offsetMinusBps = offset - WebpConstants.Bps;
-        int dc = 16;
-        for (int j = 0; j < 16; j++)
+        var offsetMinus1 = offset - 1;
+        var offsetMinusBps = offset - WebpConstants.Bps;
+        var dc = 16;
+        for (var j = 0; j < 16; j++)
         {
             // DC += dst[-1 + j * BPS] + dst[j - BPS];
             dc += yuv[offsetMinus1 + (j * WebpConstants.Bps)] + yuv[offsetMinusBps + j];
@@ -347,8 +347,8 @@ internal static class LossyUtils
     public static void VE16(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // vertical
-        Span<byte> src = yuv.Slice(offset - WebpConstants.Bps, 16);
-        for (int j = 0; j < 16; j++)
+        var src = yuv.Slice(offset - WebpConstants.Bps, 16);
+        for (var j = 0; j < 16; j++)
         {
             // memcpy(dst + j * BPS, dst - BPS, 16);
             src.CopyTo(dst.Slice(j * WebpConstants.Bps));
@@ -359,10 +359,10 @@ internal static class LossyUtils
     {
         // horizontal
         offset--;
-        for (int j = 16; j > 0; j--)
+        for (var j = 16; j > 0; j--)
         {
             // memset(dst, dst[-1], 16);
-            byte v = yuv[offset];
+            var v = yuv[offset];
             Memset(dst, v, 0, 16);
             offset += WebpConstants.Bps;
             dst = dst.Slice(WebpConstants.Bps);
@@ -372,8 +372,8 @@ internal static class LossyUtils
     public static void DC16NoTop(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // DC with top samples not available.
-        int dc = 8;
-        for (int j = 0; j < 16; j++)
+        var dc = 8;
+        for (var j = 0; j < 16; j++)
         {
             // DC += dst[-1 + j * BPS];
             dc += yuv[-1 + (j * WebpConstants.Bps) + offset];
@@ -385,8 +385,8 @@ internal static class LossyUtils
     public static void DC16NoLeft(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // DC with left samples not available.
-        int dc = 8;
-        for (int i = 0; i < 16; i++)
+        var dc = 8;
+        for (var i = 0; i < 16; i++)
         {
             // DC += dst[i - BPS];
             dc += yuv[i - WebpConstants.Bps + offset];
@@ -401,10 +401,10 @@ internal static class LossyUtils
 
     public static void DC8uv(Span<byte> dst, Span<byte> yuv, int offset)
     {
-        int dc0 = 8;
-        int offsetMinus1 = offset - 1;
-        int offsetMinusBps = offset - WebpConstants.Bps;
-        for (int i = 0; i < 8; i++)
+        var dc0 = 8;
+        var offsetMinus1 = offset - 1;
+        var offsetMinusBps = offset - WebpConstants.Bps;
+        for (var i = 0; i < 8; i++)
         {
             // dc0 += dst[i - BPS] + dst[-1 + i * BPS];
             dc0 += yuv[offsetMinusBps + i] + yuv[offsetMinus1 + (i * WebpConstants.Bps)];
@@ -420,10 +420,10 @@ internal static class LossyUtils
     public static void VE8uv(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // vertical
-        Span<byte> src = yuv.Slice(offset - WebpConstants.Bps, 8);
+        var src = yuv.Slice(offset - WebpConstants.Bps, 8);
 
-        int endIdx = 8 * WebpConstants.Bps;
-        for (int j = 0; j < endIdx; j += WebpConstants.Bps)
+        var endIdx = 8 * WebpConstants.Bps;
+        for (var j = 0; j < endIdx; j += WebpConstants.Bps)
         {
             // memcpy(dst + j * BPS, dst - BPS, 8);
             src.CopyTo(dst.Slice(j));
@@ -434,11 +434,11 @@ internal static class LossyUtils
     {
         // horizontal
         offset--;
-        for (int j = 0; j < 8; j++)
+        for (var j = 0; j < 8; j++)
         {
             // memset(dst, dst[-1], 8);
             // dst += BPS;
-            byte v = yuv[offset];
+            var v = yuv[offset];
             Memset(dst, v, 0, 8);
             dst = dst.Slice(WebpConstants.Bps);
             offset += WebpConstants.Bps;
@@ -448,10 +448,10 @@ internal static class LossyUtils
     public static void DC8uvNoTop(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // DC with no top samples.
-        int dc0 = 4;
-        int offsetMinusOne = offset - 1;
-        int endIdx = 8 * WebpConstants.Bps;
-        for (int i = 0; i < endIdx; i += WebpConstants.Bps)
+        var dc0 = 4;
+        var offsetMinusOne = offset - 1;
+        var endIdx = 8 * WebpConstants.Bps;
+        for (var i = 0; i < endIdx; i += WebpConstants.Bps)
         {
             // dc0 += dst[-1 + i * BPS];
             dc0 += yuv[offsetMinusOne + i];
@@ -463,9 +463,9 @@ internal static class LossyUtils
     public static void DC8uvNoLeft(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // DC with no left samples.
-        int offsetMinusBps = offset - WebpConstants.Bps;
-        int dc0 = 4;
-        for (int i = 0; i < 8; i++)
+        var offsetMinusBps = offset - WebpConstants.Bps;
+        var dc0 = 4;
+        for (var i = 0; i < 8; i++)
         {
             // dc0 += dst[i - BPS];
             dc0 += yuv[offsetMinusBps + i];
@@ -480,17 +480,17 @@ internal static class LossyUtils
 
     public static void DC4(Span<byte> dst, Span<byte> yuv, int offset)
     {
-        int dc = 4;
-        int offsetMinusBps = offset - WebpConstants.Bps;
-        int offsetMinusOne = offset - 1;
-        for (int i = 0; i < 4; i++)
+        var dc = 4;
+        var offsetMinusBps = offset - WebpConstants.Bps;
+        var offsetMinusOne = offset - 1;
+        for (var i = 0; i < 4; i++)
         {
             dc += yuv[offsetMinusBps + i] + yuv[offsetMinusOne + (i * WebpConstants.Bps)];
         }
 
         dc >>= 3;
-        int endIndx = 4 * WebpConstants.Bps;
-        for (int i = 0; i < endIndx; i += WebpConstants.Bps)
+        var endIndx = 4 * WebpConstants.Bps;
+        for (var i = 0; i < endIndx; i += WebpConstants.Bps)
         {
             Memset(dst, (byte)dc, i, 4);
         }
@@ -502,13 +502,13 @@ internal static class LossyUtils
     public static void VE4(Span<byte> dst, Span<byte> yuv, int offset, Span<byte> vals)
     {
         // vertical
-        int topOffset = offset - WebpConstants.Bps;
+        var topOffset = offset - WebpConstants.Bps;
         vals[0] = Avg3(yuv[topOffset - 1], yuv[topOffset], yuv[topOffset + 1]);
         vals[1] = Avg3(yuv[topOffset], yuv[topOffset + 1], yuv[topOffset + 2]);
         vals[2] = Avg3(yuv[topOffset + 1], yuv[topOffset + 2], yuv[topOffset + 3]);
         vals[3] = Avg3(yuv[topOffset + 2], yuv[topOffset + 3], yuv[topOffset + 4]);
-        int endIdx = 4 * WebpConstants.Bps;
-        for (int i = 0; i < endIdx; i += WebpConstants.Bps)
+        var endIdx = 4 * WebpConstants.Bps;
+        for (var i = 0; i < endIdx; i += WebpConstants.Bps)
         {
             vals.CopyTo(dst.Slice(i));
         }
@@ -517,13 +517,13 @@ internal static class LossyUtils
     public static void HE4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // horizontal
-        int offsetMinusOne = offset - 1;
-        byte a = yuv[offsetMinusOne - WebpConstants.Bps];
-        byte b = yuv[offsetMinusOne];
-        byte c = yuv[offsetMinusOne + WebpConstants.Bps];
-        byte d = yuv[offsetMinusOne + (2 * WebpConstants.Bps)];
-        byte e = yuv[offsetMinusOne + (3 * WebpConstants.Bps)];
-        uint val = 0x01010101U * Avg3(a, b, c);
+        var offsetMinusOne = offset - 1;
+        var a = yuv[offsetMinusOne - WebpConstants.Bps];
+        var b = yuv[offsetMinusOne];
+        var c = yuv[offsetMinusOne + WebpConstants.Bps];
+        var d = yuv[offsetMinusOne + (2 * WebpConstants.Bps)];
+        var e = yuv[offsetMinusOne + (3 * WebpConstants.Bps)];
+        var val = 0x01010101U * Avg3(a, b, c);
         BinaryPrimitives.WriteUInt32BigEndian(dst, val);
         val = 0x01010101U * Avg3(b, c, d);
         BinaryPrimitives.WriteUInt32BigEndian(dst.Slice(WebpConstants.Bps), val);
@@ -536,35 +536,35 @@ internal static class LossyUtils
     public static void RD4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // Down-right
-        int offsetMinusOne = offset - 1;
-        byte i = yuv[offsetMinusOne];
-        byte j = yuv[offsetMinusOne + (1 * WebpConstants.Bps)];
-        byte k = yuv[offsetMinusOne + (2 * WebpConstants.Bps)];
-        byte l = yuv[offsetMinusOne + (3 * WebpConstants.Bps)];
-        byte x = yuv[offsetMinusOne - WebpConstants.Bps];
-        byte a = yuv[offset - WebpConstants.Bps];
-        byte b = yuv[offset + 1 - WebpConstants.Bps];
-        byte c = yuv[offset + 2 - WebpConstants.Bps];
-        byte d = yuv[offset + 3 - WebpConstants.Bps];
+        var offsetMinusOne = offset - 1;
+        var i = yuv[offsetMinusOne];
+        var j = yuv[offsetMinusOne + (1 * WebpConstants.Bps)];
+        var k = yuv[offsetMinusOne + (2 * WebpConstants.Bps)];
+        var l = yuv[offsetMinusOne + (3 * WebpConstants.Bps)];
+        var x = yuv[offsetMinusOne - WebpConstants.Bps];
+        var a = yuv[offset - WebpConstants.Bps];
+        var b = yuv[offset + 1 - WebpConstants.Bps];
+        var c = yuv[offset + 2 - WebpConstants.Bps];
+        var d = yuv[offset + 3 - WebpConstants.Bps];
 
         Dst(dst, 0, 3, Avg3(j, k, l));
-        byte ijk = Avg3(i, j, k);
+        var ijk = Avg3(i, j, k);
         Dst(dst, 1, 3, ijk);
         Dst(dst, 0, 2, ijk);
-        byte xij = Avg3(x, i, j);
+        var xij = Avg3(x, i, j);
         Dst(dst, 2, 3, xij);
         Dst(dst, 1, 2, xij);
         Dst(dst, 0, 1, xij);
-        byte axi = Avg3(a, x, i);
+        var axi = Avg3(a, x, i);
         Dst(dst, 3, 3, axi);
         Dst(dst, 2, 2, axi);
         Dst(dst, 1, 1, axi);
         Dst(dst, 0, 0, axi);
-        byte bax = Avg3(b, a, x);
+        var bax = Avg3(b, a, x);
         Dst(dst, 3, 2, bax);
         Dst(dst, 2, 1, bax);
         Dst(dst, 1, 0, bax);
-        byte cba = Avg3(c, b, a);
+        var cba = Avg3(c, b, a);
         Dst(dst, 3, 1, cba);
         Dst(dst, 2, 0, cba);
         Dst(dst, 3, 0, Avg3(d, c, b));
@@ -573,35 +573,35 @@ internal static class LossyUtils
     public static void VR4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // Vertical-Right
-        int offsetMinusOne = offset - 1;
-        byte i = yuv[offsetMinusOne];
-        byte j = yuv[offsetMinusOne + (1 * WebpConstants.Bps)];
-        byte k = yuv[offsetMinusOne + (2 * WebpConstants.Bps)];
-        byte x = yuv[offsetMinusOne - WebpConstants.Bps];
-        byte a = yuv[offset - WebpConstants.Bps];
-        byte b = yuv[offset + 1 - WebpConstants.Bps];
-        byte c = yuv[offset + 2 - WebpConstants.Bps];
-        byte d = yuv[offset + 3 - WebpConstants.Bps];
+        var offsetMinusOne = offset - 1;
+        var i = yuv[offsetMinusOne];
+        var j = yuv[offsetMinusOne + (1 * WebpConstants.Bps)];
+        var k = yuv[offsetMinusOne + (2 * WebpConstants.Bps)];
+        var x = yuv[offsetMinusOne - WebpConstants.Bps];
+        var a = yuv[offset - WebpConstants.Bps];
+        var b = yuv[offset + 1 - WebpConstants.Bps];
+        var c = yuv[offset + 2 - WebpConstants.Bps];
+        var d = yuv[offset + 3 - WebpConstants.Bps];
 
-        byte xa = Avg2(x, a);
+        var xa = Avg2(x, a);
         Dst(dst, 0, 0, xa);
         Dst(dst, 1, 2, xa);
-        byte ab = Avg2(a, b);
+        var ab = Avg2(a, b);
         Dst(dst, 1, 0, ab);
         Dst(dst, 2, 2, ab);
-        byte bc = Avg2(b, c);
+        var bc = Avg2(b, c);
         Dst(dst, 2, 0, bc);
         Dst(dst, 3, 2, bc);
         Dst(dst, 3, 0, Avg2(c, d));
         Dst(dst, 0, 3, Avg3(k, j, i));
         Dst(dst, 0, 2, Avg3(j, i, x));
-        byte ixa = Avg3(i, x, a);
+        var ixa = Avg3(i, x, a);
         Dst(dst, 0, 1, ixa);
         Dst(dst, 1, 3, ixa);
-        byte xab = Avg3(x, a, b);
+        var xab = Avg3(x, a, b);
         Dst(dst, 1, 1, xab);
         Dst(dst, 2, 3, xab);
-        byte abc = Avg3(a, b, c);
+        var abc = Avg3(a, b, c);
         Dst(dst, 2, 1, abc);
         Dst(dst, 3, 3, abc);
         Dst(dst, 3, 1, Avg3(b, c, d));
@@ -610,33 +610,33 @@ internal static class LossyUtils
     public static void LD4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // Down-Left
-        byte a = yuv[offset - WebpConstants.Bps];
-        byte b = yuv[offset + 1 - WebpConstants.Bps];
-        byte c = yuv[offset + 2 - WebpConstants.Bps];
-        byte d = yuv[offset + 3 - WebpConstants.Bps];
-        byte e = yuv[offset + 4 - WebpConstants.Bps];
-        byte f = yuv[offset + 5 - WebpConstants.Bps];
-        byte g = yuv[offset + 6 - WebpConstants.Bps];
-        byte h = yuv[offset + 7 - WebpConstants.Bps];
+        var a = yuv[offset - WebpConstants.Bps];
+        var b = yuv[offset + 1 - WebpConstants.Bps];
+        var c = yuv[offset + 2 - WebpConstants.Bps];
+        var d = yuv[offset + 3 - WebpConstants.Bps];
+        var e = yuv[offset + 4 - WebpConstants.Bps];
+        var f = yuv[offset + 5 - WebpConstants.Bps];
+        var g = yuv[offset + 6 - WebpConstants.Bps];
+        var h = yuv[offset + 7 - WebpConstants.Bps];
 
         Dst(dst, 0, 0, Avg3(a, b, c));
-        byte bcd = Avg3(b, c, d);
+        var bcd = Avg3(b, c, d);
         Dst(dst, 1, 0, bcd);
         Dst(dst, 0, 1, bcd);
-        byte cde = Avg3(c, d, e);
+        var cde = Avg3(c, d, e);
         Dst(dst, 2, 0, cde);
         Dst(dst, 1, 1, cde);
         Dst(dst, 0, 2, cde);
-        byte def = Avg3(d, e, f);
+        var def = Avg3(d, e, f);
         Dst(dst, 3, 0, def);
         Dst(dst, 2, 1, def);
         Dst(dst, 1, 2, def);
         Dst(dst, 0, 3, def);
-        byte efg = Avg3(e, f, g);
+        var efg = Avg3(e, f, g);
         Dst(dst, 3, 1, efg);
         Dst(dst, 2, 2, efg);
         Dst(dst, 1, 3, efg);
-        byte fgh = Avg3(f, g, h);
+        var fgh = Avg3(f, g, h);
         Dst(dst, 3, 2, fgh);
         Dst(dst, 2, 3, fgh);
         Dst(dst, 3, 3, Avg3(g, h, h));
@@ -645,33 +645,33 @@ internal static class LossyUtils
     public static void VL4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // Vertical-Left
-        byte a = yuv[offset - WebpConstants.Bps];
-        byte b = yuv[offset + 1 - WebpConstants.Bps];
-        byte c = yuv[offset + 2 - WebpConstants.Bps];
-        byte d = yuv[offset + 3 - WebpConstants.Bps];
-        byte e = yuv[offset + 4 - WebpConstants.Bps];
-        byte f = yuv[offset + 5 - WebpConstants.Bps];
-        byte g = yuv[offset + 6 - WebpConstants.Bps];
-        byte h = yuv[offset + 7 - WebpConstants.Bps];
+        var a = yuv[offset - WebpConstants.Bps];
+        var b = yuv[offset + 1 - WebpConstants.Bps];
+        var c = yuv[offset + 2 - WebpConstants.Bps];
+        var d = yuv[offset + 3 - WebpConstants.Bps];
+        var e = yuv[offset + 4 - WebpConstants.Bps];
+        var f = yuv[offset + 5 - WebpConstants.Bps];
+        var g = yuv[offset + 6 - WebpConstants.Bps];
+        var h = yuv[offset + 7 - WebpConstants.Bps];
 
         Dst(dst, 0, 0, Avg2(a, b));
-        byte bc = Avg2(b, c);
+        var bc = Avg2(b, c);
         Dst(dst, 1, 0, bc);
         Dst(dst, 0, 2, bc);
-        byte cd = Avg2(c, d);
+        var cd = Avg2(c, d);
         Dst(dst, 2, 0, cd);
         Dst(dst, 1, 2, cd);
-        byte de = Avg2(d, e);
+        var de = Avg2(d, e);
         Dst(dst, 3, 0, de);
         Dst(dst, 2, 2, de);
         Dst(dst, 0, 1, Avg3(a, b, c));
-        byte bcd = Avg3(b, c, d);
+        var bcd = Avg3(b, c, d);
         Dst(dst, 1, 1, bcd);
         Dst(dst, 0, 3, bcd);
-        byte cde = Avg3(c, d, e);
+        var cde = Avg3(c, d, e);
         Dst(dst, 2, 1, cde);
         Dst(dst, 1, 3, cde);
-        byte def = Avg3(d, e, f);
+        var def = Avg3(d, e, f);
         Dst(dst, 3, 1, def);
         Dst(dst, 2, 3, def);
         Dst(dst, 3, 2, Avg3(e, f, g));
@@ -681,34 +681,34 @@ internal static class LossyUtils
     public static void HD4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // Horizontal-Down
-        byte i = yuv[offset - 1];
-        byte j = yuv[offset - 1 + (1 * WebpConstants.Bps)];
-        byte k = yuv[offset - 1 + (2 * WebpConstants.Bps)];
-        byte l = yuv[offset - 1 + (3 * WebpConstants.Bps)];
-        byte x = yuv[offset - 1 - WebpConstants.Bps];
-        byte a = yuv[offset - WebpConstants.Bps];
-        byte b = yuv[offset + 1 - WebpConstants.Bps];
-        byte c = yuv[offset + 2 - WebpConstants.Bps];
+        var i = yuv[offset - 1];
+        var j = yuv[offset - 1 + (1 * WebpConstants.Bps)];
+        var k = yuv[offset - 1 + (2 * WebpConstants.Bps)];
+        var l = yuv[offset - 1 + (3 * WebpConstants.Bps)];
+        var x = yuv[offset - 1 - WebpConstants.Bps];
+        var a = yuv[offset - WebpConstants.Bps];
+        var b = yuv[offset + 1 - WebpConstants.Bps];
+        var c = yuv[offset + 2 - WebpConstants.Bps];
 
-        byte ix = Avg2(i, x);
+        var ix = Avg2(i, x);
         Dst(dst, 0, 0, ix);
         Dst(dst, 2, 1, ix);
-        byte ji = Avg2(j, i);
+        var ji = Avg2(j, i);
         Dst(dst, 0, 1, ji);
         Dst(dst, 2, 2, ji);
-        byte kj = Avg2(k, j);
+        var kj = Avg2(k, j);
         Dst(dst, 0, 2, kj);
         Dst(dst, 2, 3, kj);
         Dst(dst, 0, 3, Avg2(l, k));
         Dst(dst, 3, 0, Avg3(a, b, c));
         Dst(dst, 2, 0, Avg3(x, a, b));
-        byte ixa = Avg3(i, x, a);
+        var ixa = Avg3(i, x, a);
         Dst(dst, 1, 0, ixa);
         Dst(dst, 3, 1, ixa);
-        byte jix = Avg3(j, i, x);
+        var jix = Avg3(j, i, x);
         Dst(dst, 1, 1, jix);
         Dst(dst, 3, 2, jix);
-        byte kji = Avg3(k, j, i);
+        var kji = Avg3(k, j, i);
         Dst(dst, 1, 2, kji);
         Dst(dst, 3, 3, kji);
         Dst(dst, 1, 3, Avg3(l, k, j));
@@ -717,23 +717,23 @@ internal static class LossyUtils
     public static void HU4(Span<byte> dst, Span<byte> yuv, int offset)
     {
         // Horizontal-Up
-        byte i = yuv[offset - 1];
-        byte j = yuv[offset - 1 + (1 * WebpConstants.Bps)];
-        byte k = yuv[offset - 1 + (2 * WebpConstants.Bps)];
-        byte l = yuv[offset - 1 + (3 * WebpConstants.Bps)];
+        var i = yuv[offset - 1];
+        var j = yuv[offset - 1 + (1 * WebpConstants.Bps)];
+        var k = yuv[offset - 1 + (2 * WebpConstants.Bps)];
+        var l = yuv[offset - 1 + (3 * WebpConstants.Bps)];
 
         Dst(dst, 0, 0, Avg2(i, j));
-        byte jk = Avg2(j, k);
+        var jk = Avg2(j, k);
         Dst(dst, 2, 0, jk);
         Dst(dst, 0, 1, jk);
-        byte kl = Avg2(k, l);
+        var kl = Avg2(k, l);
         Dst(dst, 2, 1, kl);
         Dst(dst, 0, 2, kl);
         Dst(dst, 1, 0, Avg3(i, j, k));
-        byte jkl = Avg3(j, k, l);
+        var jkl = Avg3(j, k, l);
         Dst(dst, 3, 0, jkl);
         Dst(dst, 1, 1, jkl);
-        byte kll = Avg3(k, l, l);
+        var kll = Avg3(k, l, l);
         Dst(dst, 3, 1, kll);
         Dst(dst, 1, 2, kll);
         Dst(dst, 3, 2, l);
@@ -749,32 +749,32 @@ internal static class LossyUtils
     /// </summary>
     public static void TransformWht(Span<short> input, Span<short> output, Span<int> scratch)
     {
-        Span<int> tmp = scratch.Slice(0, 16);
+        var tmp = scratch.Slice(0, 16);
         tmp.Clear();
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
-            int iPlus4 = 4 + i;
-            int iPlus8 = 8 + i;
-            int iPlus12 = 12 + i;
-            int a0 = input[i] + input[iPlus12];
-            int a1 = input[iPlus4] + input[iPlus8];
-            int a2 = input[iPlus4] - input[iPlus8];
-            int a3 = input[i] - input[iPlus12];
+            var iPlus4 = 4 + i;
+            var iPlus8 = 8 + i;
+            var iPlus12 = 12 + i;
+            var a0 = input[i] + input[iPlus12];
+            var a1 = input[iPlus4] + input[iPlus8];
+            var a2 = input[iPlus4] - input[iPlus8];
+            var a3 = input[i] - input[iPlus12];
             tmp[i] = a0 + a1;
             tmp[iPlus8] = a0 - a1;
             tmp[iPlus4] = a3 + a2;
             tmp[iPlus12] = a3 - a2;
         }
 
-        int outputOffset = 0;
-        for (int i = 0; i < 4; i++)
+        var outputOffset = 0;
+        for (var i = 0; i < 4; i++)
         {
-            int imul4 = i * 4;
-            int dc = tmp[0 + imul4] + 3;
-            int a0 = dc + tmp[3 + imul4];
-            int a1 = tmp[1 + imul4] + tmp[2 + imul4];
-            int a2 = tmp[1 + imul4] - tmp[2 + imul4];
-            int a3 = dc - tmp[3 + imul4];
+            var imul4 = i * 4;
+            var dc = tmp[0 + imul4] + 3;
+            var a0 = dc + tmp[3 + imul4];
+            var a1 = tmp[1 + imul4] + tmp[2 + imul4];
+            var a2 = tmp[1 + imul4] - tmp[2 + imul4];
+            var a3 = dc - tmp[3 + imul4];
             output[outputOffset + 0] = (short)((a0 + a1) >> 3);
             output[outputOffset + 16] = (short)((a3 + a2) >> 3);
             output[outputOffset + 32] = (short)((a0 - a1) >> 3);
@@ -790,21 +790,21 @@ internal static class LossyUtils
     /// </summary>
     public static int TTransform(Span<byte> input, Span<ushort> w, Span<int> scratch)
     {
-        int sum = 0;
-        Span<int> tmp = scratch.Slice(0, 16);
+        var sum = 0;
+        var tmp = scratch.Slice(0, 16);
         tmp.Clear();
 
         // horizontal pass.
-        int inputOffset = 0;
-        for (int i = 0; i < 4; i++)
+        var inputOffset = 0;
+        for (var i = 0; i < 4; i++)
         {
-            int inputOffsetPlusOne = inputOffset + 1;
-            int inputOffsetPlusTwo = inputOffset + 2;
-            int inputOffsetPlusThree = inputOffset + 3;
-            int a0 = input[inputOffset] + input[inputOffsetPlusTwo];
-            int a1 = input[inputOffsetPlusOne] + input[inputOffsetPlusThree];
-            int a2 = input[inputOffsetPlusOne] - input[inputOffsetPlusThree];
-            int a3 = input[inputOffset] - input[inputOffsetPlusTwo];
+            var inputOffsetPlusOne = inputOffset + 1;
+            var inputOffsetPlusTwo = inputOffset + 2;
+            var inputOffsetPlusThree = inputOffset + 3;
+            var a0 = input[inputOffset] + input[inputOffsetPlusTwo];
+            var a1 = input[inputOffsetPlusOne] + input[inputOffsetPlusThree];
+            var a2 = input[inputOffsetPlusOne] - input[inputOffsetPlusThree];
+            var a3 = input[inputOffset] - input[inputOffsetPlusTwo];
             tmp[0 + (i * 4)] = a0 + a1;
             tmp[1 + (i * 4)] = a3 + a2;
             tmp[2 + (i * 4)] = a3 - a2;
@@ -814,16 +814,16 @@ internal static class LossyUtils
         }
 
         // vertical pass
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
-            int a0 = tmp[0 + i] + tmp[8 + i];
-            int a1 = tmp[4 + i] + tmp[12 + i];
-            int a2 = tmp[4 + i] - tmp[12 + i];
-            int a3 = tmp[0 + i] - tmp[8 + i];
-            int b0 = a0 + a1;
-            int b1 = a3 + a2;
-            int b2 = a3 - a2;
-            int b3 = a0 - a1;
+            var a0 = tmp[0 + i] + tmp[8 + i];
+            var a1 = tmp[4 + i] + tmp[12 + i];
+            var a2 = tmp[4 + i] - tmp[12 + i];
+            var a3 = tmp[0 + i] - tmp[8 + i];
+            var b0 = a0 + a1;
+            var b1 = a3 + a2;
+            var b2 = a3 - a2;
+            var b3 = a0 - a1;
 
             sum += w[0] * Math.Abs(b0);
             sum += w[4] * Math.Abs(b1);
@@ -1244,18 +1244,18 @@ internal static class LossyUtils
             else
 #endif
         {
-            Span<int> tmp = scratch.Slice(0, 16);
-            int tmpOffset = 0;
-            for (int srcOffset = 0; srcOffset < 4; srcOffset++)
+            var tmp = scratch.Slice(0, 16);
+            var tmpOffset = 0;
+            for (var srcOffset = 0; srcOffset < 4; srcOffset++)
             {
                 // vertical pass
-                int srcOffsetPlus4 = srcOffset + 4;
-                int srcOffsetPlus8 = srcOffset + 8;
-                int srcOffsetPlus12 = srcOffset + 12;
-                int a = src[srcOffset] + src[srcOffsetPlus8];
-                int b = src[srcOffset] - src[srcOffsetPlus8];
-                int c = Mul2(src[srcOffsetPlus4]) - Mul1(src[srcOffsetPlus12]);
-                int d = Mul1(src[srcOffsetPlus4]) + Mul2(src[srcOffsetPlus12]);
+                var srcOffsetPlus4 = srcOffset + 4;
+                var srcOffsetPlus8 = srcOffset + 8;
+                var srcOffsetPlus12 = srcOffset + 12;
+                var a = src[srcOffset] + src[srcOffsetPlus8];
+                var b = src[srcOffset] - src[srcOffsetPlus8];
+                var c = Mul2(src[srcOffsetPlus4]) - Mul1(src[srcOffsetPlus12]);
+                var d = Mul1(src[srcOffsetPlus4]) + Mul2(src[srcOffsetPlus12]);
                 tmp[tmpOffset++] = a + d;
                 tmp[tmpOffset++] = b + c;
                 tmp[tmpOffset++] = b - c;
@@ -1268,18 +1268,18 @@ internal static class LossyUtils
             // an input in [-2048, 2047] interval. We then need to add a dst value in the [0, 255] range.
             // In the worst case scenario, the input to clip_8b() can be as large as [-60713, 60968].
             tmpOffset = 0;
-            int dstOffset = 0;
-            for (int i = 0; i < 4; i++)
+            var dstOffset = 0;
+            for (var i = 0; i < 4; i++)
             {
                 // horizontal pass
-                int tmpOffsetPlus4 = tmpOffset + 4;
-                int tmpOffsetPlus8 = tmpOffset + 8;
-                int tmpOffsetPlus12 = tmpOffset + 12;
-                int dc = tmp[tmpOffset] + 4;
-                int a = dc + tmp[tmpOffsetPlus8];
-                int b = dc - tmp[tmpOffsetPlus8];
-                int c = Mul2(tmp[tmpOffsetPlus4]) - Mul1(tmp[tmpOffsetPlus12]);
-                int d = Mul1(tmp[tmpOffsetPlus4]) + Mul2(tmp[tmpOffsetPlus12]);
+                var tmpOffsetPlus4 = tmpOffset + 4;
+                var tmpOffsetPlus8 = tmpOffset + 8;
+                var tmpOffsetPlus12 = tmpOffset + 12;
+                var dc = tmp[tmpOffset] + 4;
+                var a = dc + tmp[tmpOffsetPlus8];
+                var b = dc - tmp[tmpOffsetPlus8];
+                var c = Mul2(tmp[tmpOffsetPlus4]) - Mul1(tmp[tmpOffsetPlus12]);
+                var d = Mul1(tmp[tmpOffsetPlus4]) + Mul2(tmp[tmpOffsetPlus12]);
                 Store(dst.Slice(dstOffset), 0, 0, a + d);
                 Store(dst.Slice(dstOffset), 1, 0, b + c);
                 Store(dst.Slice(dstOffset), 2, 0, b - c);
@@ -1293,10 +1293,10 @@ internal static class LossyUtils
 
     public static void TransformDc(Span<short> src, Span<byte> dst)
     {
-        int dc = src[0] + 4;
-        for (int j = 0; j < 4; j++)
+        var dc = src[0] + 4;
+        for (var j = 0; j < 4; j++)
         {
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 Store(dst, i, j, dc);
             }
@@ -1306,11 +1306,11 @@ internal static class LossyUtils
     // Simplified transform when only src[0], src[1] and src[4] are non-zero
     public static void TransformAc3(Span<short> src, Span<byte> dst)
     {
-        int a = src[0] + 4;
-        int c4 = Mul2(src[4]);
-        int d4 = Mul1(src[4]);
-        int c1 = Mul2(src[1]);
-        int d1 = Mul1(src[1]);
+        var a = src[0] + 4;
+        var c4 = Mul2(src[4]);
+        var d4 = Mul1(src[4]);
+        var c1 = Mul2(src[1]);
+        var d1 = Mul1(src[1]);
         Store2(dst, 0, a + d4, d1, c1);
         Store2(dst, 1, a + c4, d1, c1);
         Store2(dst, 2, a - c4, d1, c1);
@@ -1370,9 +1370,9 @@ internal static class LossyUtils
             else
 #endif
         {
-            int thresh2 = (2 * thresh) + 1;
-            int end = 16 + offset;
-            for (int i = offset; i < end; i++)
+            var thresh2 = (2 * thresh) + 1;
+            var end = 16 + offset;
+            for (var i = offset; i < end; i++)
             {
                 if (NeedsFilter(p, i, stride, thresh2))
                 {
@@ -1397,9 +1397,9 @@ internal static class LossyUtils
             else
 #endif
         {
-            int thresh2 = (2 * thresh) + 1;
-            int end = offset + (16 * stride);
-            for (int i = offset; i < end; i += stride)
+            var thresh2 = (2 * thresh) + 1;
+            var end = offset + (16 * stride);
+            for (var i = offset; i < end; i += stride)
             {
                 if (NeedsFilter(p, i, 1, thresh2))
                 {
@@ -1423,7 +1423,7 @@ internal static class LossyUtils
             else
 #endif
         {
-            for (int k = 3; k > 0; k--)
+            for (var k = 3; k > 0; k--)
             {
                 offset += 4 * stride;
                 SimpleVFilter16(p, offset, stride, thresh);
@@ -1445,7 +1445,7 @@ internal static class LossyUtils
             else
 #endif
         {
-            for (int k = 3; k > 0; k--)
+            for (var k = 3; k > 0; k--)
             {
                 offset += 4;
                 SimpleHFilter16(p, offset, stride, thresh);
@@ -1581,7 +1581,7 @@ internal static class LossyUtils
             else
 #endif
         {
-            for (int k = 3; k > 0; k--)
+            for (var k = 3; k > 0; k--)
             {
                 offset += 4 * stride;
                 FilterLoop24(p, offset, stride, 1, 16, thresh, ithresh, hevThresh);
@@ -1630,7 +1630,7 @@ internal static class LossyUtils
             else
 #endif
         {
-            for (int k = 3; k > 0; k--)
+            for (var k = 3; k > 0; k--)
             {
                 offset += 4;
                 FilterLoop24(p, offset, 1, stride, 16, thresh, ithresh, hevThresh);
@@ -1760,7 +1760,7 @@ internal static class LossyUtils
             else
 #endif
         {
-            int offset4mulstride = offset + (4 * stride);
+            var offset4mulstride = offset + (4 * stride);
             FilterLoop24(u, offset4mulstride, stride, 1, 8, thresh, ithresh, hevThresh);
             FilterLoop24(v, offset4mulstride, stride, 1, 8, thresh, ithresh, hevThresh);
         }
@@ -1799,7 +1799,7 @@ internal static class LossyUtils
             else
 #endif
         {
-            int offsetPlus4 = offset + 4;
+            var offsetPlus4 = offset + 4;
             FilterLoop24(u, offsetPlus4, 1, stride, 8, thresh, ithresh, hevThresh);
             FilterLoop24(v, offsetPlus4, 1, stride, 8, thresh, ithresh, hevThresh);
         }
@@ -1838,12 +1838,12 @@ internal static class LossyUtils
             else
 #endif
         {
-            for (int k = 0; k < 4; k++)
+            for (var k = 0; k < 4; k++)
             {
                 uint avg = 0;
-                for (int y = 0; y < 4; y++)
+                for (var y = 0; y < 4; y++)
                 {
-                    for (int x = 0; x < 4; x++)
+                    for (var x = 0; x < 4; x++)
                     {
                         avg += input[x + (y * WebpConstants.Bps)];
                     }
@@ -1873,7 +1873,7 @@ internal static class LossyUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void Put16(int v, Span<byte> dst)
     {
-        for (int j = 0; j < 16; j++)
+        for (var j = 0; j < 16; j++)
         {
             Memset(dst.Slice(j * WebpConstants.Bps), (byte)v, 0, 16);
         }
@@ -1882,14 +1882,14 @@ internal static class LossyUtils
     private static void TrueMotion(Span<byte> dst, Span<byte> yuv, int offset, int size)
     {
         // For information about how true motion works, see rfc6386, page 52. ff and section 20.14.
-        int topOffset = offset - WebpConstants.Bps;
-        Span<byte> top = yuv.Slice(topOffset);
-        byte p = yuv[topOffset - 1];
-        int leftOffset = offset - 1;
-        byte left = yuv[leftOffset];
-        for (int y = 0; y < size; y++)
+        var topOffset = offset - WebpConstants.Bps;
+        var top = yuv.Slice(topOffset);
+        var p = yuv[topOffset - 1];
+        var leftOffset = offset - 1;
+        var left = yuv[leftOffset];
+        for (var y = 0; y < size; y++)
         {
-            for (int x = 0; x < size; x++)
+            for (var x = 0; x < size; x++)
             {
                 dst[x] = (byte)Clamp255(left + top[x] - p);
             }
@@ -1911,7 +1911,7 @@ internal static class LossyUtils
         int ithresh,
         int hevThresh)
     {
-        int thresh2 = (2 * thresh) + 1;
+        var thresh2 = (2 * thresh) + 1;
         while (size-- > 0)
         {
             if (NeedsFilter2(p, offset, hStride, thresh2, ithresh))
@@ -1940,7 +1940,7 @@ internal static class LossyUtils
         int ithresh,
         int hevThresh)
     {
-        int thresh2 = (2 * thresh) + 1;
+        var thresh2 = (2 * thresh) + 1;
         while (size-- > 0)
         {
             if (NeedsFilter2(p, offset, hStride, thresh2, ithresh))
@@ -1967,7 +1967,7 @@ internal static class LossyUtils
         int p0 = p[offset - step];
         int q0 = p[offset];
         int q1 = p[offset + step];
-        int a = (3 * (q0 - p0)) + WebpLookupTables.Sclip1(p1 - q1);
+        var a = (3 * (q0 - p0)) + WebpLookupTables.Sclip1(p1 - q1);
         int a1 = WebpLookupTables.Sclip2((a + 4) >> 3);
         int a2 = WebpLookupTables.Sclip2((a + 3) >> 3);
         p[offset - step] = WebpLookupTables.Clip1(p0 + a2);
@@ -2114,15 +2114,15 @@ internal static class LossyUtils
     private static void DoFilter4(Span<byte> p, int offset, int step)
     {
         // 4 pixels in, 4 pixels out.
-        int offsetMinus2Step = offset - (2 * step);
+        var offsetMinus2Step = offset - (2 * step);
         int p1 = p[offsetMinus2Step];
         int p0 = p[offset - step];
         int q0 = p[offset];
         int q1 = p[offset + step];
-        int a = 3 * (q0 - p0);
+        var a = 3 * (q0 - p0);
         int a1 = WebpLookupTables.Sclip2((a + 4) >> 3);
         int a2 = WebpLookupTables.Sclip2((a + 3) >> 3);
-        int a3 = (a1 + 1) >> 1;
+        var a3 = (a1 + 1) >> 1;
         p[offsetMinus2Step] = WebpLookupTables.Clip1(p1 + a3);
         p[offset - step] = WebpLookupTables.Clip1(p0 + a2);
         p[offset] = WebpLookupTables.Clip1(q0 - a1);
@@ -2133,9 +2133,9 @@ internal static class LossyUtils
     private static void DoFilter6(Span<byte> p, int offset, int step)
     {
         // 6 pixels in, 6 pixels out.
-        int step2 = 2 * step;
-        int step3 = 3 * step;
-        int offsetMinusStep = offset - step;
+        var step2 = 2 * step;
+        var step3 = 3 * step;
+        var offsetMinusStep = offset - step;
         int p2 = p[offset - step3];
         int p1 = p[offset - step2];
         int p0 = p[offsetMinusStep];
@@ -2145,9 +2145,9 @@ internal static class LossyUtils
         int a = WebpLookupTables.Sclip1((3 * (q0 - p0)) + WebpLookupTables.Sclip1(p1 - q1));
 
         // a is in [-128,127], a1 in [-27,27], a2 in [-18,18] and a3 in [-9,9]
-        int a1 = ((27 * a) + 63) >> 7;  // eq. to ((3 * a + 7) * 9) >> 7
-        int a2 = ((18 * a) + 63) >> 7;  // eq. to ((2 * a + 7) * 9) >> 7
-        int a3 = ((9 * a) + 63) >> 7;  // eq. to ((1 * a + 7) * 9) >> 7
+        var a1 = ((27 * a) + 63) >> 7;  // eq. to ((3 * a + 7) * 9) >> 7
+        var a2 = ((18 * a) + 63) >> 7;  // eq. to ((2 * a + 7) * 9) >> 7
+        var a3 = ((9 * a) + 63) >> 7;  // eq. to ((1 * a + 7) * 9) >> 7
         p[offset - step3] = WebpLookupTables.Clip1(p2 + a3);
         p[offset - step2] = WebpLookupTables.Clip1(p1 + a2);
         p[offsetMinusStep] = WebpLookupTables.Clip1(p0 + a1);
@@ -2168,8 +2168,8 @@ internal static class LossyUtils
 
     private static bool NeedsFilter2(Span<byte> p, int offset, int step, int t, int it)
     {
-        int step2 = 2 * step;
-        int step3 = 3 * step;
+        var step2 = 2 * step;
+        var step3 = 3 * step;
         int p3 = p[offset - (4 * step)];
         int p2 = p[offset - step3];
         int p1 = p[offset - step2];
@@ -2396,7 +2396,7 @@ internal static class LossyUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void Store(Span<byte> dst, int x, int y, int v)
     {
-        int index = x + (y * WebpConstants.Bps);
+        var index = x + (y * WebpConstants.Bps);
         dst[index] = Clip8B(dst[index] + (v >> 3));
     }
 
@@ -2418,8 +2418,8 @@ internal static class LossyUtils
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void Put8x8uv(byte value, Span<byte> dst)
     {
-        int end = 8 * WebpConstants.Bps;
-        for (int j = 0; j < end; j += WebpConstants.Bps)
+        var end = 8 * WebpConstants.Bps;
+        for (var j = 0; j < end; j += WebpConstants.Bps)
         {
             // memset(dst + j * BPS, value, 8);
             Memset(dst, value, j, 8);

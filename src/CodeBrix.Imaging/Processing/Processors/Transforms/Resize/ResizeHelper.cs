@@ -17,8 +17,8 @@ internal static class ResizeHelper
         int width,
         int sizeLimitHintInBytes)
     {
-        int sizeLimitHint = sizeLimitHintInBytes / sizeof(Vector4);
-        int sizeOfOneWindow = windowBandHeight * width;
+        var sizeLimitHint = sizeLimitHintInBytes / sizeof(Vector4);
+        var sizeOfOneWindow = windowBandHeight * width;
         return Math.Max(2, sizeLimitHint / sizeOfOneWindow);
     }
 
@@ -32,8 +32,8 @@ internal static class ResizeHelper
     /// </returns>
     public static (Size Size, Rectangle Rectangle) CalculateTargetLocationAndBounds(Size sourceSize, ResizeOptions options)
     {
-        int width = options.Size.Width;
-        int height = options.Size.Height;
+        var width = options.Size.Width;
+        var height = options.Size.Height;
 
         if (width <= 0 && height <= 0)
         {
@@ -82,23 +82,23 @@ internal static class ResizeHelper
         int width,
         int height)
     {
-        int sourceWidth = source.Width;
-        int sourceHeight = source.Height;
+        var sourceWidth = source.Width;
+        var sourceHeight = source.Height;
 
         // Fractional variants for preserving aspect ratio.
-        float percentHeight = MathF.Abs(height / (float)sourceHeight);
-        float percentWidth = MathF.Abs(width / (float)sourceWidth);
+        var percentHeight = MathF.Abs(height / (float)sourceHeight);
+        var percentWidth = MathF.Abs(width / (float)sourceWidth);
 
-        int boxPadHeight = height > 0 ? height : (int)MathF.Round(sourceHeight * percentWidth);
-        int boxPadWidth = width > 0 ? width : (int)MathF.Round(sourceWidth * percentHeight);
+        var boxPadHeight = height > 0 ? height : (int)MathF.Round(sourceHeight * percentWidth);
+        var boxPadWidth = width > 0 ? width : (int)MathF.Round(sourceWidth * percentHeight);
 
         // Only calculate if upscaling.
         if (sourceWidth < boxPadWidth && sourceHeight < boxPadHeight)
         {
             int targetX;
             int targetY;
-            int targetWidth = sourceWidth;
-            int targetHeight = sourceHeight;
+            var targetWidth = sourceWidth;
+            var targetHeight = sourceHeight;
             width = boxPadWidth;
             height = boxPadHeight;
 
@@ -157,17 +157,17 @@ internal static class ResizeHelper
         int height)
     {
         float ratio;
-        int sourceWidth = source.Width;
-        int sourceHeight = source.Height;
+        var sourceWidth = source.Width;
+        var sourceHeight = source.Height;
 
-        int targetX = 0;
-        int targetY = 0;
-        int targetWidth = width;
-        int targetHeight = height;
+        var targetX = 0;
+        var targetY = 0;
+        var targetWidth = width;
+        var targetHeight = height;
 
         // Fractional variants for preserving aspect ratio.
-        float percentHeight = MathF.Abs(height / (float)sourceHeight);
-        float percentWidth = MathF.Abs(width / (float)sourceWidth);
+        var percentHeight = MathF.Abs(height / (float)sourceHeight);
+        var percentWidth = MathF.Abs(width / (float)sourceWidth);
 
         if (percentHeight < percentWidth)
         {
@@ -175,7 +175,7 @@ internal static class ResizeHelper
 
             if (options.CenterCoordinates.HasValue)
             {
-                float center = -(ratio * sourceHeight) * options.CenterCoordinates.Value.Y;
+                var center = -(ratio * sourceHeight) * options.CenterCoordinates.Value.Y;
                 targetY = (int)MathF.Round(center + (height / 2F));
 
                 if (targetY > 0)
@@ -216,7 +216,7 @@ internal static class ResizeHelper
 
             if (options.CenterCoordinates.HasValue)
             {
-                float center = -(ratio * sourceWidth) * options.CenterCoordinates.Value.X;
+                var center = -(ratio * sourceWidth) * options.CenterCoordinates.Value.X;
                 targetX = (int)MathF.Round(center + (width / 2F));
 
                 if (targetX > 0)
@@ -261,16 +261,16 @@ internal static class ResizeHelper
         int width,
         int height)
     {
-        int targetWidth = width;
-        int targetHeight = height;
+        var targetWidth = width;
+        var targetHeight = height;
 
         // Fractional variants for preserving aspect ratio.
-        float percentHeight = MathF.Abs(height / (float)source.Height);
-        float percentWidth = MathF.Abs(width / (float)source.Width);
+        var percentHeight = MathF.Abs(height / (float)source.Height);
+        var percentWidth = MathF.Abs(width / (float)source.Width);
 
         // Integers must be cast to floats to get needed precision
-        float ratio = height / (float)width;
-        float sourceRatio = source.Height / (float)source.Width;
+        var ratio = height / (float)width;
+        var sourceRatio = source.Height / (float)source.Width;
 
         if (sourceRatio < ratio)
         {
@@ -290,10 +290,10 @@ internal static class ResizeHelper
         int width,
         int height)
     {
-        int sourceWidth = source.Width;
-        int sourceHeight = source.Height;
-        int targetWidth = width;
-        int targetHeight = height;
+        var sourceWidth = source.Width;
+        var sourceHeight = source.Height;
+        var targetWidth = width;
+        var targetHeight = height;
 
         // Don't upscale
         if (width > sourceWidth || height > sourceHeight)
@@ -302,29 +302,29 @@ internal static class ResizeHelper
         }
 
         // Find the shortest distance to go.
-        int widthDiff = sourceWidth - width;
-        int heightDiff = sourceHeight - height;
+        var widthDiff = sourceWidth - width;
+        var heightDiff = sourceHeight - height;
 
         if (widthDiff < heightDiff)
         {
-            float sourceRatio = (float)sourceHeight / sourceWidth;
+            var sourceRatio = (float)sourceHeight / sourceWidth;
             targetHeight = (int)MathF.Round(width * sourceRatio);
         }
         else if (widthDiff > heightDiff)
         {
-            float sourceRatioInverse = (float)sourceWidth / sourceHeight;
+            var sourceRatioInverse = (float)sourceWidth / sourceHeight;
             targetWidth = (int)MathF.Round(height * sourceRatioInverse);
         }
         else
         {
             if (height > width)
             {
-                float percentWidth = MathF.Abs(width / (float)sourceWidth);
+                var percentWidth = MathF.Abs(width / (float)sourceWidth);
                 targetHeight = (int)MathF.Round(sourceHeight * percentWidth);
             }
             else
             {
-                float percentHeight = MathF.Abs(height / (float)sourceHeight);
+                var percentHeight = MathF.Abs(height / (float)sourceHeight);
                 targetWidth = (int)MathF.Round(sourceWidth * percentHeight);
             }
         }
@@ -340,17 +340,17 @@ internal static class ResizeHelper
         int height)
     {
         float ratio;
-        int sourceWidth = sourceSize.Width;
-        int sourceHeight = sourceSize.Height;
+        var sourceWidth = sourceSize.Width;
+        var sourceHeight = sourceSize.Height;
 
-        int targetX = 0;
-        int targetY = 0;
-        int targetWidth = width;
-        int targetHeight = height;
+        var targetX = 0;
+        var targetY = 0;
+        var targetWidth = width;
+        var targetHeight = height;
 
         // Fractional variants for preserving aspect ratio.
-        float percentHeight = MathF.Abs(height / (float)sourceHeight);
-        float percentWidth = MathF.Abs(width / (float)sourceWidth);
+        var percentHeight = MathF.Abs(height / (float)sourceHeight);
+        var percentWidth = MathF.Abs(width / (float)sourceWidth);
 
         if (percentHeight < percentWidth)
         {
@@ -411,12 +411,12 @@ internal static class ResizeHelper
             ThrowInvalid("Manual resizing requires a target location and size.");
         }
 
-        Rectangle targetRectangle = options.TargetRectangle.Value;
+        var targetRectangle = options.TargetRectangle.Value;
 
-        int targetX = targetRectangle.X;
-        int targetY = targetRectangle.Y;
-        int targetWidth = targetRectangle.Width > 0 ? targetRectangle.Width : width;
-        int targetHeight = targetRectangle.Height > 0 ? targetRectangle.Height : height;
+        var targetX = targetRectangle.X;
+        var targetY = targetRectangle.Y;
+        var targetWidth = targetRectangle.Width > 0 ? targetRectangle.Width : width;
+        var targetHeight = targetRectangle.Height > 0 ? targetRectangle.Height : height;
 
         // Target image width and height can be different to the rectangle width and height.
         return (new Size(Sanitize(width), Sanitize(height)), new Rectangle(targetX, targetY, Sanitize(targetWidth), Sanitize(targetHeight)));

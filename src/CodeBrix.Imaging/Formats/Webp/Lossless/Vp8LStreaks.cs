@@ -41,7 +41,7 @@ internal class Vp8LStreaks
     {
         // The constants in this function are experimental and got rounded from
         // their original values in 1/8 when switched to 1/1024.
-        double retval = InitialHuffmanCost();
+        var retval = InitialHuffmanCost();
 
         // Second coefficient: Many zeros in the histogram are covered efficiently
         // by a run-length encode. Originally 2/8.
@@ -64,8 +64,8 @@ internal class Vp8LStreaks
     private static double InitialHuffmanCost()
     {
         // Small bias because Huffman code length is typically not stored in full length.
-        int huffmanCodeOfHuffmanCodeSize = WebpConstants.CodeLengthCodes * 3;
-        double smallBias = 9.1;
+        var huffmanCodeOfHuffmanCodeSize = WebpConstants.CodeLengthCodes * 3;
+        var smallBias = 9.1;
         return huffmanCodeOfHuffmanCodeSize - smallBias;
     }
 }

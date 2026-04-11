@@ -41,7 +41,7 @@ internal class EntropyCropProcessor<TPixel> : ImageProcessor<TPixel>
         // All frames have be the same size so we only need to calculate the correct dimensions for the first frame
         using (var temp = new Image<TPixel>(this.Configuration, this.Source.Metadata.DeepClone(), new[] { this.Source.Frames.RootFrame.Clone() }))
         {
-            Configuration configuration = this.Source.GetConfiguration();
+            var configuration = this.Source.GetConfiguration();
 
             // Detect the edges.
             new EdgeDetector2DProcessor(KnownEdgeDetectorKernels.Sobel, false).Execute(this.Configuration, temp, this.SourceRectangle);
@@ -96,8 +96,8 @@ internal class EntropyCropProcessor<TPixel> : ImageProcessor<TPixel>
     /// </returns>
     private static Rectangle GetFilteredBoundingRectangle(ImageFrame<TPixel> bitmap, float componentValue, RgbaComponent channel = RgbaComponent.B)
     {
-        int width = bitmap.Width;
-        int height = bitmap.Height;
+        var width = bitmap.Width;
+        var height = bitmap.Height;
         Point topLeft = default;
         Point bottomRight = default;
 
@@ -125,9 +125,9 @@ internal class EntropyCropProcessor<TPixel> : ImageProcessor<TPixel>
 
         int GetMinY(ImageFrame<TPixel> pixels)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
                     if (delegateFunc(pixels, x, y, componentValue))
                     {
@@ -141,9 +141,9 @@ internal class EntropyCropProcessor<TPixel> : ImageProcessor<TPixel>
 
         int GetMaxY(ImageFrame<TPixel> pixels)
         {
-            for (int y = height - 1; y > -1; y--)
+            for (var y = height - 1; y > -1; y--)
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
                     if (delegateFunc(pixels, x, y, componentValue))
                     {
@@ -157,9 +157,9 @@ internal class EntropyCropProcessor<TPixel> : ImageProcessor<TPixel>
 
         int GetMinX(ImageFrame<TPixel> pixels)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
                     if (delegateFunc(pixels, x, y, componentValue))
                     {
@@ -173,9 +173,9 @@ internal class EntropyCropProcessor<TPixel> : ImageProcessor<TPixel>
 
         int GetMaxX(ImageFrame<TPixel> pixels)
         {
-            for (int x = width - 1; x > -1; x--)
+            for (var x = width - 1; x > -1; x--)
             {
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
                     if (delegateFunc(pixels, x, y, componentValue))
                     {

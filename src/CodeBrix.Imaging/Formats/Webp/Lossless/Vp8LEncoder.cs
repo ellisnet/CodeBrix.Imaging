@@ -110,8 +110,8 @@ internal class Vp8LEncoder : IDisposable
         bool nearLossless,
         int nearLosslessQuality)
     {
-        int pixelCount = width * height;
-        int initialSize = pixelCount * 2;
+        var pixelCount = width * height;
+        var initialSize = pixelCount * 2;
 
         this.memoryAllocator = memoryAllocator;
         this.configuration = configuration;
@@ -128,8 +128,8 @@ internal class Vp8LEncoder : IDisposable
         this.HashChain = new Vp8LHashChain(memoryAllocator, pixelCount);
 
         // We round the block size up, so we're guaranteed to have at most MaxRefsBlockPerImage blocks used:
-        int refsBlockSize = ((pixelCount - 1) / MaxRefsBlockPerImage) + 1;
-        for (int i = 0; i < this.Refs.Length; i++)
+        var refsBlockSize = ((pixelCount - 1) / MaxRefsBlockPerImage) + 1;
+        for (var i = 0; i < this.Refs.Length; i++)
         {
             this.Refs[i] = new Vp8LBackwardRefs(pixelCount)
             {
@@ -236,14 +236,14 @@ internal class Vp8LEncoder : IDisposable
     public void Encode<TPixel>(Image<TPixel> image, Stream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
+        var width = image.Width;
+        var height = image.Height;
 
-        ImageMetadata metadata = image.Metadata;
+        var metadata = image.Metadata;
         metadata.SyncProfiles();
 
         // Convert image pixels to bgra array.
-        bool hasAlpha = this.ConvertPixelsToBgra(image, width, height);
+        var hasAlpha = this.ConvertPixelsToBgra(image, width, height);
 
         // Write the image size.
         this.WriteImageSize(width, height);
@@ -270,9 +270,9 @@ internal class Vp8LEncoder : IDisposable
     public int EncodeAlphaImageData<TPixel>(Image<TPixel> image, IMemoryOwner<byte> alphaData)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        int pixelCount = width * height;
+        var width = image.Width;
+        var height = image.Height;
+        var pixelCount = width * height;
 
         // Convert image pixels to bgra array.
         this.ConvertPixelsToBgra(image, width, height);
@@ -280,7 +280,7 @@ internal class Vp8LEncoder : IDisposable
         // The image-stream will NOT contain any headers describing the image dimension, the dimension is already known.
         this.EncodeStream(image);
         this.bitWriter.Finish();
-        int size = this.bitWriter.NumBytes();
+        var size = this.bitWriter.NumBytes();
         if (size >= pixelCount)
         {
             // Compressing would not yield in smaller data -> leave the data uncompressed.
@@ -301,8 +301,8 @@ internal class Vp8LEncoder : IDisposable
         Guard.MustBeLessThan(inputImgWidth, WebpConstants.MaxDimension, nameof(inputImgWidth));
         Guard.MustBeLessThan(inputImgHeight, WebpConstants.MaxDimension, nameof(inputImgHeight));
 
-        uint width = (uint)inputImgWidth - 1;
-        uint height = (uint)inputImgHeight - 1;
+        var width = (uint)inputImgWidth - 1;
+        var height = (uint)inputImgHeight - 1;
 
         this.bitWriter.PutBits(width, WebpConstants.Vp8LImageSizeBits);
         this.bitWriter.PutBits(height, WebpConstants.Vp8LImageSizeBits);
@@ -326,24 +326,24 @@ internal class Vp8LEncoder : IDisposable
     private void EncodeStream<TPixel>(Image<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
+        var width = image.Width;
+        var height = image.Height;
 
-        Span<uint> bgra = this.Bgra.GetSpan();
-        Span<uint> encodedData = this.EncodedData.GetSpan();
-        bool lowEffort = this.method == 0;
+        var bgra = this.Bgra.GetSpan();
+        var encodedData = this.EncodedData.GetSpan();
+        var lowEffort = this.method == 0;
 
         // Analyze image (entropy, numPalettes etc).
-        CrunchConfig[] crunchConfigs = this.EncoderAnalyze(bgra, width, height, out bool redAndBlueAlwaysZero);
+        var crunchConfigs = this.EncoderAnalyze(bgra, width, height, out var redAndBlueAlwaysZero);
 
-        int bestSize = 0;
-        Vp8LBitWriter bitWriterInit = this.bitWriter;
-        Vp8LBitWriter bitWriterBest = this.bitWriter.Clone();
-        bool isFirstConfig = true;
-        foreach (CrunchConfig crunchConfig in crunchConfigs)
+        var bestSize = 0;
+        var bitWriterInit = this.bitWriter;
+        var bitWriterBest = this.bitWriter.Clone();
+        var isFirstConfig = true;
+        foreach (var crunchConfig in crunchConfigs)
         {
             bgra.CopyTo(encodedData);
-            bool useCache = true;
+            var useCache = true;
             this.UsePalette = crunchConfig.EntropyIdx is EntropyIx.Palette or EntropyIx.PaletteAndSpatial;
             this.UseSubtractGreenTransform = crunchConfig.EntropyIdx is EntropyIx.SubGreen or EntropyIx.SpatialSubGreen;
             this.UsePredictorTransform = crunchConfig.EntropyIdx is EntropyIx.Spatial or EntropyIx.SpatialSubGreen;
@@ -365,7 +365,7 @@ internal class Vp8LEncoder : IDisposable
             if (this.nearLossless)
             {
                 // Apply near-lossless preprocessing.
-                bool useNearLossless = this.nearLosslessQuality < 100 && !this.UsePalette && !this.UsePredictorTransform;
+                var useNearLossless = this.nearLosslessQuality < 100 && !this.UsePalette && !this.UsePredictorTransform;
                 if (useNearLossless)
                 {
                     this.AllocateTransformBuffer(width, height);
@@ -443,19 +443,19 @@ internal class Vp8LEncoder : IDisposable
     private bool ConvertPixelsToBgra<TPixel>(Image<TPixel> image, int width, int height)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Buffer2D<TPixel> imageBuffer = image.Frames.RootFrame.PixelBuffer;
-        bool nonOpaque = false;
-        Span<uint> bgra = this.Bgra.GetSpan();
-        Span<byte> bgraBytes = MemoryMarshal.Cast<uint, byte>(bgra);
-        int widthBytes = width * 4;
-        for (int y = 0; y < height; y++)
+        var imageBuffer = image.Frames.RootFrame.PixelBuffer;
+        var nonOpaque = false;
+        var bgra = this.Bgra.GetSpan();
+        var bgraBytes = MemoryMarshal.Cast<uint, byte>(bgra);
+        var widthBytes = width * 4;
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> rowSpan = imageBuffer.DangerousGetRowSpan(y);
-            Span<byte> rowBytes = bgraBytes.Slice(y * widthBytes, widthBytes);
+            var rowSpan = imageBuffer.DangerousGetRowSpan(y);
+            var rowBytes = bgraBytes.Slice(y * widthBytes, widthBytes);
             PixelOperations<TPixel>.Instance.ToBgra32Bytes(this.configuration, rowSpan, rowBytes, width);
             if (!nonOpaque)
             {
-                Span<Bgra32> rowBgra = MemoryMarshal.Cast<byte, Bgra32>(rowBytes);
+                var rowBgra = MemoryMarshal.Cast<byte, Bgra32>(rowBytes);
                 nonOpaque = WebpCommonUtils.CheckNonOpaque(rowBgra);
             }
         }
@@ -473,17 +473,17 @@ internal class Vp8LEncoder : IDisposable
     private CrunchConfig[] EncoderAnalyze(ReadOnlySpan<uint> bgra, int width, int height, out bool redAndBlueAlwaysZero)
     {
         // Check if we only deal with a small number of colors and should use a palette.
-        bool usePalette = this.AnalyzeAndCreatePalette(bgra, width, height);
+        var usePalette = this.AnalyzeAndCreatePalette(bgra, width, height);
 
         // Empirical bit sizes.
         this.HistoBits = GetHistoBits(this.method, usePalette, width, height);
         this.TransformBits = GetTransformBits(this.method, this.HistoBits);
 
         // Try out multiple LZ77 on images with few colors.
-        int nlz77s = this.PaletteSize is > 0 and <= 16 ? 2 : 1;
-        EntropyIx entropyIdx = this.AnalyzeEntropy(bgra, width, height, usePalette, this.PaletteSize, this.TransformBits, out redAndBlueAlwaysZero);
+        var nlz77s = this.PaletteSize is > 0 and <= 16 ? 2 : 1;
+        var entropyIdx = this.AnalyzeEntropy(bgra, width, height, usePalette, this.PaletteSize, this.TransformBits, out redAndBlueAlwaysZero);
 
-        bool doNotCache = false;
+        var doNotCache = false;
         var crunchConfigs = new List<CrunchConfig>();
 
         if (this.method == WebpEncodingMethod.BestQuality && this.quality == 100)
@@ -491,7 +491,7 @@ internal class Vp8LEncoder : IDisposable
             doNotCache = true;
 
             // Go brute force on all transforms.
-            foreach (EntropyIx entropyIx in Enum.GetValues(typeof(EntropyIx)).Cast<EntropyIx>())
+            foreach (var entropyIx in Enum.GetValues(typeof(EntropyIx)).Cast<EntropyIx>())
             {
                 // We can only apply kPalette or kPaletteAndSpatial if we can indeed use a palette.
                 if ((entropyIx != EntropyIx.Palette && entropyIx != EntropyIx.PaletteAndSpatial) || usePalette)
@@ -518,9 +518,9 @@ internal class Vp8LEncoder : IDisposable
         }
 
         // Fill in the different LZ77s.
-        foreach (CrunchConfig crunchConfig in crunchConfigs)
+        foreach (var crunchConfig in crunchConfigs)
         {
-            for (int j = 0; j < nlz77s; j++)
+            for (var j = 0; j < nlz77s; j++)
             {
                 crunchConfig.SubConfigs.Add(new CrunchSubConfig
                 {
@@ -536,11 +536,11 @@ internal class Vp8LEncoder : IDisposable
     private void EncodeImage(int width, int height, bool useCache, CrunchConfig config, int cacheBits, bool lowEffort)
     {
         // bgra data with transformations applied.
-        Span<uint> bgra = this.EncodedData.GetSpan();
-        int histogramImageXySize = LosslessUtils.SubSampleSize(width, this.HistoBits) * LosslessUtils.SubSampleSize(height, this.HistoBits);
-        ushort[] histogramSymbols = new ushort[histogramImageXySize];
+        var bgra = this.EncodedData.GetSpan();
+        var histogramImageXySize = LosslessUtils.SubSampleSize(width, this.HistoBits) * LosslessUtils.SubSampleSize(height, this.HistoBits);
+        var histogramSymbols = new ushort[histogramImageXySize];
         var huffTree = new HuffmanTree[3 * WebpConstants.CodeLengthCodes];
-        for (int i = 0; i < huffTree.Length; i++)
+        for (var i = 0; i < huffTree.Length; i++)
         {
             huffTree[i] = default;
         }
@@ -560,12 +560,12 @@ internal class Vp8LEncoder : IDisposable
         // Calculate backward references from BGRA image.
         this.HashChain.Fill(bgra, this.quality, width, height, lowEffort);
 
-        Vp8LBitWriter bitWriterBest = config.SubConfigs.Count > 1 ? this.bitWriter.Clone() : this.bitWriter;
-        Vp8LBitWriter bwInit = this.bitWriter;
-        bool isFirstIteration = true;
-        foreach (CrunchSubConfig subConfig in config.SubConfigs)
+        var bitWriterBest = config.SubConfigs.Count > 1 ? this.bitWriter.Clone() : this.bitWriter;
+        var bwInit = this.bitWriter;
+        var isFirstIteration = true;
+        foreach (var subConfig in config.SubConfigs)
         {
-            Vp8LBackwardRefs refsBest = BackwardReferenceEncoder.GetBackwardReferences(
+            var refsBest = BackwardReferenceEncoder.GetBackwardReferences(
                 width,
                 height,
                 bgra,
@@ -579,12 +579,12 @@ internal class Vp8LEncoder : IDisposable
 
             // Keep the best references aside and use the other element from the first
             // two as a temporary for later usage.
-            Vp8LBackwardRefs refsTmp = this.Refs[refsBest.Equals(this.Refs[0]) ? 1 : 0];
+            var refsTmp = this.Refs[refsBest.Equals(this.Refs[0]) ? 1 : 0];
 
             this.bitWriter.Reset(bwInit);
             var tmpHisto = new Vp8LHistogram(cacheBits);
             var histogramImage = new List<Vp8LHistogram>(histogramImageXySize);
-            for (int i = 0; i < histogramImageXySize; i++)
+            for (var i = 0; i < histogramImageXySize; i++)
             {
                 histogramImage.Add(new Vp8LHistogram(cacheBits));
             }
@@ -593,10 +593,10 @@ internal class Vp8LEncoder : IDisposable
             HistogramEncoder.GetHistoImageSymbols(width, height, refsBest, this.quality, this.HistoBits, cacheBits, histogramImage, tmpHisto, histogramSymbols);
 
             // Create Huffman bit lengths and codes for each histogram image.
-            int histogramImageSize = histogramImage.Count;
-            int bitArraySize = 5 * histogramImageSize;
+            var histogramImageSize = histogramImage.Count;
+            var bitArraySize = 5 * histogramImageSize;
             var huffmanCodes = new HuffmanTreeCode[bitArraySize];
-            for (int i = 0; i < huffmanCodes.Length; i++)
+            for (var i = 0; i < huffmanCodes.Length; i++)
             {
                 huffmanCodes[i] = default;
             }
@@ -615,16 +615,16 @@ internal class Vp8LEncoder : IDisposable
             }
 
             // Huffman image + meta huffman.
-            bool writeHistogramImage = histogramImageSize > 1;
+            var writeHistogramImage = histogramImageSize > 1;
             this.bitWriter.PutBits((uint)(writeHistogramImage ? 1 : 0), 1);
             if (writeHistogramImage)
             {
-                using IMemoryOwner<uint> histogramBgraBuffer = this.memoryAllocator.Allocate<uint>(histogramImageXySize);
-                Span<uint> histogramBgra = histogramBgraBuffer.GetSpan();
-                int maxIndex = 0;
-                for (int i = 0; i < histogramImageXySize; i++)
+                using var histogramBgraBuffer = this.memoryAllocator.Allocate<uint>(histogramImageXySize);
+                var histogramBgra = histogramBgraBuffer.GetSpan();
+                var maxIndex = 0;
+                for (var i = 0; i < histogramImageXySize; i++)
                 {
-                    int symbolIndex = histogramSymbols[i] & 0xffff;
+                    var symbolIndex = histogramSymbols[i] & 0xffff;
                     histogramBgra[i] = (uint)(symbolIndex << 8);
                     if (symbolIndex >= maxIndex)
                     {
@@ -646,10 +646,10 @@ internal class Vp8LEncoder : IDisposable
 
             // Store Huffman codes.
             // Find maximum number of symbols for the huffman tree-set.
-            int maxTokens = 0;
-            for (int i = 0; i < 5 * histogramImage.Count; i++)
+            var maxTokens = 0;
+            for (var i = 0; i < 5 * histogramImage.Count; i++)
             {
-                HuffmanTreeCode codes = huffmanCodes[i];
+                var codes = huffmanCodes[i];
                 if (maxTokens < codes.NumSymbols)
                 {
                     maxTokens = codes.NumSymbols;
@@ -657,14 +657,14 @@ internal class Vp8LEncoder : IDisposable
             }
 
             var tokens = new HuffmanTreeToken[maxTokens];
-            for (int i = 0; i < tokens.Length; i++)
+            for (var i = 0; i < tokens.Length; i++)
             {
                 tokens[i] = new HuffmanTreeToken();
             }
 
-            for (int i = 0; i < 5 * histogramImage.Count; i++)
+            for (var i = 0; i < 5 * histogramImage.Count; i++)
             {
-                HuffmanTreeCode codes = huffmanCodes[i];
+                var codes = huffmanCodes[i];
                 this.StoreHuffmanCode(huffTree, tokens, codes);
                 ClearHuffmanTreeIfOnlyOneSymbol(codes);
             }
@@ -675,7 +675,7 @@ internal class Vp8LEncoder : IDisposable
             // Keep track of the smallest image so far.
             if (isFirstIteration || (bitWriterBest != null && this.bitWriter.NumBytes() < bitWriterBest.NumBytes()))
             {
-                Vp8LBitWriter tmp = this.bitWriter;
+                var tmp = this.bitWriter;
                 this.bitWriter = bitWriterBest;
                 bitWriterBest = tmp;
             }
@@ -692,12 +692,12 @@ internal class Vp8LEncoder : IDisposable
     private void EncodePalette(bool lowEffort)
     {
         Span<uint> tmpPalette = new uint[WebpConstants.MaxPaletteSize];
-        int paletteSize = this.PaletteSize;
-        Span<uint> palette = this.Palette.Memory.Span;
+        var paletteSize = this.PaletteSize;
+        var palette = this.Palette.Memory.Span;
         this.bitWriter.PutBits(WebpConstants.TransformPresent, 1);
         this.bitWriter.PutBits((uint)Vp8LTransformType.ColorIndexingTransform, 2);
         this.bitWriter.PutBits((uint)paletteSize - 1, 8);
-        for (int i = paletteSize - 1; i >= 1; i--)
+        for (var i = paletteSize - 1; i >= 1; i--)
         {
             tmpPalette[i] = LosslessUtils.SubPixels(palette[i], palette[i - 1]);
         }
@@ -719,10 +719,10 @@ internal class Vp8LEncoder : IDisposable
     private void ApplyPredictFilter(int width, int height, bool lowEffort)
     {
         // We disable near-lossless quantization if palette is used.
-        int nearLosslessStrength = this.UsePalette ? 100 : this.nearLosslessQuality;
-        int predBits = this.TransformBits;
-        int transformWidth = LosslessUtils.SubSampleSize(width, predBits);
-        int transformHeight = LosslessUtils.SubSampleSize(height, predBits);
+        var nearLosslessStrength = this.UsePalette ? 100 : this.nearLosslessQuality;
+        var predBits = this.TransformBits;
+        var transformWidth = LosslessUtils.SubSampleSize(width, predBits);
+        var transformHeight = LosslessUtils.SubSampleSize(height, predBits);
 
         PredictorEncoder.ResidualImage(
             width,
@@ -748,9 +748,9 @@ internal class Vp8LEncoder : IDisposable
 
     private void ApplyCrossColorFilter(int width, int height, bool lowEffort)
     {
-        int colorTransformBits = this.TransformBits;
-        int transformWidth = LosslessUtils.SubSampleSize(width, colorTransformBits);
-        int transformHeight = LosslessUtils.SubSampleSize(height, colorTransformBits);
+        var colorTransformBits = this.TransformBits;
+        var transformWidth = LosslessUtils.SubSampleSize(width, colorTransformBits);
+        var transformHeight = LosslessUtils.SubSampleSize(height, colorTransformBits);
 
         PredictorEncoder.ColorSpaceTransform(width, height, colorTransformBits, this.quality, this.EncodedData.GetSpan(), this.TransformData.GetSpan(), this.scratch);
 
@@ -763,17 +763,17 @@ internal class Vp8LEncoder : IDisposable
 
     private void EncodeImageNoHuffman(Span<uint> bgra, Vp8LHashChain hashChain, Vp8LBackwardRefs refsTmp1, Vp8LBackwardRefs refsTmp2, int width, int height, int quality, bool lowEffort)
     {
-        int cacheBits = 0;
-        ushort[] histogramSymbols = new ushort[1]; // Only one tree, one symbol.
+        var cacheBits = 0;
+        var histogramSymbols = new ushort[1]; // Only one tree, one symbol.
 
         var huffmanCodes = new HuffmanTreeCode[5];
-        for (int i = 0; i < huffmanCodes.Length; i++)
+        for (var i = 0; i < huffmanCodes.Length; i++)
         {
             huffmanCodes[i] = default;
         }
 
         var huffTree = new HuffmanTree[3UL * WebpConstants.CodeLengthCodes];
-        for (int i = 0; i < huffTree.Length; i++)
+        for (var i = 0; i < huffTree.Length; i++)
         {
             huffTree[i] = default;
         }
@@ -781,7 +781,7 @@ internal class Vp8LEncoder : IDisposable
         // Calculate backward references from the image pixels.
         hashChain.Fill(bgra, quality, width, height, lowEffort);
 
-        Vp8LBackwardRefs refs = BackwardReferenceEncoder.GetBackwardReferences(
+        var refs = BackwardReferenceEncoder.GetBackwardReferences(
             width,
             height,
             bgra,
@@ -808,10 +808,10 @@ internal class Vp8LEncoder : IDisposable
         this.bitWriter.PutBits(0, 1);
 
         // Find maximum number of symbols for the huffman tree-set.
-        int maxTokens = 0;
-        for (int i = 0; i < 5; i++)
+        var maxTokens = 0;
+        for (var i = 0; i < 5; i++)
         {
-            HuffmanTreeCode codes = huffmanCodes[i];
+            var codes = huffmanCodes[i];
             if (maxTokens < codes.NumSymbols)
             {
                 maxTokens = codes.NumSymbols;
@@ -819,15 +819,15 @@ internal class Vp8LEncoder : IDisposable
         }
 
         var tokens = new HuffmanTreeToken[maxTokens];
-        for (int i = 0; i < tokens.Length; i++)
+        for (var i = 0; i < tokens.Length; i++)
         {
             tokens[i] = new HuffmanTreeToken();
         }
 
         // Store Huffman codes.
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            HuffmanTreeCode codes = huffmanCodes[i];
+            var codes = huffmanCodes[i];
             this.StoreHuffmanCode(huffTree, tokens, codes);
             ClearHuffmanTreeIfOnlyOneSymbol(codes);
         }
@@ -838,14 +838,14 @@ internal class Vp8LEncoder : IDisposable
 
     private void StoreHuffmanCode(HuffmanTree[] huffTree, HuffmanTreeToken[] tokens, HuffmanTreeCode huffmanCode)
     {
-        int count = 0;
-        Span<int> symbols = this.scratch.AsSpan(0, 2);
+        var count = 0;
+        var symbols = this.scratch.AsSpan(0, 2);
         symbols.Clear();
-        int maxBits = 8;
-        int maxSymbol = 1 << maxBits;
+        var maxBits = 8;
+        var maxSymbol = 1 << maxBits;
 
         // Check whether it's a small tree.
-        for (int i = 0; i < huffmanCode.NumSymbols && count < 3; i++)
+        for (var i = 0; i < huffmanCode.NumSymbols && count < 3; i++)
         {
             if (huffmanCode.CodeLengths[i] != 0)
             {
@@ -893,8 +893,8 @@ internal class Vp8LEncoder : IDisposable
     private void StoreFullHuffmanCode(HuffmanTree[] huffTree, HuffmanTreeToken[] tokens, HuffmanTreeCode tree)
     {
         int i;
-        byte[] codeLengthBitDepth = new byte[WebpConstants.CodeLengthCodes];
-        short[] codeLengthBitDepthSymbols = new short[WebpConstants.CodeLengthCodes];
+        var codeLengthBitDepth = new byte[WebpConstants.CodeLengthCodes];
+        var codeLengthBitDepthSymbols = new short[WebpConstants.CodeLengthCodes];
         var huffmanCode = new HuffmanTreeCode
         {
             NumSymbols = WebpConstants.CodeLengthCodes,
@@ -903,9 +903,9 @@ internal class Vp8LEncoder : IDisposable
         };
 
         this.bitWriter.PutBits(0, 1);
-        int numTokens = HuffmanUtils.CreateCompressedHuffmanTree(tree, tokens);
-        uint[] histogram = new uint[WebpConstants.CodeLengthCodes + 1];
-        bool[] bufRle = new bool[WebpConstants.CodeLengthCodes + 1];
+        var numTokens = HuffmanUtils.CreateCompressedHuffmanTree(tree, tokens);
+        var histogram = new uint[WebpConstants.CodeLengthCodes + 1];
+        var bufRle = new bool[WebpConstants.CodeLengthCodes + 1];
         for (i = 0; i < numTokens; i++)
         {
             histogram[tokens[i].Code]++;
@@ -915,8 +915,8 @@ internal class Vp8LEncoder : IDisposable
         this.StoreHuffmanTreeOfHuffmanTreeToBitMask(codeLengthBitDepth);
         ClearHuffmanTreeIfOnlyOneSymbol(huffmanCode);
 
-        int trailingZeroBits = 0;
-        int trimmedLength = numTokens;
+        var trailingZeroBits = 0;
+        var trimmedLength = numTokens;
         i = numTokens;
         while (i-- > 0)
         {
@@ -940,8 +940,8 @@ internal class Vp8LEncoder : IDisposable
             }
         }
 
-        bool writeTrimmedLength = trimmedLength > 1 && trailingZeroBits > 12;
-        int length = writeTrimmedLength ? trimmedLength : numTokens;
+        var writeTrimmedLength = trimmedLength > 1 && trailingZeroBits > 12;
+        var length = writeTrimmedLength ? trimmedLength : numTokens;
         this.bitWriter.PutBits((uint)(writeTrimmedLength ? 1 : 0), 1);
         if (writeTrimmedLength)
         {
@@ -951,8 +951,8 @@ internal class Vp8LEncoder : IDisposable
             }
             else
             {
-                int nBits = Numerics.Log2((uint)trimmedLength - 2);
-                int nBitPairs = (nBits / 2) + 1;
+                var nBits = Numerics.Log2((uint)trimmedLength - 2);
+                var nBitPairs = (nBits / 2) + 1;
                 this.bitWriter.PutBits((uint)nBitPairs - 1, 3);
                 this.bitWriter.PutBits((uint)trimmedLength - 2, nBitPairs * 2);
             }
@@ -963,7 +963,7 @@ internal class Vp8LEncoder : IDisposable
 
     private void StoreHuffmanTreeToBitMask(HuffmanTreeToken[] tokens, int numTokens, HuffmanTreeCode huffmanCode)
     {
-        for (int i = 0; i < numTokens; i++)
+        for (var i = 0; i < numTokens; i++)
         {
             int ix = tokens[i].Code;
             int extraBits = tokens[i].ExtraBits;
@@ -986,7 +986,7 @@ internal class Vp8LEncoder : IDisposable
     private void StoreHuffmanTreeOfHuffmanTreeToBitMask(byte[] codeLengthBitDepth)
     {
         // Throw away trailing zeros:
-        int codesToStore = WebpConstants.CodeLengthCodes;
+        var codesToStore = WebpConstants.CodeLengthCodes;
         for (; codesToStore > 4; codesToStore--)
         {
             if (codeLengthBitDepth[StorageOrder[codesToStore - 1]] != 0)
@@ -996,7 +996,7 @@ internal class Vp8LEncoder : IDisposable
         }
 
         this.bitWriter.PutBits((uint)codesToStore - 4, 4);
-        for (int i = 0; i < codesToStore; i++)
+        for (var i = 0; i < codesToStore; i++)
         {
             this.bitWriter.PutBits(codeLengthBitDepth[StorageOrder[i]], 3);
         }
@@ -1004,20 +1004,20 @@ internal class Vp8LEncoder : IDisposable
 
     private void StoreImageToBitMask(int width, int histoBits, Vp8LBackwardRefs backwardRefs, ushort[] histogramSymbols, HuffmanTreeCode[] huffmanCodes)
     {
-        int histoXSize = histoBits > 0 ? LosslessUtils.SubSampleSize(width, histoBits) : 1;
-        int tileMask = histoBits == 0 ? 0 : -(1 << histoBits);
+        var histoXSize = histoBits > 0 ? LosslessUtils.SubSampleSize(width, histoBits) : 1;
+        var tileMask = histoBits == 0 ? 0 : -(1 << histoBits);
 
         // x and y trace the position in the image.
-        int x = 0;
-        int y = 0;
-        int tileX = x & tileMask;
-        int tileY = y & tileMask;
+        var x = 0;
+        var y = 0;
+        var tileX = x & tileMask;
+        var tileY = y & tileMask;
         int histogramIx = histogramSymbols[0];
-        Span<HuffmanTreeCode> codes = huffmanCodes.AsSpan(5 * histogramIx);
-        using List<PixOrCopy>.Enumerator c = backwardRefs.Refs.GetEnumerator();
+        var codes = huffmanCodes.AsSpan(5 * histogramIx);
+        using var c = backwardRefs.Refs.GetEnumerator();
         while (c.MoveNext())
         {
-            PixOrCopy v = c.Current;
+            var v = c.Current;
             if (tileX != (x & tileMask) || tileY != (y & tileMask))
             {
                 tileX = x & tileMask;
@@ -1028,24 +1028,24 @@ internal class Vp8LEncoder : IDisposable
 
             if (v.IsLiteral())
             {
-                for (int k = 0; k < 4; k++)
+                for (var k = 0; k < 4; k++)
                 {
-                    int code = (int)v.Literal(Order[k]);
+                    var code = (int)v.Literal(Order[k]);
                     this.bitWriter.WriteHuffmanCode(codes[k], code);
                 }
             }
             else if (v.IsCacheIdx())
             {
-                int code = (int)v.CacheIdx();
-                int literalIx = 256 + WebpConstants.NumLengthCodes + code;
+                var code = (int)v.CacheIdx();
+                var literalIx = 256 + WebpConstants.NumLengthCodes + code;
                 this.bitWriter.WriteHuffmanCode(codes[0], literalIx);
             }
             else
             {
-                int bits = 0;
-                int nBits = 0;
-                int distance = (int)v.Distance();
-                int code = LosslessUtils.PrefixEncode(v.Len, ref nBits, ref bits);
+                var bits = 0;
+                var nBits = 0;
+                var distance = (int)v.Distance();
+                var code = LosslessUtils.PrefixEncode(v.Len, ref nBits, ref bits);
                 this.bitWriter.WriteHuffmanCodeWithExtraBits(codes[0], 256 + code, bits, nBits);
 
                 // Don't write the distance with the extra bits code since
@@ -1086,17 +1086,17 @@ internal class Vp8LEncoder : IDisposable
             return EntropyIx.Palette;
         }
 
-        using IMemoryOwner<uint> histoBuffer = this.memoryAllocator.Allocate<uint>((int)HistoIx.HistoTotal * 256, AllocationOptions.Clean);
-        Span<uint> histo = histoBuffer.Memory.Span;
-        uint pixPrev = bgra[0]; // Skip the first pixel.
+        using var histoBuffer = this.memoryAllocator.Allocate<uint>((int)HistoIx.HistoTotal * 256, AllocationOptions.Clean);
+        var histo = histoBuffer.Memory.Span;
+        var pixPrev = bgra[0]; // Skip the first pixel.
         ReadOnlySpan<uint> prevRow = null;
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            ReadOnlySpan<uint> currentRow = bgra.Slice(y * width, width);
-            for (int x = 0; x < width; x++)
+            var currentRow = bgra.Slice(y * width, width);
+            for (var x = 0; x < width; x++)
             {
-                uint pix = currentRow[x];
-                uint pixDiff = LosslessUtils.SubPixels(pix, pixPrev);
+                var pix = currentRow[x];
+                var pixDiff = LosslessUtils.SubPixels(pix, pixPrev);
                 pixPrev = pix;
                 if (pixDiff == 0 || ((!prevRow.IsEmpty) && pix == prevRow[x]))
                 {
@@ -1125,16 +1125,16 @@ internal class Vp8LEncoder : IDisposable
                     histo.Slice((int)HistoIx.HistoBluePredSubGreen * 256));
 
                 // Approximate the palette by the entropy of the multiplicative hash.
-                uint hash = HashPix(pix);
+                var hash = HashPix(pix);
                 histo[((int)HistoIx.HistoPalette * 256) + (int)hash]++;
             }
 
             prevRow = currentRow;
         }
 
-        double[] entropyComp = new double[(int)HistoIx.HistoTotal];
-        double[] entropy = new double[(int)EntropyIx.NumEntropyIx];
-        int lastModeToAnalyze = usePalette ? (int)EntropyIx.Palette : (int)EntropyIx.SpatialSubGreen;
+        var entropyComp = new double[(int)HistoIx.HistoTotal];
+        var entropy = new double[(int)EntropyIx.NumEntropyIx];
+        var lastModeToAnalyze = usePalette ? (int)EntropyIx.Palette : (int)EntropyIx.SpatialSubGreen;
 
         // Let's add one zero to the predicted histograms. The zeros are removed
         // too efficiently by the pixDiff == 0 comparison, at least one of the
@@ -1147,10 +1147,10 @@ internal class Vp8LEncoder : IDisposable
         histo[(int)HistoIx.HistoAlphaPred * 256]++;
 
         var bitEntropy = new Vp8LBitEntropy();
-        for (int j = 0; j < (int)HistoIx.HistoTotal; j++)
+        for (var j = 0; j < (int)HistoIx.HistoTotal; j++)
         {
             bitEntropy.Init();
-            Span<uint> curHisto = histo.Slice(j * 256, 256);
+            var curHisto = histo.Slice(j * 256, 256);
             bitEntropy.BitsEntropyUnrefined(curHisto, 256);
             entropyComp[j] = bitEntropy.BitsEntropyRefine();
         }
@@ -1191,8 +1191,8 @@ internal class Vp8LEncoder : IDisposable
         // lower cost than sizeof(uint32_t)*8.
         entropy[(int)EntropyIx.Palette] += paletteSize * 8;
 
-        EntropyIx minEntropyIx = EntropyIx.Direct;
-        for (int k = (int)EntropyIx.Direct + 1; k <= lastModeToAnalyze; k++)
+        var minEntropyIx = EntropyIx.Direct;
+        for (var k = (int)EntropyIx.Direct + 1; k <= lastModeToAnalyze; k++)
         {
             if (entropy[(int)minEntropyIx] > entropy[k])
             {
@@ -1213,9 +1213,9 @@ internal class Vp8LEncoder : IDisposable
             new[] { (byte)HistoIx.HistoRedPredSubGreen, (byte)HistoIx.HistoBluePredSubGreen },
             new[] { (byte)HistoIx.HistoRed, (byte)HistoIx.HistoBlue }
         };
-        Span<uint> redHisto = histo.Slice(256 * histoPairs[(int)minEntropyIx][0]);
-        Span<uint> blueHisto = histo.Slice(256 * histoPairs[(int)minEntropyIx][1]);
-        for (int i = 1; i < 256; i++)
+        var redHisto = histo.Slice(256 * histoPairs[(int)minEntropyIx][0]);
+        var blueHisto = histo.Slice(256 * histoPairs[(int)minEntropyIx][1]);
+        for (var i = 1; i < 256; i++)
         {
             if ((redHisto[i] | blueHisto[i]) != 0)
             {
@@ -1237,7 +1237,7 @@ internal class Vp8LEncoder : IDisposable
     /// <returns>true, if a palette should be used.</returns>
     private bool AnalyzeAndCreatePalette(ReadOnlySpan<uint> bgra, int width, int height)
     {
-        Span<uint> palette = this.Palette.Memory.Span;
+        var palette = this.Palette.Memory.Span;
         this.PaletteSize = this.GetColorPalette(bgra, width, height, palette);
         if (this.PaletteSize > WebpConstants.MaxPaletteSize)
         {
@@ -1267,10 +1267,10 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     private int GetColorPalette(ReadOnlySpan<uint> bgra, int width, int height, Span<uint> palette)
     {
         var colors = new HashSet<uint>();
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            ReadOnlySpan<uint> bgraRow = bgra.Slice(y * width, width);
-            for (int x = 0; x < width; x++)
+            var bgraRow = bgra.Slice(y * width, width);
+            for (var x = 0; x < width; x++)
             {
                 colors.Add(bgraRow[x]);
                 if (colors.Count > WebpConstants.MaxPaletteSize)
@@ -1282,8 +1282,8 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
         }
 
         // Fill the colors into the palette.
-        using HashSet<uint>.Enumerator colorEnumerator = colors.GetEnumerator();
-        int idx = 0;
+        using var colorEnumerator = colors.GetEnumerator();
+        var idx = 0;
         while (colorEnumerator.MoveNext())
         {
             palette[idx++] = colorEnumerator.Current;
@@ -1294,11 +1294,11 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
     private void MapImageFromPalette(int width, int height)
     {
-        Span<uint> src = this.EncodedData.GetSpan();
-        int srcStride = this.CurrentWidth;
-        Span<uint> dst = this.EncodedData.GetSpan(); // Applying the palette will be done in place.
-        Span<uint> palette = this.Palette.GetSpan();
-        int paletteSize = this.PaletteSize;
+        var src = this.EncodedData.GetSpan();
+        var srcStride = this.CurrentWidth;
+        var dst = this.EncodedData.GetSpan(); // Applying the palette will be done in place.
+        var palette = this.Palette.GetSpan();
+        var paletteSize = this.PaletteSize;
         int xBits;
 
         // Replace each input pixel by corresponding palette index.
@@ -1324,18 +1324,18 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     /// </summary>
     private void ApplyPalette(Span<uint> src, int srcStride, Span<uint> dst, int dstStride, Span<uint> palette, int paletteSize, int width, int height, int xBits)
     {
-        using IMemoryOwner<byte> tmpRowBuffer = this.memoryAllocator.Allocate<byte>(width);
-        Span<byte> tmpRow = tmpRowBuffer.GetSpan();
+        using var tmpRowBuffer = this.memoryAllocator.Allocate<byte>(width);
+        var tmpRow = tmpRowBuffer.GetSpan();
 
         if (paletteSize < ApplyPaletteGreedyMax)
         {
-            uint prevPix = palette[0];
+            var prevPix = palette[0];
             uint prevIdx = 0;
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
-                    uint pix = src[x];
+                    var pix = src[x];
                     if (pix != prevPix)
                     {
                         prevIdx = SearchColorGreedy(palette, pix);
@@ -1352,19 +1352,19 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
         }
         else
         {
-            uint[] buffer = new uint[PaletteInvSize];
+            var buffer = new uint[PaletteInvSize];
 
             // Try to find a perfect hash function able to go from a color to an index
             // within 1 << PaletteInvSize in order to build a hash map to go from color to index in palette.
             int i;
             for (i = 0; i < 3; i++)
             {
-                bool useLut = true;
+                var useLut = true;
 
                 // Set each element in buffer to max value.
                 buffer.AsSpan().Fill(uint.MaxValue);
 
-                for (int j = 0; j < paletteSize; j++)
+                for (var j = 0; j < paletteSize; j++)
                 {
                     uint ind = 0;
                     switch (i)
@@ -1403,8 +1403,8 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
             }
             else
             {
-                uint[] idxMap = new uint[paletteSize];
-                uint[] paletteSorted = new uint[paletteSize];
+                var idxMap = new uint[paletteSize];
+                var paletteSorted = new uint[paletteSize];
                 PrepareMapToPalette(palette, paletteSize, paletteSorted, idxMap);
                 ApplyPaletteForWithIdxMap(width, height, palette, src, srcStride, dst, dstStride, tmpRow, idxMap, xBits, paletteSorted, paletteSize);
             }
@@ -1413,13 +1413,13 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
     private static void ApplyPaletteFor(int width, int height, Span<uint> palette, int hashIdx, Span<uint> src, int srcStride, Span<uint> dst, int dstStride, Span<byte> tmpRow, uint[] buffer, int xBits)
     {
-        uint prevPix = palette[0];
+        var prevPix = palette[0];
         uint prevIdx = 0;
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                uint pix = src[x];
+                var pix = src[x];
                 if (pix != prevPix)
                 {
                     switch (hashIdx)
@@ -1450,13 +1450,13 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
     private static void ApplyPaletteForWithIdxMap(int width, int height, Span<uint> palette, Span<uint> src, int srcStride, Span<uint> dst, int dstStride, Span<byte> tmpRow, uint[] idxMap, int xBits, uint[] paletteSorted, int paletteSize)
     {
-        uint prevPix = palette[0];
+        var prevPix = palette[0];
         uint prevIdx = 0;
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                uint pix = src[x];
+                var pix = src[x];
                 if (pix != prevPix)
                 {
                     prevIdx = idxMap[SearchColorNoIdx(paletteSorted, pix, paletteSize)];
@@ -1480,7 +1480,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     {
         palette.Slice(0, numColors).CopyTo(sorted);
         Array.Sort(sorted, PaletteCompareColorsForSort);
-        for (int i = 0; i < numColors; i++)
+        for (var i = 0; i < numColors; i++)
         {
             idxMap[SearchColorNoIdx(sorted, palette[i], numColors)] = (uint)i;
         }
@@ -1488,7 +1488,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
     private static int SearchColorNoIdx(uint[] sorted, uint color, int hi)
     {
-        int low = 0;
+        var low = 0;
         if (sorted[low] == color)
         {
             return low;  // loop invariant: sorted[low] != color
@@ -1496,7 +1496,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
         while (true)
         {
-            int mid = (low + hi) >> 1;
+            var mid = (low + hi) >> 1;
             if (sorted[mid] == color)
             {
                 return mid;
@@ -1515,8 +1515,8 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
     private static void ClearHuffmanTreeIfOnlyOneSymbol(HuffmanTreeCode huffmanCode)
     {
-        int count = 0;
-        for (int k = 0; k < huffmanCode.NumSymbols; k++)
+        var count = 0;
+        for (var k = 0; k < huffmanCode.NumSymbols; k++)
         {
             if (huffmanCode.CodeLengths[k] != 0)
             {
@@ -1528,7 +1528,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
             }
         }
 
-        for (int k = 0; k < huffmanCode.NumSymbols; k++)
+        for (var k = 0; k < huffmanCode.NumSymbols; k++)
         {
             huffmanCode.CodeLengths[k] = 0;
             huffmanCode.Codes[k] = 0;
@@ -1548,12 +1548,12 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     {
         uint predict = 0x000000;
         byte signFound = 0x00;
-        for (int i = 0; i < numColors; i++)
+        for (var i = 0; i < numColors; i++)
         {
-            uint diff = LosslessUtils.SubPixels(palette[i], predict);
-            byte rd = (byte)((diff >> 16) & 0xff);
-            byte gd = (byte)((diff >> 8) & 0xff);
-            byte bd = (byte)((diff >> 0) & 0xff);
+            var diff = LosslessUtils.SubPixels(palette[i], predict);
+            var rd = (byte)((diff >> 16) & 0xff);
+            var gd = (byte)((diff >> 8) & 0xff);
+            var bd = (byte)((diff >> 0) & 0xff);
             if (rd != 0x00)
             {
                 signFound |= (byte)(rd < 0x80 ? 1 : 2);
@@ -1582,13 +1582,13 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     private static void GreedyMinimizeDeltas(Span<uint> palette, int numColors)
     {
         uint predict = 0x00000000;
-        for (int i = 0; i < numColors; i++)
+        for (var i = 0; i < numColors; i++)
         {
-            int bestIdx = i;
-            uint bestScore = ~0U;
-            for (int k = i; k < numColors; k++)
+            var bestIdx = i;
+            var bestScore = ~0U;
+            for (var k = i; k < numColors; k++)
             {
-                uint curScore = PaletteColorDistance(palette[k], predict);
+                var curScore = PaletteColorDistance(palette[k], predict);
                 if (bestScore > curScore)
                 {
                     bestScore = curScore;
@@ -1597,7 +1597,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
             }
 
             // Swap color(palette[bestIdx], palette[i]);
-            uint best = palette[bestIdx];
+            var best = palette[bestIdx];
             palette[bestIdx] = palette[i];
             palette[i] = best;
             predict = palette[i];
@@ -1606,26 +1606,26 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
 
     private static void GetHuffBitLengthsAndCodes(List<Vp8LHistogram> histogramImage, HuffmanTreeCode[] huffmanCodes)
     {
-        int maxNumSymbols = 0;
+        var maxNumSymbols = 0;
 
         // Iterate over all histograms and get the aggregate number of codes used.
-        for (int i = 0; i < histogramImage.Count; i++)
+        for (var i = 0; i < histogramImage.Count; i++)
         {
-            Vp8LHistogram histo = histogramImage[i];
-            int startIdx = 5 * i;
-            for (int k = 0; k < 5; k++)
+            var histo = histogramImage[i];
+            var startIdx = 5 * i;
+            for (var k = 0; k < 5; k++)
             {
-                int numSymbols =
+                var numSymbols =
                     k == 0 ? histo.NumCodes() :
                     k == 4 ? WebpConstants.NumDistanceCodes : 256;
                 huffmanCodes[startIdx + k].NumSymbols = numSymbols;
             }
         }
 
-        int end = 5 * histogramImage.Count;
-        for (int i = 0; i < end; i++)
+        var end = 5 * histogramImage.Count;
+        for (var i = 0; i < end; i++)
         {
-            int bitLength = huffmanCodes[i].NumSymbols;
+            var bitLength = huffmanCodes[i].NumSymbols;
             huffmanCodes[i].Codes = new short[bitLength];
             huffmanCodes[i].CodeLengths = new byte[bitLength];
             if (maxNumSymbols < bitLength)
@@ -1635,17 +1635,17 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
         }
 
         // Create Huffman trees.
-        bool[] bufRle = new bool[maxNumSymbols];
+        var bufRle = new bool[maxNumSymbols];
         var huffTree = new HuffmanTree[3 * maxNumSymbols];
-        for (int i = 0; i < huffTree.Length; i++)
+        for (var i = 0; i < huffTree.Length; i++)
         {
             huffTree[i] = default;
         }
 
-        for (int i = 0; i < histogramImage.Count; i++)
+        for (var i = 0; i < histogramImage.Count; i++)
         {
-            int codesStartIdx = 5 * i;
-            Vp8LHistogram histo = histogramImage[i];
+            var codesStartIdx = 5 * i;
+            var histo = histogramImage[i];
             HuffmanUtils.CreateHuffmanTree(histo.Literal, 15, bufRle, huffTree, huffmanCodes[codesStartIdx]);
             HuffmanUtils.CreateHuffmanTree(histo.Red, 15, bufRle, huffTree, huffmanCodes[codesStartIdx + 1]);
             HuffmanUtils.CreateHuffmanTree(histo.Blue, 15, bufRle, huffTree, huffmanCodes[codesStartIdx + 2]);
@@ -1663,9 +1663,9 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     [MethodImpl(InliningOptions.ShortMethod)]
     private static uint PaletteColorDistance(uint col1, uint col2)
     {
-        uint diff = LosslessUtils.SubPixels(col1, col2);
+        var diff = LosslessUtils.SubPixels(col1, col2);
         uint moreWeightForRGBThanForAlpha = 9;
-        uint score = PaletteComponentDistance((diff >> 0) & 0xff);
+        var score = PaletteComponentDistance((diff >> 0) & 0xff);
         score += PaletteComponentDistance((diff >> 8) & 0xff);
         score += PaletteComponentDistance((diff >> 16) & 0xff);
         score *= moreWeightForRGBThanForAlpha;
@@ -1680,10 +1680,10 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     private static int GetHistoBits(WebpEncodingMethod method, bool usePalette, int width, int height)
     {
         // Make tile size a function of encoding method (Range: 0 to 6).
-        int histoBits = (usePalette ? 9 : 7) - (int)method;
+        var histoBits = (usePalette ? 9 : 7) - (int)method;
         while (true)
         {
-            int huffImageSize = LosslessUtils.SubSampleSize(width, histoBits) * LosslessUtils.SubSampleSize(height, histoBits);
+            var huffImageSize = LosslessUtils.SubSampleSize(width, histoBits) * LosslessUtils.SubSampleSize(height, histoBits);
             if (huffImageSize <= WebpConstants.MaxHuffImageSize)
             {
                 break;
@@ -1704,12 +1704,12 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
         int x;
         if (xBits > 0)
         {
-            int bitDepth = 1 << (3 - xBits);
-            int mask = (1 << xBits) - 1;
-            uint code = 0xff000000;
+            var bitDepth = 1 << (3 - xBits);
+            var mask = (1 << xBits) - 1;
+            var code = 0xff000000;
             for (x = 0; x < width; x++)
             {
-                int xSub = x & mask;
+                var xSub = x & mask;
                 if (xSub == 0)
                 {
                     code = 0xff000000;
@@ -1731,7 +1731,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     [MethodImpl(InliningOptions.ShortMethod)]
     private void BitWriterSwap(ref Vp8LBitWriter src, ref Vp8LBitWriter dst)
     {
-        Vp8LBitWriter tmp = src;
+        var tmp = src;
         src = dst;
         dst = tmp;
     }
@@ -1742,8 +1742,8 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int GetTransformBits(WebpEncodingMethod method, int histoBits)
     {
-        int maxTransformBits = (int)method < 4 ? 6 : method > WebpEncodingMethod.Level4 ? 4 : 5;
-        int res = histoBits > maxTransformBits ? maxTransformBits : histoBits;
+        var maxTransformBits = (int)method < 4 ? 6 : method > WebpEncodingMethod.Level4 ? 4 : 5;
+        var res = histoBits > maxTransformBits ? maxTransformBits : histoBits;
         return res;
     }
 
@@ -1759,7 +1759,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void AddSingleSubGreen(uint p, Span<uint> r, Span<uint> b)
     {
-        int green = (int)p >> 8;  // The upper bits are masked away later.
+        var green = (int)p >> 8;  // The upper bits are masked away later.
         r[(int)((p >> 16) - green) & 0xff]++;
         b[(int)((p >> 0) - green) & 0xff]++;
     }
@@ -1809,8 +1809,8 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     {
         // VP8LResidualImage needs room for 2 scanlines of uint32 pixels with an extra
         // pixel in each, plus 2 regular scanlines of bytes.
-        int bgraScratchSize = this.UsePredictorTransform ? ((width + 1) * 2) + (((width * 2) + 4 - 1) / 4) : 0;
-        int transformDataSize = this.UsePredictorTransform || this.UseCrossColorTransform ? LosslessUtils.SubSampleSize(width, this.TransformBits) * LosslessUtils.SubSampleSize(height, this.TransformBits) : 0;
+        var bgraScratchSize = this.UsePredictorTransform ? ((width + 1) * 2) + (((width * 2) + 4 - 1) / 4) : 0;
+        var transformDataSize = this.UsePredictorTransform || this.UseCrossColorTransform ? LosslessUtils.SubSampleSize(width, this.TransformBits) * LosslessUtils.SubSampleSize(height, this.TransformBits) : 0;
 
         this.BgraScratch = this.memoryAllocator.Allocate<uint>(bgraScratchSize);
         this.TransformData = this.memoryAllocator.Allocate<uint>(transformDataSize);
@@ -1822,7 +1822,7 @@ if (PaletteHasNonMonotonousDeltas(palette, this.PaletteSize))
     /// </summary>
     public void ClearRefs()
     {
-        for (int i = 0; i < this.Refs.Length; i++)
+        for (var i = 0; i < this.Refs.Length; i++)
         {
             this.Refs[i].Refs.Clear();
         }

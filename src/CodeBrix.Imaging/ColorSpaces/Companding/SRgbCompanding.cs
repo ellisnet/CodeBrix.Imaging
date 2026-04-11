@@ -30,9 +30,9 @@ public static class SRgbCompanding
         {
             var result = new float[Length];
 
-            for (int i = 0; i < result.Length; i++)
+            for (var i = 0; i < result.Length; i++)
             {
-                double d = (double)i / Scale;
+                var d = (double)i / Scale;
                 if (d <= (0.04045 / 12.92))
                 {
                     d *= 12.92;
@@ -54,9 +54,9 @@ public static class SRgbCompanding
         {
             var result = new float[Length];
 
-            for (int i = 0; i < result.Length; i++)
+            for (var i = 0; i < result.Length; i++)
             {
-                double d = (double)i / Scale;
+                var d = (double)i / Scale;
                 if (d <= 0.04045)
                 {
                     d /= 12.92;
@@ -211,22 +211,22 @@ public static class SRgbCompanding
     {
         fixed (float* tablePointer = &table[0])
         {
-            Vector4 zero = Vector4.Zero;
+            var zero = Vector4.Zero;
             var scale = new Vector4(Scale);
-            ref Vector4 vectorsBase = ref MemoryMarshal.GetReference(vectors);
-            ref Vector4 vectorsLast = ref Unsafe.Add(ref vectorsBase, vectors.Length);
+            ref var vectorsBase = ref MemoryMarshal.GetReference(vectors);
+            ref var vectorsLast = ref Unsafe.Add(ref vectorsBase, vectors.Length);
 
             while (Unsafe.IsAddressLessThan(ref vectorsBase, ref vectorsLast))
             {
-                Vector4 multiplied = Numerics.Clamp(vectorsBase * Scale, zero, scale);
+                var multiplied = Numerics.Clamp(vectorsBase * Scale, zero, scale);
 
-                float f0 = multiplied.X;
-                float f1 = multiplied.Y;
-                float f2 = multiplied.Z;
+                var f0 = multiplied.X;
+                var f1 = multiplied.Y;
+                var f2 = multiplied.Z;
 
-                uint i0 = (uint)f0;
-                uint i1 = (uint)f1;
-                uint i2 = (uint)f2;
+                var i0 = (uint)f0;
+                var i1 = (uint)f1;
+                var i2 = (uint)f2;
 
                 // Alpha is already a linear representation of opacity so we do not want to convert it.
                 vectorsBase.X = Numerics.Lerp(tablePointer[i0], tablePointer[i0 + 1], f0 - (int)i0);

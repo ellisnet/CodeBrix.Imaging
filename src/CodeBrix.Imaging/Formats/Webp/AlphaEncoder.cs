@@ -31,14 +31,14 @@ internal class AlphaEncoder : IDisposable
     public IMemoryOwner<byte> EncodeAlpha<TPixel>(Image<TPixel> image, Configuration configuration, MemoryAllocator memoryAllocator, bool compress, out int size)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
+        var width = image.Width;
+        var height = image.Height;
         this.alphaData = ExtractAlphaChannel(image, configuration, memoryAllocator);
 
         if (compress)
         {
-            WebpEncodingMethod effort = WebpEncodingMethod.Default;
-            int quality = 8 * (int)effort;
+            var effort = WebpEncodingMethod.Default;
+            var quality = 8 * (int)effort;
             using var lossLessEncoder = new Vp8LEncoder(
                 memoryAllocator,
                 configuration,
@@ -53,7 +53,7 @@ internal class AlphaEncoder : IDisposable
             // The transparency information will be stored in the green channel of the ARGB quadruplet.
             // The green channel is allowed extra transformation steps in the specification -- unlike the other channels,
             // that can improve compression.
-            using Image<Rgba32> alphaAsImage = DispatchAlphaToGreen(image, this.alphaData.GetSpan());
+            using var alphaAsImage = DispatchAlphaToGreen(image, this.alphaData.GetSpan());
 
             size = lossLessEncoder.EncodeAlphaImageData(alphaAsImage, this.alphaData);
 
@@ -74,16 +74,16 @@ internal class AlphaEncoder : IDisposable
     private static Image<Rgba32> DispatchAlphaToGreen<TPixel>(Image<TPixel> image, Span<byte> alphaData)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
+        var width = image.Width;
+        var height = image.Height;
         var alphaAsImage = new Image<Rgba32>(width, height, WebpFormat.Instance);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Memory<Rgba32> rowBuffer = alphaAsImage.DangerousGetPixelRowMemory(y);
-            Span<Rgba32> pixelRow = rowBuffer.Span;
-            Span<byte> alphaRow = alphaData.Slice(y * width, width);
-            for (int x = 0; x < width; x++)
+            var rowBuffer = alphaAsImage.DangerousGetPixelRowMemory(y);
+            var pixelRow = rowBuffer.Span;
+            var alphaRow = alphaData.Slice(y * width, width);
+            for (var x = 0; x < width; x++)
             {
                 // Leave A/R/B channels zero'd.
                 pixelRow[x] = new Rgba32(0, alphaRow[x], 0, 0);
@@ -104,21 +104,21 @@ internal class AlphaEncoder : IDisposable
     private static IMemoryOwner<byte> ExtractAlphaChannel<TPixel>(Image<TPixel> image, Configuration configuration, MemoryAllocator memoryAllocator)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Buffer2D<TPixel> imageBuffer = image.Frames.RootFrame.PixelBuffer;
-        int height = image.Height;
-        int width = image.Width;
-        IMemoryOwner<byte> alphaDataBuffer = memoryAllocator.Allocate<byte>(width * height);
-        Span<byte> alphaData = alphaDataBuffer.GetSpan();
+        var imageBuffer = image.Frames.RootFrame.PixelBuffer;
+        var height = image.Height;
+        var width = image.Width;
+        var alphaDataBuffer = memoryAllocator.Allocate<byte>(width * height);
+        var alphaData = alphaDataBuffer.GetSpan();
 
-        using IMemoryOwner<Rgba32> rowBuffer = memoryAllocator.Allocate<Rgba32>(width);
-        Span<Rgba32> rgbaRow = rowBuffer.GetSpan();
+        using var rowBuffer = memoryAllocator.Allocate<Rgba32>(width);
+        var rgbaRow = rowBuffer.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> rowSpan = imageBuffer.DangerousGetRowSpan(y);
+            var rowSpan = imageBuffer.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToRgba32(configuration, rowSpan, rgbaRow);
-            int offset = y * width;
-            for (int x = 0; x < width; x++)
+            var offset = y * width;
+            for (var x = 0; x < width; x++)
             {
                 alphaData[offset + x] = rgbaRow[x].A;
             }

@@ -218,7 +218,7 @@ public partial struct La16 : IPixel<La16>, IPackedVector<ushort>
     public readonly Vector4 ToVector4()
     {
         const float Max = 255F;
-        float rgb = this.L / Max;
+        var rgb = this.L / Max;
         return new Vector4(rgb, rgb, rgb, this.A / Max);
     }
 

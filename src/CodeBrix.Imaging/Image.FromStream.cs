@@ -79,7 +79,7 @@ public abstract partial class Image
     /// The <see cref="IImageInfo"/> or null if a suitable info detector is not found.
     /// </returns>
     public static IImageInfo Identify(Stream stream)
-        => Identify(stream, out IImageFormat _);
+        => Identify(stream, out var _);
 
     /// <summary>
     /// Reads the raw image information from the specified stream without fully decoding it.
@@ -144,7 +144,7 @@ public abstract partial class Image
         Stream stream,
         CancellationToken cancellationToken = default)
     {
-        (IImageInfo ImageInfo, IImageFormat Format) res = await IdentifyWithFormatAsync(configuration, stream, cancellationToken).ConfigureAwait(false);
+        var res = await IdentifyWithFormatAsync(configuration, stream, cancellationToken).ConfigureAwait(false);
         return res.ImageInfo;
     }
 
@@ -163,7 +163,7 @@ public abstract partial class Image
     /// </returns>
     public static IImageInfo Identify(Configuration configuration, Stream stream, out IImageFormat format)
     {
-        (IImageInfo ImageInfo, IImageFormat Format) data = WithSeekableStream(configuration, stream, s => InternalIdentity(s, configuration ?? Configuration.Default));
+        var data = WithSeekableStream(configuration, stream, s => InternalIdentity(s, configuration ?? Configuration.Default));
 
         format = data.Format;
         return data.ImageInfo;
@@ -372,7 +372,7 @@ public abstract partial class Image
     /// <returns>A <see cref="Task{Image}"/> representing the asynchronous operation.</returns>
     public static async Task<Image> LoadAsync(Configuration configuration, Stream stream, CancellationToken cancellationToken = default)
     {
-        (Image Image, IImageFormat Format) fmt = await LoadWithFormatAsync(configuration, stream, cancellationToken)
+        var fmt = await LoadWithFormatAsync(configuration, stream, cancellationToken)
             .ConfigureAwait(false);
         return fmt.Image;
     }
@@ -528,7 +528,7 @@ public abstract partial class Image
     /// <returns>A new <see cref="Image{TPixel}"/>.</returns>
     public static Image<TPixel> Load<TPixel>(Configuration configuration, Stream stream)
         where TPixel : unmanaged, IPixel<TPixel>
-        => Load<TPixel>(configuration, stream, out IImageFormat _);
+        => Load<TPixel>(configuration, stream, out var _);
 
     /// <summary>
     /// Create a new instance of the <see cref="Image{TPixel}"/> class from the given stream.
@@ -546,7 +546,7 @@ public abstract partial class Image
     public static Image<TPixel> Load<TPixel>(Configuration configuration, Stream stream, out IImageFormat format)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        (Image<TPixel> Image, IImageFormat Format) data = WithSeekableStream(configuration, stream, s => Decode<TPixel>(s, configuration));
+        var data = WithSeekableStream(configuration, stream, s => Decode<TPixel>(s, configuration));
 
         format = data.Format;
 
@@ -558,7 +558,7 @@ public abstract partial class Image
         var sb = new StringBuilder();
         sb.AppendLine("Image cannot be loaded. Available decoders:");
 
-        foreach (KeyValuePair<IImageFormat, IImageDecoder> val in configuration.ImageFormatsManager.ImageDecoders)
+        foreach (var val in configuration.ImageFormatsManager.ImageDecoders)
         {
             sb.AppendFormat(" - {0} : {1}{2}", val.Key.Name, val.Value.GetType().Name, Environment.NewLine);
         }
@@ -583,7 +583,7 @@ public abstract partial class Image
         Stream stream,
         CancellationToken cancellationToken = default)
     {
-        (Image Image, IImageFormat Format) data = await WithSeekableStreamAsync(
+        var data = await WithSeekableStreamAsync(
                 configuration,
                 stream,
                 (s, ct) => Decode(s, configuration, ct),
@@ -598,7 +598,7 @@ public abstract partial class Image
         var sb = new StringBuilder();
         sb.AppendLine("Image cannot be loaded. Available decoders:");
 
-        foreach (KeyValuePair<IImageFormat, IImageDecoder> val in configuration.ImageFormatsManager.ImageDecoders)
+        foreach (var val in configuration.ImageFormatsManager.ImageDecoders)
         {
             sb.AppendFormat(" - {0} : {1}{2}", val.Key.Name, val.Value.GetType().Name, Environment.NewLine);
         }
@@ -625,7 +625,7 @@ public abstract partial class Image
         CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        (Image<TPixel> Image, IImageFormat Format) data =
+        var data =
             await WithSeekableStreamAsync(
                     configuration,
                     stream,
@@ -641,7 +641,7 @@ public abstract partial class Image
         var sb = new StringBuilder();
         sb.AppendLine("Image cannot be loaded. Available decoders:");
 
-        foreach (KeyValuePair<IImageFormat, IImageDecoder> val in configuration.ImageFormatsManager.ImageDecoders)
+        foreach (var val in configuration.ImageFormatsManager.ImageDecoders)
         {
             sb.AppendFormat(" - {0} : {1}{2}", val.Key.Name, val.Value.GetType().Name, Environment.NewLine);
         }
@@ -668,7 +668,7 @@ public abstract partial class Image
         CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        (Image<TPixel> img, _) = await LoadWithFormatAsync<TPixel>(configuration, stream, cancellationToken)
+        (var img, _) = await LoadWithFormatAsync<TPixel>(configuration, stream, cancellationToken)
             .ConfigureAwait(false);
         return img;
     }
@@ -700,7 +700,7 @@ public abstract partial class Image
         var sb = new StringBuilder();
         sb.AppendLine("Image cannot be loaded. Available decoders:");
 
-        foreach (KeyValuePair<IImageFormat, IImageDecoder> val in configuration.ImageFormatsManager.ImageDecoders)
+        foreach (var val in configuration.ImageFormatsManager.ImageDecoders)
         {
             sb.AppendFormat(" - {0} : {1}{2}", val.Key.Name, val.Value.GetType().Name, Environment.NewLine);
         }

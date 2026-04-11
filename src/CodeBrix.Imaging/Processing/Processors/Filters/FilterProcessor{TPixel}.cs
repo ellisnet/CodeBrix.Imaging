@@ -71,7 +71,7 @@ internal class FilterProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<Vector4> span)
         {
-            Span<TPixel> rowSpan = this.source.DangerousGetRowSpan(y).Slice(this.startX, span.Length);
+            var rowSpan = this.source.DangerousGetRowSpan(y).Slice(this.startX, span.Length);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, rowSpan, span, PixelConversionModifiers.Scale);
 
             ColorNumerics.Transform(span, ref Unsafe.AsRef(in this.matrix));

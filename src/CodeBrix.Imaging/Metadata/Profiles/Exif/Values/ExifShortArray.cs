@@ -74,9 +74,9 @@ internal sealed class ExifShortArray : ExifArrayValue<ushort>
         }
 
         var unsigned = new ushort[signed.Length];
-        for (int i = 0; i < signed.Length; i++)
+        for (var i = 0; i < signed.Length; i++)
         {
-            int s = signed[i];
+            var s = signed[i];
             unsigned[i] = (ushort)s;
         }
 
@@ -92,9 +92,9 @@ internal sealed class ExifShortArray : ExifArrayValue<ushort>
         }
 
         var unsigned = new ushort[signed.Length];
-        for (int i = 0; i < signed.Length; i++)
+        for (var i = 0; i < signed.Length; i++)
         {
-            short s = signed[i];
+            var s = signed[i];
             unsigned[i] = (ushort)s;
         }
 

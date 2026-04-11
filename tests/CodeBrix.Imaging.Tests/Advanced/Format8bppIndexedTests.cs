@@ -76,8 +76,8 @@ public class Format8bppIndexedTests
 
         // Verify the color palette matches exactly.
         // The pixel data offset (stored at bytes 10-13) tells us where headers + palette end.
-        int pixelDataOffset = BinaryPrimitives.ReadInt32LittleEndian(expectedBytes.AsSpan(10));
-        int paletteSize = pixelDataOffset - totalHeaderSize;
+        var pixelDataOffset = BinaryPrimitives.ReadInt32LittleEndian(expectedBytes.AsSpan(10));
+        var paletteSize = pixelDataOffset - totalHeaderSize;
         _output.WriteLine($"Palette size: {paletteSize} bytes ({paletteSize / 4} entries)");
 
         Assert.Equal(
@@ -90,6 +90,14 @@ public class Format8bppIndexedTests
         // decode the same source image (±1 in RGB channel values), which can cause pixels near
         // grayscale quantization boundaries to map to different palette indices.
         Assert.Equal(expectedBytes, actualBytes);
+    }
+
+    public enum TestingColorMatrixMode
+    {
+        UseDefault = 0,  //Use the BmpFormatHelper.DefaultGrayscaleColorMatrix
+        UseBt601 = 1,    //Use the BmpFormatHelper.Bt601GrayscaleColorMatrix
+        UseBt709 = 2,    //Use the BmpFormatHelper.Bt709GrayscaleColorMatrix 
+        UseRedHeavy = 3, //Use the RedHeavyColorMatrix below
     }
 
     /// <summary>
@@ -105,32 +113,113 @@ public class Format8bppIndexedTests
         0f, 0f, 0f, 0f);
 
     [Theory]
-    [InlineData("test-image-01.png", BmpIndexingMode.Normal,
-        "ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp")]
 
-    [InlineData("test-image-01.jpg", BmpIndexingMode.Normal,
-        "ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp")]
+    #region | UseDefault color matrix test cases |
 
-    [InlineData("test-image-01.bmp", BmpIndexingMode.Normal,
-        "ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp")]
+    [InlineData("test-image-01.png", BmpIndexingMode.Normal, TestingColorMatrixMode.UseDefault,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
 
-    [InlineData("test-image-01.png", BmpIndexingMode.SystemDrawingCompatible,
-        "ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")]
+    [InlineData("test-image-01.jpg", BmpIndexingMode.Normal, TestingColorMatrixMode.UseDefault,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
 
-    [InlineData("test-image-01.jpg", BmpIndexingMode.SystemDrawingCompatible,
-        "ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")]
+    [InlineData("test-image-01.bmp", BmpIndexingMode.Normal, TestingColorMatrixMode.UseDefault,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
 
-    [InlineData("test-image-01.bmp", BmpIndexingMode.SystemDrawingCompatible,
-        "ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")]
+    [InlineData("test-image-01.png", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseDefault,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseDefault,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseDefault,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    #endregion
+
+    #region | UseBt601 color matrix test cases |
+
+    [InlineData("test-image-01.png", BmpIndexingMode.Normal, TestingColorMatrixMode.UseBt601,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.Normal, TestingColorMatrixMode.UseBt601,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.Normal, TestingColorMatrixMode.UseBt601,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.png", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseBt601,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseBt601,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseBt601,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    #endregion
+
+    #region | UseBt709 color matrix test cases |
+
+    [InlineData("test-image-01.png", BmpIndexingMode.Normal, TestingColorMatrixMode.UseBt709,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.Normal, TestingColorMatrixMode.UseBt709,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.Normal, TestingColorMatrixMode.UseBt709,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.png", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseBt709,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseBt709,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseBt709,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")] //TODO: We need to generate a new reference BMP for this test case; add it to the SampleFiles folder/namespace as an embedded resource file; and reference it here
+
+    #endregion
+
+    #region | UseRedHeavy color matrix test cases |
+
+    [InlineData("test-image-01.png", BmpIndexingMode.Normal, TestingColorMatrixMode.UseRedHeavy,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp")]
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.Normal, TestingColorMatrixMode.UseRedHeavy,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp")]
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.Normal, TestingColorMatrixMode.UseRedHeavy,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp")]
+
+    [InlineData("test-image-01.png", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseRedHeavy,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")]
+
+    [InlineData("test-image-01.jpg", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseRedHeavy,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")]
+
+    [InlineData("test-image-01.bmp", BmpIndexingMode.SystemDrawingCompatible, TestingColorMatrixMode.UseRedHeavy,
+        "ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp")]
+
+    #endregion
+
     public async Task ExportAs8bppGrayscaleBmpFormatAsync_with_matrix_exports_image(string resourceName, BmpIndexingMode indexingMode,
-        string compareResourceName)
+        TestingColorMatrixMode testingColorMatrixMode, string compareResourceName)
     {
         // Arrange
         using var sampleImage = ImageTestHelper.LoadImage(resourceName);
 
-        // Act - Export as 8bpp grayscale BMP using a red-channel-heavy color matrix
+        // Act - Export as 8bpp grayscale BMP using the specified color matrix
         using var outputMs = new MemoryStream();
-        await sampleImage.ExportAs8bppGrayscaleBmpFormatAsync(outputMs, RedHeavyColorMatrix, indexingMode);
+        var specifiedColorMatrix = testingColorMatrixMode switch
+        {
+            TestingColorMatrixMode.UseDefault => BmpFormatHelper.DefaultGrayscaleColorMatrix,
+            TestingColorMatrixMode.UseBt601 => BmpFormatHelper.Bt601GrayscaleColorMatrix,
+            TestingColorMatrixMode.UseBt709 => BmpFormatHelper.Bt709GrayscaleColorMatrix,
+            TestingColorMatrixMode.UseRedHeavy => RedHeavyColorMatrix,
+            _ => throw new ArgumentOutOfRangeException(nameof(testingColorMatrixMode))
+        };
+
+        await sampleImage.ExportAs8bppGrayscaleBmpFormatAsync(outputMs, specifiedColorMatrix, indexingMode);
         var actualBytes = outputMs.ToArray();
 
         // Load the reference image from embedded resources
@@ -160,8 +249,8 @@ public class Format8bppIndexedTests
 
         // Verify the color palette matches exactly.
         // The pixel data offset (stored at bytes 10-13) tells us where headers + palette end.
-        int pixelDataOffset = BinaryPrimitives.ReadInt32LittleEndian(expectedBytes.AsSpan(10));
-        int paletteSize = pixelDataOffset - totalHeaderSize;
+        var pixelDataOffset = BinaryPrimitives.ReadInt32LittleEndian(expectedBytes.AsSpan(10));
+        var paletteSize = pixelDataOffset - totalHeaderSize;
         _output.WriteLine($"Palette size: {paletteSize} bytes ({paletteSize / 4} entries)");
 
         Assert.Equal(

@@ -28,10 +28,10 @@ internal class SwizzleProcessor<TSwizzler, TPixel> : TransformProcessor<TPixel>
     {
         Point p = default;
         Point newPoint;
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var sourceBuffer = source.PixelBuffer;
         for (p.Y = 0; p.Y < source.Height; p.Y++)
         {
-            Span<TPixel> rowSpan = sourceBuffer.DangerousGetRowSpan(p.Y);
+            var rowSpan = sourceBuffer.DangerousGetRowSpan(p.Y);
             for (p.X = 0; p.X < source.Width; p.X++)
             {
                 newPoint = this.swizzler.Transform(p);

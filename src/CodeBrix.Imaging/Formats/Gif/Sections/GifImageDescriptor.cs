@@ -71,7 +71,7 @@ internal readonly struct GifImageDescriptor
     {
         buffer[0] = GifConstants.ImageDescriptorLabel;
 
-        ref GifImageDescriptor dest = ref Unsafe.As<byte, GifImageDescriptor>(ref MemoryMarshal.GetReference(buffer.Slice(1)));
+        ref var dest = ref Unsafe.As<byte, GifImageDescriptor>(ref MemoryMarshal.GetReference(buffer.Slice(1)));
 
         dest = this;
     }

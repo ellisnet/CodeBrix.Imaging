@@ -49,8 +49,8 @@ internal static class PngEncoderOptionsHelpers
 
         // Ensure bit depth and color type are a supported combination.
         // Bit8 is the only bit depth supported by all color types.
-        byte bits = (byte)options.BitDepth;
-        byte[] validBitDepths = PngConstants.ColorTypes[options.ColorType.Value];
+        var bits = (byte)options.BitDepth;
+        var validBitDepths = PngConstants.ColorTypes[options.ColorType.Value];
         if (Array.IndexOf(validBitDepths, bits) == -1)
         {
             options.BitDepth = PngBitDepth.Bit8;
@@ -86,15 +86,15 @@ internal static class PngEncoderOptionsHelpers
         // Use the metadata to determine what quantization depth to use if no quantizer has been set.
         if (options.Quantizer is null)
         {
-            byte bits = (byte)options.BitDepth;
+            var bits = (byte)options.BitDepth;
             var maxColors = ColorNumerics.GetColorCountForBitDepth(bits);
             options.Quantizer = new WuQuantizer(new QuantizerOptions { MaxColors = maxColors });
         }
 
         // Create quantized frame returning the palette and set the bit depth.
-        using (IQuantizer<TPixel> frameQuantizer = options.Quantizer.CreatePixelSpecificQuantizer<TPixel>(image.GetConfiguration()))
+        using (var frameQuantizer = options.Quantizer.CreatePixelSpecificQuantizer<TPixel>(image.GetConfiguration()))
         {
-            ImageFrame<TPixel> frame = image.Frames.RootFrame;
+            var frame = image.Frames.RootFrame;
             return frameQuantizer.BuildPaletteAndQuantizeFrame(frame, frame.Bounds());
         }
     }
@@ -113,8 +113,8 @@ internal static class PngEncoderOptionsHelpers
         byte bitDepth;
         if (options.ColorType == PngColorType.Palette)
         {
-            byte quantizedBits = (byte)Numerics.Clamp(ColorNumerics.GetBitsNeededForColorDepth(quantizedFrame.Palette.Length), 1, 8);
-            byte bits = Math.Max((byte)options.BitDepth, quantizedBits);
+            var quantizedBits = (byte)Numerics.Clamp(ColorNumerics.GetBitsNeededForColorDepth(quantizedFrame.Palette.Length), 1, 8);
+            var bits = Math.Max((byte)options.BitDepth, quantizedBits);
 
             // Png only supports in four pixel depths: 1, 2, 4, and 8 bits when using the PLTE chunk
             // We check again for the bit depth as the bit depth of the color palette from a given quantizer might not

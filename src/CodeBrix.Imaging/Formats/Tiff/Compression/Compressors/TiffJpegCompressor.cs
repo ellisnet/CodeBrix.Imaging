@@ -28,8 +28,8 @@ internal class TiffJpegCompressor : TiffBaseCompressor
     /// <inheritdoc/>
     public override void CompressStrip(Span<byte> rows, int height)
     {
-        int pixelCount = rows.Length / 3;
-        int width = pixelCount / height;
+        var pixelCount = rows.Length / 3;
+        var width = pixelCount / height;
 
         using var memoryStream = new MemoryStream();
         var image = Image.LoadPixelData<Rgb24>(rows, width, height, TiffFormat.Instance);

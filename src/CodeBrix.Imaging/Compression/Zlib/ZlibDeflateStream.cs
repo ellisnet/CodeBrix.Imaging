@@ -61,7 +61,7 @@ internal sealed class ZlibDeflateStream : Stream
     /// <param name="level">The compression level.</param>
     public ZlibDeflateStream(MemoryAllocator memoryAllocator, Stream stream, PngCompressionLevel level)
     {
-        int compressionLevel = (int)level;
+        var compressionLevel = (int)level;
         this.rawStream = stream;
 
         // Write the zlib header : http://tools.ietf.org/html/rfc1950
@@ -76,7 +76,7 @@ internal sealed class ZlibDeflateStream : Stream
         // |CMF|FLG|
         // +---+---+
         const int Cmf = 0x78;
-        int flg = 218;
+        var flg = 218;
 
         // http://stackoverflow.com/a/2331025/277304
         if (compressionLevel >= 5 && compressionLevel <= 6)
@@ -166,7 +166,7 @@ internal sealed class ZlibDeflateStream : Stream
             this.deflateStream.Dispose();
 
             // Add the crc
-            uint crc = this.adler;
+            var crc = this.adler;
             this.rawStream.WriteByte((byte)((crc >> 24) & 0xFF));
             this.rawStream.WriteByte((byte)((crc >> 16) & 0xFF));
             this.rawStream.WriteByte((byte)((crc >> 8) & 0xFF));

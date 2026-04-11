@@ -176,7 +176,7 @@ public class ImageFormatManager
                 "Please ensure the image was loaded from a supported format, or specify the format explicitly.");
         }
 
-        return this.mimeTypeDecoders.TryGetValue(format, out IImageDecoder decoder)
+        return this.mimeTypeDecoders.TryGetValue(format, out var decoder)
             ? decoder
             : null;
     }
@@ -199,7 +199,7 @@ public class ImageFormatManager
                 "(e.g., PngFormat.Instance, JpegFormat.Instance).");
         }
 
-        return this.mimeTypeEncoders.TryGetValue(format, out IImageEncoder encoder)
+        return this.mimeTypeEncoders.TryGetValue(format, out var encoder)
             ? encoder
             : null;
     }
@@ -213,7 +213,7 @@ public class ImageFormatManager
     {
         Guard.NotNull(encoder, nameof(encoder));
 
-        foreach (KeyValuePair<IImageFormat, IImageEncoder> kvp in this.mimeTypeEncoders)
+        foreach (var kvp in this.mimeTypeEncoders)
         {
             if (kvp.Value.GetType() == encoder.GetType())
             {

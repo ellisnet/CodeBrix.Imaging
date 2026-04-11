@@ -42,22 +42,22 @@ internal sealed class DeflateTiffCompression : TiffBaseDecompressor
     /// <inheritdoc/>
     protected override void Decompress(BufferedReadStream stream, int byteCount, int stripHeight, Span<byte> buffer)
     {
-        long pos = stream.Position;
+        var pos = stream.Position;
         using (var deframeStream = new ZlibInflateStream(
                    stream,
                    () =>
                    {
-                       int left = (int)(byteCount - (stream.Position - pos));
+                       var left = (int)(byteCount - (stream.Position - pos));
                        return left > 0 ? left : 0;
                    }))
         {
             deframeStream.AllocateNewBytes(byteCount, true);
-            DeflateStream dataStream = deframeStream.CompressedStream;
+            var dataStream = deframeStream.CompressedStream;
 
-            int totalRead = 0;
+            var totalRead = 0;
             while (totalRead < buffer.Length)
             {
-                int bytesRead = dataStream.Read(buffer, totalRead, buffer.Length - totalRead);
+                var bytesRead = dataStream.Read(buffer, totalRead, buffer.Length - totalRead);
                 if (bytesRead <= 0)
                 {
                     break;

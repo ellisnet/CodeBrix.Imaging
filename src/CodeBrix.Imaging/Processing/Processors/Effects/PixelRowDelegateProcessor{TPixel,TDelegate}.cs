@@ -88,7 +88,7 @@ internal sealed class PixelRowDelegateProcessor<TPixel, TDelegate> : ImageProces
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<Vector4> span)
         {
-            Span<TPixel> rowSpan = this.source.DangerousGetRowSpan(y).Slice(this.startX, span.Length);
+            var rowSpan = this.source.DangerousGetRowSpan(y).Slice(this.startX, span.Length);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, rowSpan, span, this.modifiers);
 
             // Run the user defined pixel shader to the current row of pixels

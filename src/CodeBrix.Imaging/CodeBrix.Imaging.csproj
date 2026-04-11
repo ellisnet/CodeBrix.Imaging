@@ -6,7 +6,7 @@
 
     <!-- NuGet package properties -->
     <PackageId>CodeBrix.Imaging.ApacheLicenseForever</PackageId>
-    <Version>1.0.91</Version>
+    <Version>1.0.100</Version>
     <Product>CodeBrix.Imaging</Product>
     <Title>CodeBrix.Imaging</Title>
     <Authors>Jeremy Ellis</Authors>

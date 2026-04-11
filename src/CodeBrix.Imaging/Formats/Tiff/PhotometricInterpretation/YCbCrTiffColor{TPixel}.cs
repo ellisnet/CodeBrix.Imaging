@@ -28,15 +28,15 @@ internal class YCbCrTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     /// <inheritdoc/>
     public override void Decode(ReadOnlySpan<byte> data, Buffer2D<TPixel> pixels, int left, int top, int width, int height)
     {
-        ReadOnlySpan<byte> ycbcrData = data;
+        var ycbcrData = data;
         if (this.ycbcrSubSampling != null && !(this.ycbcrSubSampling[0] == 1 && this.ycbcrSubSampling[1] == 1))
         {
             // 4 extra rows and columns for possible padding.
-            int paddedWidth = width + 4;
-            int paddedHeight = height + 4;
-            int requiredBytes = paddedWidth * paddedHeight * 3;
-            using IMemoryOwner<byte> tmpBuffer = this.memoryAllocator.Allocate<byte>(requiredBytes);
-            Span<byte> tmpBufferSpan = tmpBuffer.GetSpan();
+            var paddedWidth = width + 4;
+            var paddedHeight = height + 4;
+            var requiredBytes = paddedWidth * paddedHeight * 3;
+            using var tmpBuffer = this.memoryAllocator.Allocate<byte>(requiredBytes);
+            var tmpBufferSpan = tmpBuffer.GetSpan();
             ReverseChromaSubSampling(width, height, this.ycbcrSubSampling[0], this.ycbcrSubSampling[1], data, tmpBufferSpan);
             ycbcrData = tmpBufferSpan;
             this.DecodeYCbCrData(pixels, left, top, width, height, ycbcrData);
@@ -49,20 +49,20 @@ internal class YCbCrTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     private void DecodeYCbCrData(Buffer2D<TPixel> pixels, int left, int top, int width, int height, ReadOnlySpan<byte> ycbcrData)
     {
         var color = default(TPixel);
-        int offset = 0;
-        int widthPadding = 0;
+        var offset = 0;
+        var widthPadding = 0;
         if (this.ycbcrSubSampling != null)
         {
             // Round to the next integer multiple of horizontalSubSampling.
             widthPadding = TiffUtils.PaddingToNextInteger(width, this.ycbcrSubSampling[0]);
         }
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                Rgba32 rgba = this.converter.ConvertToRgba32(ycbcrData[offset], ycbcrData[offset + 1], ycbcrData[offset + 2]);
+                var rgba = this.converter.ConvertToRgba32(ycbcrData[offset], ycbcrData[offset + 1], ycbcrData[offset + 2]);
                 color.FromRgba32(rgba);
                 pixelRow[x] = color;
                 offset += 3;
@@ -78,25 +78,25 @@ internal class YCbCrTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
         // then the source data will be padded.
         width += TiffUtils.PaddingToNextInteger(width, horizontalSubSampling);
         height += TiffUtils.PaddingToNextInteger(height, verticalSubSampling);
-        int blockWidth = width / horizontalSubSampling;
-        int blockHeight = height / verticalSubSampling;
-        int cbCrOffsetInBlock = horizontalSubSampling * verticalSubSampling;
-        int blockByteCount = cbCrOffsetInBlock + 2;
+        var blockWidth = width / horizontalSubSampling;
+        var blockHeight = height / verticalSubSampling;
+        var cbCrOffsetInBlock = horizontalSubSampling * verticalSubSampling;
+        var blockByteCount = cbCrOffsetInBlock + 2;
 
-        for (int blockRow = blockHeight - 1; blockRow >= 0; blockRow--)
+        for (var blockRow = blockHeight - 1; blockRow >= 0; blockRow--)
         {
-            for (int blockCol = blockWidth - 1; blockCol >= 0; blockCol--)
+            for (var blockCol = blockWidth - 1; blockCol >= 0; blockCol--)
             {
-                int blockOffset = (blockRow * blockWidth) + blockCol;
-                ReadOnlySpan<byte> blockData = source.Slice(blockOffset * blockByteCount, blockByteCount);
-                byte cr = blockData[cbCrOffsetInBlock + 1];
-                byte cb = blockData[cbCrOffsetInBlock];
+                var blockOffset = (blockRow * blockWidth) + blockCol;
+                var blockData = source.Slice(blockOffset * blockByteCount, blockByteCount);
+                var cr = blockData[cbCrOffsetInBlock + 1];
+                var cb = blockData[cbCrOffsetInBlock];
 
-                for (int row = verticalSubSampling - 1; row >= 0; row--)
+                for (var row = verticalSubSampling - 1; row >= 0; row--)
                 {
-                    for (int col = horizontalSubSampling - 1; col >= 0; col--)
+                    for (var col = horizontalSubSampling - 1; col >= 0; col--)
                     {
-                        int offset = 3 * ((((blockRow * verticalSubSampling) + row) * width) + (blockCol * horizontalSubSampling) + col);
+                        var offset = 3 * ((((blockRow * verticalSubSampling) + row) * width) + (blockCol * horizontalSubSampling) + col);
                         destination[offset + 2] = cr;
                         destination[offset + 1] = cb;
                         destination[offset] = blockData[(row * horizontalSubSampling) + col];

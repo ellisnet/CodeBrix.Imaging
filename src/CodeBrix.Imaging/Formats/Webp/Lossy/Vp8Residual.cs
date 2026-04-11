@@ -95,8 +95,8 @@ internal class Vp8Residual
     // Note: no need to record the fixed probas.
     public int RecordCoeffs(int ctx)
     {
-        int n = this.First;
-        Vp8StatsArray s = this.Stats[n].Stats[ctx];
+        var n = this.First;
+        var s = this.Stats[n].Stats[ctx];
         if (this.Last < 0)
         {
             this.RecordStats(0, s, 0);
@@ -114,7 +114,7 @@ internal class Vp8Residual
             }
 
             this.RecordStats(1, s, 1);
-            bool bit = (uint)(v + 1) > 2u;
+            var bit = (uint)(v + 1) > 2u;
             if (this.RecordStats(bit ? 1 : 0, s, 2) == 0)
             {
                 // v = -1 or 1
@@ -133,7 +133,7 @@ internal class Vp8Residual
                 int i;
                 for (i = 0; (pattern >>= 1) != 0; i++)
                 {
-                    int mask = 2 << i;
+                    var mask = 2 << i;
                     if ((pattern & 1) != 0)
                     {
                         this.RecordStats((bits & mask) != 0 ? 1 : 0, s, 3 + i);
@@ -154,15 +154,15 @@ internal class Vp8Residual
 
     public int GetResidualCost(int ctx0)
     {
-        int n = this.First;
+        var n = this.First;
         int p0 = this.Prob[n].Probabilities[ctx0].Probabilities[0];
-        Vp8Costs[] costs = this.Costs;
-        Vp8CostArray t = costs[n].Costs[ctx0];
+        var costs = this.Costs;
+        var t = costs[n].Costs[ctx0];
 
         // bitCost(1, p0) is already incorporated in t[] tables, but only if ctx != 0
         // (as required by the syntax). For ctx0 == 0, we need to add it here or it'll
         // be missing during the loop.
-        int cost = ctx0 == 0 ? LossyUtils.Vp8BitCost(1, (byte)p0) : 0;
+        var cost = ctx0 == 0 ? LossyUtils.Vp8BitCost(1, (byte)p0) : 0;
 
         if (this.Last < 0)
         {
@@ -223,7 +223,7 @@ internal class Vp8Residual
             for (; n < this.Last; ++n)
             {
                 v = Math.Abs(this.Coeffs[n]);
-                int ctx = v >= 2 ? 2 : v;
+                var ctx = v >= 2 ? 2 : v;
                 cost += LevelCost(t.Costs, v);
                 t = costs[n + 1].Costs[ctx];
             }
@@ -233,8 +233,8 @@ internal class Vp8Residual
             cost += LevelCost(t.Costs, v);
             if (n < 15)
             {
-                int b = WebpConstants.Vp8EncBands[n + 1];
-                int ctx = v == 1 ? 1 : 2;
+                var b = WebpConstants.Vp8EncBands[n + 1];
+                var ctx = v == 1 ? 1 : 2;
                 int lastP0 = this.Prob[b].Probabilities[ctx].Probabilities[0];
                 cost += LossyUtils.Vp8BitCost(0, (byte)lastP0);
             }

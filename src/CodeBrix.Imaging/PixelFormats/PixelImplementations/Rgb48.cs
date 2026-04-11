@@ -134,7 +134,7 @@ public partial struct Rgb48 : IPixel<Rgb48>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromL8(L8 source)
     {
-        ushort rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.PackedValue);
+        var rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.PackedValue);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -153,7 +153,7 @@ public partial struct Rgb48 : IPixel<Rgb48>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromLa16(La16 source)
     {
-        ushort rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.L);
+        var rgb = ColorNumerics.UpscaleFrom8BitTo16Bit(source.L);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;

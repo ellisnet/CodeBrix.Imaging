@@ -35,8 +35,8 @@ internal static partial class SimdUtils
                 return;
             }
 
-            int remainder = Numerics.Modulo8(source.Length);
-            int adjustedCount = source.Length - remainder;
+            var remainder = Numerics.Modulo8(source.Length);
+            var adjustedCount = source.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -64,8 +64,8 @@ internal static partial class SimdUtils
                 return;
             }
 
-            int remainder = Numerics.Modulo8(source.Length);
-            int adjustedCount = source.Length - remainder;
+            var remainder = Numerics.Modulo8(source.Length);
+            var adjustedCount = source.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -94,23 +94,23 @@ internal static partial class SimdUtils
             var magicInt = new Vector<uint>(1191182336); // reinterpreted value of 32768.0f
             var mask = new Vector<uint>(255);
 
-            ref Octet<byte> sourceBase = ref Unsafe.As<byte, Octet<byte>>(ref MemoryMarshal.GetReference(source));
-            ref Octet<uint> destBaseAsWideOctet = ref Unsafe.As<float, Octet<uint>>(ref MemoryMarshal.GetReference(dest));
+            ref var sourceBase = ref Unsafe.As<byte, Octet<byte>>(ref MemoryMarshal.GetReference(source));
+            ref var destBaseAsWideOctet = ref Unsafe.As<float, Octet<uint>>(ref MemoryMarshal.GetReference(dest));
 
-            ref Vector<float> destBaseAsFloat = ref Unsafe.As<Octet<uint>, Vector<float>>(ref destBaseAsWideOctet);
+            ref var destBaseAsFloat = ref Unsafe.As<Octet<uint>, Vector<float>>(ref destBaseAsWideOctet);
 
-            int n = dest.Length / 8;
+            var n = dest.Length / 8;
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
-                ref Octet<byte> s = ref Unsafe.Add(ref sourceBase, i);
-                ref Octet<uint> d = ref Unsafe.Add(ref destBaseAsWideOctet, i);
+                ref var s = ref Unsafe.Add(ref sourceBase, i);
+                ref var d = ref Unsafe.Add(ref destBaseAsWideOctet, i);
                 d.LoadFrom(ref s);
             }
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
-                ref Vector<float> df = ref Unsafe.Add(ref destBaseAsFloat, i);
+                ref var df = ref Unsafe.Add(ref destBaseAsFloat, i);
 
                 var vi = Vector.AsVectorUInt32(df);
                 vi &= mask;
@@ -136,9 +136,9 @@ internal static partial class SimdUtils
                 return;
             }
 
-            ref Vector<float> srcBase = ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(source));
-            ref Octet<byte> destBase = ref Unsafe.As<byte, Octet<byte>>(ref MemoryMarshal.GetReference(dest));
-            int n = source.Length / 8;
+            ref var srcBase = ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(source));
+            ref var destBase = ref Unsafe.As<byte, Octet<byte>>(ref MemoryMarshal.GetReference(dest));
+            var n = source.Length / 8;
 
             var magick = new Vector<float>(32768.0f);
             var scale = new Vector<float>(255f) / new Vector<float>(256f);
@@ -147,21 +147,21 @@ internal static partial class SimdUtils
             // SimdUtils.Octet<uint> temp = Unsafe.As<Vector<float>, SimdUtils.Octet<uint>>(ref x)
             // does not work. TODO: This might be a CoreClr bug, need to ask/report
             var temp = default(Octet<uint>);
-            ref Vector<float> tempRef = ref Unsafe.As<Octet<uint>, Vector<float>>(ref temp);
+            ref var tempRef = ref Unsafe.As<Octet<uint>, Vector<float>>(ref temp);
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 // union { float f; uint32_t i; } u;
                 // u.f = 32768.0f + x * (255.0f / 256.0f);
                 // return (uint8_t)u.i;
-                Vector<float> x = Unsafe.Add(ref srcBase, i);
+                var x = Unsafe.Add(ref srcBase, i);
                 x = Vector.Max(x, Vector<float>.Zero);
                 x = Vector.Min(x, Vector<float>.One);
 
                 x = (x * scale) + magick;
                 tempRef = x;
 
-                ref Octet<byte> d = ref Unsafe.Add(ref destBase, i);
+                ref var d = ref Unsafe.Add(ref destBase, i);
                 d.LoadFrom(ref temp);
             }
         }
@@ -185,9 +185,9 @@ internal static partial class SimdUtils
                 return;
             }
 
-            ref Vector<float> srcBase = ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(source));
-            ref Octet<byte> destBase = ref Unsafe.As<byte, Octet<byte>>(ref MemoryMarshal.GetReference(dest));
-            int n = source.Length / 8;
+            ref var srcBase = ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(source));
+            ref var destBase = ref Unsafe.As<byte, Octet<byte>>(ref MemoryMarshal.GetReference(dest));
+            var n = source.Length / 8;
 
             var magick = new Vector<float>(32768.0f);
             var scale = new Vector<float>(255f) / new Vector<float>(256f);
@@ -196,18 +196,18 @@ internal static partial class SimdUtils
             // SimdUtils.Octet<uint> temp = Unsafe.As<Vector<float>, SimdUtils.Octet<uint>>(ref x)
             // does not work. TODO: This might be a CoreClr bug, need to ask/report
             var temp = default(Octet<uint>);
-            ref Vector<float> tempRef = ref Unsafe.As<Octet<uint>, Vector<float>>(ref temp);
+            ref var tempRef = ref Unsafe.As<Octet<uint>, Vector<float>>(ref temp);
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 // union { float f; uint32_t i; } u;
                 // u.f = 32768.0f + x * (255.0f / 256.0f);
                 // return (uint8_t)u.i;
-                Vector<float> x = Unsafe.Add(ref srcBase, i);
+                var x = Unsafe.Add(ref srcBase, i);
                 x = (x * scale) + magick;
                 tempRef = x;
 
-                ref Octet<byte> d = ref Unsafe.Add(ref destBase, i);
+                ref var d = ref Unsafe.Add(ref destBase, i);
                 d.LoadFrom(ref temp);
             }
         }

@@ -20,12 +20,12 @@ internal sealed class HslAndRgbConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public Rgb Convert(in Hsl input)
     {
-        float rangedH = input.H / 360F;
+        var rangedH = input.H / 360F;
         float r = 0;
         float g = 0;
         float b = 0;
-        float s = input.S;
-        float l = input.L;
+        var s = input.S;
+        var l = input.L;
 
         if (MathF.Abs(l) > Constants.Epsilon)
         {
@@ -35,8 +35,8 @@ internal sealed class HslAndRgbConverter
             }
             else
             {
-                float temp2 = (l < .5F) ? l * (1F + s) : l + s - (l * s);
-                float temp1 = (2F * l) - temp2;
+                var temp2 = (l < .5F) ? l * (1F + s) : l + s - (l * s);
+                var temp1 = (2F * l) - temp2;
 
                 r = GetColorComponent(temp1, temp2, rangedH + 0.3333333F);
                 g = GetColorComponent(temp1, temp2, rangedH);
@@ -55,16 +55,16 @@ internal sealed class HslAndRgbConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public Hsl Convert(in Rgb input)
     {
-        float r = input.R;
-        float g = input.G;
-        float b = input.B;
+        var r = input.R;
+        var g = input.G;
+        var b = input.B;
 
-        float max = MathF.Max(r, MathF.Max(g, b));
-        float min = MathF.Min(r, MathF.Min(g, b));
-        float chroma = max - min;
-        float h = 0F;
-        float s = 0F;
-        float l = (max + min) / 2F;
+        var max = MathF.Max(r, MathF.Max(g, b));
+        var min = MathF.Min(r, MathF.Min(g, b));
+        var chroma = max - min;
+        var h = 0F;
+        var s = 0F;
+        var l = (max + min) / 2F;
 
         if (MathF.Abs(chroma) < Constants.Epsilon)
         {

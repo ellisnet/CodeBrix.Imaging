@@ -147,10 +147,10 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         var p1 = secondControlPoint;
         var p2 = point;
 
-        for (int i = 1; i <= BezierSegments; i++)
+        for (var i = 1; i <= BezierSegments; i++)
         {
-            float t = i / (float)BezierSegments;
-            float u = 1f - t;
+            var t = i / (float)BezierSegments;
+            var u = 1f - t;
 
             // Quadratic bezier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
             var pt = (u * u * p0) + (2f * u * t * p1) + (t * t * p2);
@@ -169,10 +169,10 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         var p2 = thirdControlPoint;
         var p3 = point;
 
-        for (int i = 1; i <= BezierSegments; i++)
+        for (var i = 1; i <= BezierSegments; i++)
         {
-            float t = i / (float)BezierSegments;
-            float u = 1f - t;
+            var t = i / (float)BezierSegments;
+            var u = 1f - t;
 
             // Cubic bezier: B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
             var pt = (u * u * u * p0) +
@@ -196,10 +196,10 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         }
 
         // Calculate bounding box for all figures
-        float minX = float.MaxValue;
-        float minY = float.MaxValue;
-        float maxX = float.MinValue;
-        float maxY = float.MinValue;
+        var minX = float.MaxValue;
+        var minY = float.MaxValue;
+        var maxX = float.MinValue;
+        var maxY = float.MinValue;
 
         foreach (var figure in _currentGlyphFigures)
         {
@@ -213,10 +213,10 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         }
 
         // Clamp to image bounds
-        int startY = Math.Max(0, (int)Math.Floor(minY));
-        int endY = Math.Min(_image.Height - 1, (int)Math.Ceiling(maxY));
-        int startX = Math.Max(0, (int)Math.Floor(minX));
-        int endX = Math.Min(_image.Width - 1, (int)Math.Ceiling(maxX));
+        var startY = Math.Max(0, (int)Math.Floor(minY));
+        var endY = Math.Min(_image.Height - 1, (int)Math.Ceiling(maxY));
+        var startX = Math.Max(0, (int)Math.Floor(minX));
+        var endX = Math.Min(_image.Width - 1, (int)Math.Ceiling(maxX));
 
         if (startY > endY || startX > endX)
         {
@@ -224,26 +224,26 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         }
 
         // Use supersampling for anti-aliasing
-        int supersampleCount = (int)SubpixelScale;
-        float subpixelStep = 1f / supersampleCount;
+        var supersampleCount = (int)SubpixelScale;
+        var subpixelStep = 1f / supersampleCount;
 
         // For each scanline
-        for (int y = startY; y <= endY; y++)
+        for (var y = startY; y <= endY; y++)
         {
             // Create a coverage array for this scanline
             var coverage = new float[endX - startX + 1];
 
             // Supersample vertically
-            for (int subY = 0; subY < supersampleCount; subY++)
+            for (var subY = 0; subY < supersampleCount; subY++)
             {
-                float scanY = y + (subY + 0.5f) * subpixelStep;
+                var scanY = y + (subY + 0.5f) * subpixelStep;
 
                 // Collect all edge intersections for this sub-scanline
                 var intersections = new List<float>();
 
                 foreach (var figure in _currentGlyphFigures)
                 {
-                    for (int i = 0; i < figure.Count - 1; i++)
+                    for (var i = 0; i < figure.Count - 1; i++)
                     {
                         var p1 = figure[i];
                         var p2 = figure[i + 1];
@@ -252,8 +252,8 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
                         if ((p1.Y <= scanY && p2.Y > scanY) || (p2.Y <= scanY && p1.Y > scanY))
                         {
                             // Calculate x intersection
-                            float t = (scanY - p1.Y) / (p2.Y - p1.Y);
-                            float x = p1.X + t * (p2.X - p1.X);
+                            var t = (scanY - p1.Y) / (p2.Y - p1.Y);
+                            var x = p1.X + t * (p2.X - p1.X);
                             intersections.Add(x);
                         }
                     }
@@ -268,20 +268,20 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
                 intersections.Sort();
 
                 // Fill between pairs of intersections (even-odd fill rule)
-                for (int i = 0; i < intersections.Count - 1; i += 2)
+                for (var i = 0; i < intersections.Count - 1; i += 2)
                 {
-                    float xStart = intersections[i];
-                    float xEnd = intersections[i + 1];
+                    var xStart = intersections[i];
+                    var xEnd = intersections[i + 1];
 
-                    int pixelStart = Math.Max(startX, (int)Math.Floor(xStart));
-                    int pixelEnd = Math.Min(endX, (int)Math.Ceiling(xEnd));
+                    var pixelStart = Math.Max(startX, (int)Math.Floor(xStart));
+                    var pixelEnd = Math.Min(endX, (int)Math.Ceiling(xEnd));
 
-                    for (int x = pixelStart; x <= pixelEnd; x++)
+                    for (var x = pixelStart; x <= pixelEnd; x++)
                     {
                         // Calculate coverage for this pixel
-                        float left = Math.Max(x, xStart);
-                        float right = Math.Min(x + 1, xEnd);
-                        float pixelCoverage = Math.Max(0, right - left);
+                        var left = Math.Max(x, xStart);
+                        var right = Math.Min(x + 1, xEnd);
+                        var pixelCoverage = Math.Max(0, right - left);
 
                         coverage[x - startX] += pixelCoverage / supersampleCount;
                     }
@@ -289,9 +289,9 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
             }
 
             // Apply coverage to pixels
-            for (int x = startX; x <= endX; x++)
+            for (var x = startX; x <= endX; x++)
             {
-                float alpha = Math.Clamp(coverage[x - startX], 0f, 1f);
+                var alpha = Math.Clamp(coverage[x - startX], 0f, 1f);
 
                 if (alpha > 0.001f)
                 {
@@ -319,7 +319,7 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         var colorVector = _currentColor.ToVector4();
 
         // Premultiply the source alpha with the coverage
-        float srcAlpha = colorVector.W * alpha;
+        var srcAlpha = colorVector.W * alpha;
 
         // Alpha blend: out = src * srcAlpha + dst * (1 - srcAlpha)
         var blended = new Vector4(

@@ -107,8 +107,8 @@ internal sealed class JpegComponent : IDisposable, IJpegComponent
         this.HeightInBlocks = (int)MathF.Ceiling(
             MathF.Ceiling(this.Frame.PixelHeight / 8F) * this.VerticalSamplingFactor / maxSubFactorV);
 
-        int blocksPerLineForMcu = this.Frame.McusPerLine * this.HorizontalSamplingFactor;
-        int blocksPerColumnForMcu = this.Frame.McusPerColumn * this.VerticalSamplingFactor;
+        var blocksPerLineForMcu = this.Frame.McusPerLine * this.HorizontalSamplingFactor;
+        var blocksPerColumnForMcu = this.Frame.McusPerColumn * this.VerticalSamplingFactor;
         this.SizeInBlocks = new Size(blocksPerLineForMcu, blocksPerColumnForMcu);
 
         this.SubSamplingDivisors = new Size(maxSubFactorH, maxSubFactorV).DivideBy(this.SamplingFactors);
@@ -127,8 +127,8 @@ internal sealed class JpegComponent : IDisposable, IJpegComponent
             return;
         }
 
-        int spectralAllocWidth = this.SizeInBlocks.Width;
-        int spectralAllocHeight = fullScan ? this.SizeInBlocks.Height : this.VerticalSamplingFactor;
+        var spectralAllocWidth = this.SizeInBlocks.Width;
+        var spectralAllocHeight = fullScan ? this.SizeInBlocks.Height : this.VerticalSamplingFactor;
 
         this.SpectralBlocks = this.memoryAllocator.Allocate2D<Block8x8>(spectralAllocWidth, spectralAllocHeight, AllocationOptions.Clean);
     }

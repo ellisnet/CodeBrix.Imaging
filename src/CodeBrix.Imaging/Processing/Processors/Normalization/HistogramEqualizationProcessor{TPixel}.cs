@@ -69,11 +69,11 @@ internal abstract class HistogramEqualizationProcessor<TPixel> : ImageProcessor<
     /// <returns>The first none zero value of the cdf.</returns>
     public int CalculateCdf(ref int cdfBase, ref int histogramBase, int maxIdx)
     {
-        int histSum = 0;
-        int cdfMin = 0;
-        bool cdfMinFound = false;
+        var histSum = 0;
+        var cdfMin = 0;
+        var cdfMinFound = false;
 
-        for (int i = 0; i <= maxIdx; i++)
+        for (var i = 0; i <= maxIdx; i++)
         {
             histSum += Unsafe.Add(ref histogramBase, i);
             if (!cdfMinFound && histSum != 0)
@@ -98,12 +98,12 @@ internal abstract class HistogramEqualizationProcessor<TPixel> : ImageProcessor<
     /// <param name="clipLimit">Histogram clip limit. Histogram bins which exceed this limit, will be capped at this value.</param>
     public void ClipHistogram(Span<int> histogram, int clipLimit)
     {
-        int sumOverClip = 0;
-        ref int histogramBase = ref MemoryMarshal.GetReference(histogram);
+        var sumOverClip = 0;
+        ref var histogramBase = ref MemoryMarshal.GetReference(histogram);
 
-        for (int i = 0; i < histogram.Length; i++)
+        for (var i = 0; i < histogram.Length; i++)
         {
-            ref int histogramLevel = ref Unsafe.Add(ref histogramBase, i);
+            ref var histogramLevel = ref Unsafe.Add(ref histogramBase, i);
             if (histogramLevel > clipLimit)
             {
                 sumOverClip += histogramLevel - clipLimit;
@@ -112,22 +112,22 @@ internal abstract class HistogramEqualizationProcessor<TPixel> : ImageProcessor<
         }
 
         // Redistribute the clipped pixels over all bins of the histogram.
-        int addToEachBin = sumOverClip > 0 ? (int)MathF.Floor(sumOverClip / this.luminanceLevelsFloat) : 0;
+        var addToEachBin = sumOverClip > 0 ? (int)MathF.Floor(sumOverClip / this.luminanceLevelsFloat) : 0;
         if (addToEachBin > 0)
         {
-            for (int i = 0; i < histogram.Length; i++)
+            for (var i = 0; i < histogram.Length; i++)
             {
                 Unsafe.Add(ref histogramBase, i) += addToEachBin;
             }
         }
 
-        int residual = sumOverClip - (addToEachBin * this.LuminanceLevels);
+        var residual = sumOverClip - (addToEachBin * this.LuminanceLevels);
         if (residual != 0)
         {
-            int residualStep = Math.Max(this.LuminanceLevels / residual, 1);
-            for (int i = 0; i < this.LuminanceLevels && residual > 0; i += residualStep, residual--)
+            var residualStep = Math.Max(this.LuminanceLevels / residual, 1);
+            for (var i = 0; i < this.LuminanceLevels && residual > 0; i += residualStep, residual--)
             {
-                ref int histogramLevel = ref Unsafe.Add(ref histogramBase, i);
+                ref var histogramLevel = ref Unsafe.Add(ref histogramBase, i);
                 histogramLevel++;
             }
         }

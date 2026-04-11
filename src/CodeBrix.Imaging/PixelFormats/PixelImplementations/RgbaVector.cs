@@ -185,9 +185,9 @@ public partial struct RgbaVector : IPixel<RgbaVector>
     public readonly string ToHex()
     {
         // Hex is RRGGBBAA
-        Vector4 vector = this.ToVector4() * Max;
+        var vector = this.ToVector4() * Max;
         vector += Half;
-        uint hexOrder = (uint)((byte)vector.W | ((byte)vector.Z << 8) | ((byte)vector.Y << 16) | ((byte)vector.X << 24));
+        var hexOrder = (uint)((byte)vector.W | ((byte)vector.Z << 8) | ((byte)vector.Y << 16) | ((byte)vector.X << 24));
         return hexOrder.ToString("X8");
     }
 

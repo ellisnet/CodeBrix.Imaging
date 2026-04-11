@@ -128,11 +128,11 @@ public partial class ColorSpaceConverter
         }
 
         // Conversion to XYZ
-        LinearRgbToCieXyzConverter converterToXYZ = this.GetLinearRgbToCieXyzConverter(color.WorkingSpace);
-        CieXyz unadapted = converterToXYZ.Convert(color);
+        var converterToXYZ = this.GetLinearRgbToCieXyzConverter(color.WorkingSpace);
+        var unadapted = converterToXYZ.Convert(color);
 
         // Adaptation
-        CieXyz adapted = this.chromaticAdaptation.Transform(unadapted, color.WorkingSpace.WhitePoint, this.targetRgbWorkingSpace.WhitePoint);
+        var adapted = this.chromaticAdaptation.Transform(unadapted, color.WorkingSpace.WhitePoint, this.targetRgbWorkingSpace.WhitePoint);
 
         // Conversion back to RGB
         return this.cieXyzToLinearRgbConverter.Convert(adapted);
@@ -151,7 +151,7 @@ public partial class ColorSpaceConverter
         }
 
         var linearInput = this.ToLinearRgb(color);
-        LinearRgb linearOutput = this.Adapt(linearInput);
+        var linearOutput = this.Adapt(linearInput);
         return this.ToRgb(linearOutput);
     }
 }

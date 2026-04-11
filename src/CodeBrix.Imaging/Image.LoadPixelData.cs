@@ -172,10 +172,10 @@ public abstract partial class Image
     {
         Guard.NotNull(configuration, nameof(configuration));
 
-        long longCount = (long)width * height;
+        var longCount = (long)width * height;
         Guard.MustBeLessThanOrEqualTo(longCount, (long)int.MaxValue, nameof(data));
 
-        int count = (int)longCount;
+        var count = (int)longCount;
         Guard.MustBeGreaterThanOrEqualTo(data.Length, count, nameof(data));
 
         var image = new Image<TPixel>(configuration, width, height, expectedFormat);
@@ -268,26 +268,26 @@ public abstract partial class Image
     {
         Guard.NotNull(configuration, nameof(configuration));
 
-        long longCount = (long)width * height;
+        var longCount = (long)width * height;
         Guard.MustBeLessThanOrEqualTo(longCount, (long)int.MaxValue, nameof(data));
 
-        int count = (int)longCount;
-        int byteCount = count * 4;
+        var count = (int)longCount;
+        var byteCount = count * 4;
         Guard.MustBeGreaterThanOrEqualTo(data.Length, byteCount, nameof(data));
 
         var image = new Image<Rgba32>(configuration, width, height, expectedFormat);
-        ReadOnlySpan<byte> source = data.Slice(0, byteCount);
+        var source = data.Slice(0, byteCount);
 
         // Convert BGRA to RGBA using the SIMD-optimized PixelConverter, writing
         // directly into the image's pixel buffer segments. This handles potentially
         // discontiguous memory groups while using hardware-accelerated (AVX2/SSSE3)
         // channel reordering for maximum throughput.
         IMemoryGroup<Rgba32> memoryGroup = image.Frames.RootFrame.PixelBuffer.FastMemoryGroup;
-        foreach (Memory<Rgba32> memory in memoryGroup)
+        foreach (var memory in memoryGroup)
         {
-            Span<Rgba32> rgbaSpan = memory.Span;
-            int segmentBytes = rgbaSpan.Length * 4;
-            Span<byte> destBytes = MemoryMarshal.Cast<Rgba32, byte>(rgbaSpan);
+            var rgbaSpan = memory.Span;
+            var segmentBytes = rgbaSpan.Length * 4;
+            var destBytes = MemoryMarshal.Cast<Rgba32, byte>(rgbaSpan);
 
             PixelConverter.FromBgra32.ToRgba32(source.Slice(0, segmentBytes), destBytes);
             source = source.Slice(segmentBytes);

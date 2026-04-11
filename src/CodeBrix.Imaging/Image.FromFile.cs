@@ -34,7 +34,7 @@ public abstract partial class Image
     {
         Guard.NotNull(configuration, nameof(configuration));
 
-        using (Stream file = configuration.FileSystem.OpenRead(filePath))
+        using (var file = configuration.FileSystem.OpenRead(filePath))
         {
             return DetectFormat(configuration, file);
         }
@@ -48,7 +48,7 @@ public abstract partial class Image
     /// The <see cref="IImageInfo"/> or null if suitable info detector not found.
     /// </returns>
     public static IImageInfo Identify(string filePath)
-        => Identify(filePath, out IImageFormat _);
+        => Identify(filePath, out var _);
 
     /// <summary>
     /// Reads the raw image information from the specified stream without fully decoding it.
@@ -74,7 +74,7 @@ public abstract partial class Image
     public static IImageInfo Identify(Configuration configuration, string filePath, out IImageFormat format)
     {
         Guard.NotNull(configuration, nameof(configuration));
-        using (Stream file = configuration.FileSystem.OpenRead(filePath))
+        using (var file = configuration.FileSystem.OpenRead(filePath))
         {
             return Identify(configuration, file, out format);
         }
@@ -109,7 +109,7 @@ public abstract partial class Image
         string filePath,
         CancellationToken cancellationToken = default)
     {
-        (IImageInfo ImageInfo, IImageFormat Format) res = await IdentifyWithFormatAsync(configuration, filePath, cancellationToken)
+        var res = await IdentifyWithFormatAsync(configuration, filePath, cancellationToken)
             .ConfigureAwait(false);
         return res.ImageInfo;
     }
@@ -146,7 +146,7 @@ public abstract partial class Image
         CancellationToken cancellationToken = default)
     {
         Guard.NotNull(configuration, nameof(configuration));
-        using Stream stream = configuration.FileSystem.OpenRead(filePath);
+        using var stream = configuration.FileSystem.OpenRead(filePath);
         return await IdentifyWithFormatAsync(configuration, stream, cancellationToken)
             .ConfigureAwait(false);
     }
@@ -205,8 +205,8 @@ public abstract partial class Image
         string path,
         CancellationToken cancellationToken = default)
     {
-        using Stream stream = configuration.FileSystem.OpenRead(path);
-        (Image img, _) = await LoadWithFormatAsync(configuration, stream, cancellationToken)
+        using var stream = configuration.FileSystem.OpenRead(path);
+        (var img, _) = await LoadWithFormatAsync(configuration, stream, cancellationToken)
             .ConfigureAwait(false);
         return img;
     }
@@ -229,7 +229,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using (Stream stream = configuration.FileSystem.OpenRead(path))
+        using (var stream = configuration.FileSystem.OpenRead(path))
         {
             return Load(configuration, stream, decoder);
         }
@@ -307,7 +307,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using Stream stream = configuration.FileSystem.OpenRead(path);
+        using var stream = configuration.FileSystem.OpenRead(path);
         return await LoadAsync(configuration, stream, decoder, cancellationToken)
             .ConfigureAwait(false);
     }
@@ -337,7 +337,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using Stream stream = configuration.FileSystem.OpenRead(path);
+        using var stream = configuration.FileSystem.OpenRead(path);
         return await LoadAsync<TPixel>(configuration, stream, decoder, cancellationToken)
             .ConfigureAwait(false);
     }
@@ -377,8 +377,8 @@ public abstract partial class Image
         CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using Stream stream = configuration.FileSystem.OpenRead(path);
-        (Image<TPixel> img, _) = await LoadWithFormatAsync<TPixel>(configuration, stream, cancellationToken)
+        using var stream = configuration.FileSystem.OpenRead(path);
+        (var img, _) = await LoadWithFormatAsync<TPixel>(configuration, stream, cancellationToken)
             .ConfigureAwait(false);
         return img;
     }
@@ -444,7 +444,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using (Stream stream = configuration.FileSystem.OpenRead(path))
+        using (var stream = configuration.FileSystem.OpenRead(path))
         {
             return Load<TPixel>(configuration, stream);
         }
@@ -469,7 +469,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using (Stream stream = configuration.FileSystem.OpenRead(path))
+        using (var stream = configuration.FileSystem.OpenRead(path))
         {
             return Load<TPixel>(configuration, stream, out format);
         }
@@ -493,7 +493,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using (Stream stream = configuration.FileSystem.OpenRead(path))
+        using (var stream = configuration.FileSystem.OpenRead(path))
         {
             return Load(configuration, stream, out format);
         }
@@ -534,7 +534,7 @@ public abstract partial class Image
         Guard.NotNull(configuration, nameof(configuration));
         Guard.NotNull(path, nameof(path));
 
-        using (Stream stream = configuration.FileSystem.OpenRead(path))
+        using (var stream = configuration.FileSystem.OpenRead(path))
         {
             return Load<TPixel>(configuration, stream, decoder);
         }

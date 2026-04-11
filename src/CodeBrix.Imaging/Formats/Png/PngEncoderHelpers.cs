@@ -21,18 +21,18 @@ internal static class PngEncoderHelpers
     /// <param name="scale">The scaling factor.</param>
     public static void ScaleDownFrom8BitArray(ReadOnlySpan<byte> source, Span<byte> result, int bits, float scale = 1)
     {
-        ref byte sourceRef = ref MemoryMarshal.GetReference(source);
-        ref byte resultRef = ref MemoryMarshal.GetReference(result);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var resultRef = ref MemoryMarshal.GetReference(result);
 
-        int shift = 8 - bits;
-        byte mask = (byte)(0xFF >> shift);
-        byte shift0 = (byte)shift;
-        int v = 0;
-        int resultOffset = 0;
+        var shift = 8 - bits;
+        var mask = (byte)(0xFF >> shift);
+        var shift0 = (byte)shift;
+        var v = 0;
+        var resultOffset = 0;
 
-        for (int i = 0; i < source.Length; i++)
+        for (var i = 0; i < source.Length; i++)
         {
-            int value = ((int)MathF.Round(Unsafe.Add(ref sourceRef, i) / scale)) & mask;
+            var value = ((int)MathF.Round(Unsafe.Add(ref sourceRef, i) / scale)) & mask;
             v |= value << shift;
 
             if (shift == 0)

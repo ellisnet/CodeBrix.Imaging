@@ -18,19 +18,19 @@ internal class Rgb444TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         var color = default(TPixel);
 
-        int offset = 0;
+        var offset = 0;
 
         var bgra = default(Bgra4444);
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y);
+            var pixelRow = pixels.DangerousGetRowSpan(y);
 
-            for (int x = left; x < left + width; x += 2)
+            for (var x = left; x < left + width; x += 2)
             {
-                byte r = (byte)((data[offset] & 0xF0) >> 4);
-                byte g = (byte)(data[offset] & 0xF);
+                var r = (byte)((data[offset] & 0xF0) >> 4);
+                var g = (byte)(data[offset] & 0xF);
                 offset++;
-                byte b = (byte)((data[offset] & 0xF0) >> 4);
+                var b = (byte)((data[offset] & 0xF0) >> 4);
 
                 bgra.PackedValue = ToBgraPackedValue(b, g, r);
                 color.FromScaledVector4(bgra.ToScaledVector4());

@@ -152,13 +152,13 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         var metadata = new ImageMetadata(PngFormat.Instance);
-        PngMetadata pngMetadata = metadata.GetPngMetadata();
+        var pngMetadata = metadata.GetPngMetadata();
         this.currentStream = stream;
         this.currentStream.Skip(8);
         Image<TPixel> image = null;
         try
         {
-            while (this.TryReadChunk(out PngChunk chunk))
+            while (this.TryReadChunk(out var chunk))
             {
                 try
                 {
@@ -183,12 +183,12 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
 
                             break;
                         case PngChunkType.Palette:
-                            byte[] pal = new byte[chunk.Length];
+                            var pal = new byte[chunk.Length];
                             chunk.Data.GetSpan().CopyTo(pal);
                             this.palette = pal;
                             break;
                         case PngChunkType.Transparency:
-                            byte[] alpha = new byte[chunk.Length];
+                            var alpha = new byte[chunk.Length];
                             chunk.Data.GetSpan().CopyTo(alpha);
                             this.paletteAlpha = alpha;
                             this.AssignTransparentMarkers(alpha, pngMetadata);
@@ -205,7 +205,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
                         case PngChunkType.Exif:
                             if (!this.ignoreMetadata)
                             {
-                                byte[] exifData = new byte[chunk.Length];
+                                var exifData = new byte[chunk.Length];
                                 chunk.Data.GetSpan().CopyTo(exifData);
                                 this.MergeOrSetExifProfile(metadata, new ExifProfile(exifData), replaceExistingKeys: true);
                             }
@@ -249,12 +249,12 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     public IImageInfo Identify(BufferedReadStream stream, CancellationToken cancellationToken)
     {
         var metadata = new ImageMetadata(PngFormat.Instance);
-        PngMetadata pngMetadata = metadata.GetPngMetadata();
+        var pngMetadata = metadata.GetPngMetadata();
         this.currentStream = stream;
         this.currentStream.Skip(8);
         try
         {
-            while (this.TryReadChunk(out PngChunk chunk))
+            while (this.TryReadChunk(out var chunk))
             {
                 try
                 {
@@ -292,7 +292,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
                             this.SkipChunkDataAndCrc(chunk);
                             break;
                         case PngChunkType.Transparency:
-                            byte[] alpha = new byte[chunk.Length];
+                            var alpha = new byte[chunk.Length];
                             chunk.Data.GetSpan().CopyTo(alpha);
                             this.paletteAlpha = alpha;
                             this.AssignTransparentMarkers(alpha, pngMetadata);
@@ -339,7 +339,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
 
                             if (!this.ignoreMetadata)
                             {
-                                byte[] exifData = new byte[chunk.Length];
+                                var exifData = new byte[chunk.Length];
                                 chunk.Data.GetSpan().CopyTo(exifData);
                                 this.MergeOrSetExifProfile(metadata, new ExifProfile(exifData), replaceExistingKeys: true);
                             }
@@ -411,17 +411,17 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         }
 
         buffer = this.memoryAllocator.Allocate<byte>(bytesPerScanline * 8 / bits, AllocationOptions.Clean);
-        ref byte sourceRef = ref MemoryMarshal.GetReference(source);
-        ref byte resultRef = ref buffer.GetReference();
-        int mask = 0xFF >> (8 - bits);
-        int resultOffset = 0;
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var resultRef = ref buffer.GetReference();
+        var mask = 0xFF >> (8 - bits);
+        var resultOffset = 0;
 
-        for (int i = 0; i < bytesPerScanline; i++)
+        for (var i = 0; i < bytesPerScanline; i++)
         {
-            byte b = Unsafe.Add(ref sourceRef, i);
-            for (int shift = 0; shift < 8; shift += bits)
+            var b = Unsafe.Add(ref sourceRef, i);
+            for (var shift = 0; shift < 8; shift += bits)
             {
-                int colorIndex = (b >> (8 - bits - shift)) & mask;
+                var colorIndex = (b >> (8 - bits - shift)) & mask;
                 Unsafe.Add(ref resultRef, resultOffset) = (byte)colorIndex;
                 resultOffset++;
             }
@@ -552,10 +552,10 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     /// </returns>
     private int CalculateScanlineLength(int width)
     {
-        int mod = this.header.BitDepth == 16 ? 16 : 8;
-        int scanlineLength = width * this.header.BitDepth * this.bytesPerPixel;
+        var mod = this.header.BitDepth == 16 ? 16 : 8;
+        var scanlineLength = width * this.header.BitDepth * this.bytesPerPixel;
 
-        int amount = scanlineLength % mod;
+        var amount = scanlineLength % mod;
         if (amount != 0)
         {
             scanlineLength += mod - amount;
@@ -580,7 +580,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return;
         }
 
-        DeflateStream dataStream = deframeStream.CompressedStream;
+        var dataStream = deframeStream.CompressedStream;
 
         if (this.header.InterlaceMethod == PngInterlaceMode.Adam7)
         {
@@ -604,10 +604,10 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     {
         while (this.currentRow < this.header.Height)
         {
-            Span<byte> scanlineSpan = this.scanline.GetSpan();
+            var scanlineSpan = this.scanline.GetSpan();
             while (this.currentRowBytesRead < this.bytesPerScanline)
             {
-                int bytesRead = compressedStream.Read(scanlineSpan, this.currentRowBytesRead, this.bytesPerScanline - this.currentRowBytesRead);
+                var bytesRead = compressedStream.Read(scanlineSpan, this.currentRowBytesRead, this.bytesPerScanline - this.currentRowBytesRead);
                 if (bytesRead <= 0)
                 {
                     goto EXIT;
@@ -665,12 +665,12 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     private void DecodeInterlacedPixelData<TPixel>(DeflateStream compressedStream, ImageFrame<TPixel> image, PngMetadata pngMetadata)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int pass = 0;
-        int width = this.header.Width;
-        Buffer2D<TPixel> imageBuffer = image.PixelBuffer;
+        var pass = 0;
+        var width = this.header.Width;
+        var imageBuffer = image.PixelBuffer;
         while (true)
         {
-            int numColumns = Adam7.ComputeColumns(width, pass);
+            var numColumns = Adam7.ComputeColumns(width, pass);
 
             if (numColumns == 0)
             {
@@ -680,13 +680,13 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
                 continue;
             }
 
-            int bytesPerInterlaceScanline = this.CalculateScanlineLength(numColumns) + 1;
+            var bytesPerInterlaceScanline = this.CalculateScanlineLength(numColumns) + 1;
 
             while (this.currentRow < this.header.Height)
             {
                 while (this.currentRowBytesRead < bytesPerInterlaceScanline)
                 {
-                    int bytesRead = compressedStream.Read(this.scanline.GetSpan(), this.currentRowBytesRead, bytesPerInterlaceScanline - this.currentRowBytesRead);
+                    var bytesRead = compressedStream.Read(this.scanline.GetSpan(), this.currentRowBytesRead, bytesPerInterlaceScanline - this.currentRowBytesRead);
                     if (bytesRead <= 0)
                     {
                         goto EXIT;
@@ -697,8 +697,8 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
 
                 this.currentRowBytesRead = 0;
 
-                Span<byte> scanSpan = this.scanline.Slice(0, bytesPerInterlaceScanline);
-                Span<byte> prevSpan = this.previousScanline.Slice(0, bytesPerInterlaceScanline);
+                var scanSpan = this.scanline.Slice(0, bytesPerInterlaceScanline);
+                var prevSpan = this.previousScanline.Slice(0, bytesPerInterlaceScanline);
 
                 switch ((FilterType)scanSpan[0])
                 {
@@ -726,7 +726,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
                         break;
                 }
 
-                Span<TPixel> rowSpan = imageBuffer.DangerousGetRowSpan(this.currentRow);
+                var rowSpan = imageBuffer.DangerousGetRowSpan(this.currentRow);
                 this.ProcessInterlacedDefilteredScanline(this.scanline.GetSpan(), rowSpan, pngMetadata, Adam7.FirstColumn[pass], Adam7.ColumnIncrement[pass]);
 
                 this.SwapScanlineBuffers();
@@ -762,16 +762,16 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     private void ProcessDefilteredScanline<TPixel>(ReadOnlySpan<byte> defilteredScanline, ImageFrame<TPixel> pixels, PngMetadata pngMetadata)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Span<TPixel> rowSpan = pixels.PixelBuffer.DangerousGetRowSpan(this.currentRow);
+        var rowSpan = pixels.PixelBuffer.DangerousGetRowSpan(this.currentRow);
 
         // Trim the first marker byte from the buffer
-        ReadOnlySpan<byte> trimmed = defilteredScanline.Slice(1, defilteredScanline.Length - 1);
+        var trimmed = defilteredScanline.Slice(1, defilteredScanline.Length - 1);
 
         // Convert 1, 2, and 4 bit pixel data into the 8 bit equivalent.
         IMemoryOwner<byte> buffer = null;
         try
         {
-            ReadOnlySpan<byte> scanlineSpan = this.TryScaleUpTo8BitArray(
+            var scanlineSpan = this.TryScaleUpTo8BitArray(
                 trimmed,
                 this.bytesPerScanline - 1,
                 this.header.BitDepth,
@@ -857,13 +857,13 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // Trim the first marker byte from the buffer
-        ReadOnlySpan<byte> trimmed = defilteredScanline.Slice(1, defilteredScanline.Length - 1);
+        var trimmed = defilteredScanline.Slice(1, defilteredScanline.Length - 1);
 
         // Convert 1, 2, and 4 bit pixel data into the 8 bit equivalent.
         IMemoryOwner<byte> buffer = null;
         try
         {
-            ReadOnlySpan<byte> scanlineSpan = this.TryScaleUpTo8BitArray(
+            var scanlineSpan = this.TryScaleUpTo8BitArray(
                 trimmed,
                 this.bytesPerScanline,
                 this.header.BitDepth,
@@ -957,18 +957,18 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             {
                 if (this.header.BitDepth == 16)
                 {
-                    ushort rc = BinaryPrimitives.ReadUInt16LittleEndian(alpha.Slice(0, 2));
-                    ushort gc = BinaryPrimitives.ReadUInt16LittleEndian(alpha.Slice(2, 2));
-                    ushort bc = BinaryPrimitives.ReadUInt16LittleEndian(alpha.Slice(4, 2));
+                    var rc = BinaryPrimitives.ReadUInt16LittleEndian(alpha.Slice(0, 2));
+                    var gc = BinaryPrimitives.ReadUInt16LittleEndian(alpha.Slice(2, 2));
+                    var bc = BinaryPrimitives.ReadUInt16LittleEndian(alpha.Slice(4, 2));
 
                     pngMetadata.TransparentRgb48 = new Rgb48(rc, gc, bc);
                     pngMetadata.HasTransparency = true;
                     return;
                 }
 
-                byte r = ReadByteLittleEndian(alpha, 0);
-                byte g = ReadByteLittleEndian(alpha, 2);
-                byte b = ReadByteLittleEndian(alpha, 4);
+                var r = ReadByteLittleEndian(alpha, 0);
+                var g = ReadByteLittleEndian(alpha, 2);
+                var b = ReadByteLittleEndian(alpha, 4);
                 pngMetadata.TransparentRgb24 = new Rgb24(r, g, b);
                 pngMetadata.HasTransparency = true;
             }
@@ -1022,7 +1022,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return;
         }
 
-        int zeroIndex = data.IndexOf((byte)0);
+        var zeroIndex = data.IndexOf((byte)0);
 
         // Keywords are restricted to 1 to 79 bytes in length.
         if (zeroIndex is < PngConstants.MinTextKeywordLength or > PngConstants.MaxTextKeywordLength)
@@ -1030,13 +1030,13 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return;
         }
 
-        ReadOnlySpan<byte> keywordBytes = data.Slice(0, zeroIndex);
-        if (!this.TryReadTextKeyword(keywordBytes, out string name))
+        var keywordBytes = data.Slice(0, zeroIndex);
+        if (!this.TryReadTextKeyword(keywordBytes, out var name))
         {
             return;
         }
 
-        string value = PngConstants.Encoding.GetString(data.Slice(zeroIndex + 1));
+        var value = PngConstants.Encoding.GetString(data.Slice(zeroIndex + 1));
 
         if (!this.TryReadTextChunkMetadata(baseMetadata, name, value))
         {
@@ -1057,28 +1057,28 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return;
         }
 
-        int zeroIndex = data.IndexOf((byte)0);
+        var zeroIndex = data.IndexOf((byte)0);
         if (zeroIndex < PngConstants.MinTextKeywordLength || zeroIndex > PngConstants.MaxTextKeywordLength)
         {
             return;
         }
 
-        byte compressionMethod = data[zeroIndex + 1];
+        var compressionMethod = data[zeroIndex + 1];
         if (compressionMethod != 0)
         {
             // Only compression method 0 is supported (zlib datastream with deflate compression).
             return;
         }
 
-        ReadOnlySpan<byte> keywordBytes = data.Slice(0, zeroIndex);
-        if (!this.TryReadTextKeyword(keywordBytes, out string name))
+        var keywordBytes = data.Slice(0, zeroIndex);
+        if (!this.TryReadTextKeyword(keywordBytes, out var name))
         {
             return;
         }
 
-        ReadOnlySpan<byte> compressedData = data.Slice(zeroIndex + 2);
+        var compressedData = data.Slice(zeroIndex + 2);
 
-        if (this.TryUncompressTextData(compressedData, PngConstants.Encoding, out string uncompressed) &&
+        if (this.TryUncompressTextData(compressedData, PngConstants.Encoding, out var uncompressed) &&
             !this.TryReadTextChunkMetadata(baseMetadata, name, uncompressed))
         {
             metadata.TextData.Add(new PngTextData(name, uncompressed, string.Empty, string.Empty));
@@ -1118,7 +1118,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     /// <param name="data">The contents of the "raw profile type exif" text chunk.</param>
     private bool TryReadLegacyExifTextChunk(ImageMetadata metadata, string data)
     {
-        ReadOnlySpan<char> dataSpan = data.AsSpan();
+        var dataSpan = data.AsSpan();
         dataSpan = dataSpan.TrimStart();
 
         if (!StringEqualsInsensitive(dataSpan.Slice(0, 4), "exif".AsSpan()))
@@ -1129,8 +1129,8 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
 
         // Skip to the data length
         dataSpan = dataSpan.Slice(4).TrimStart();
-        int dataLengthEnd = dataSpan.IndexOf('\n');
-        int dataLength = ParseInt32(dataSpan.Slice(0, dataSpan.IndexOf('\n')));
+        var dataLengthEnd = dataSpan.IndexOf('\n');
+        var dataLength = ParseInt32(dataSpan.Slice(0, dataSpan.IndexOf('\n')));
 
         // Skip to the hex-encoded data
         dataSpan = dataSpan.Slice(dataLengthEnd).Trim();
@@ -1146,12 +1146,12 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         }
 
         // Parse the hex-encoded data into the byte array we are going to hand off to ExifProfile
-        byte[] exifBlob = new byte[dataLength - exifHeader.Length];
+        var exifBlob = new byte[dataLength - exifHeader.Length];
 
         try
         {
             // Check for the presence of the exif header in the hex-encoded binary data
-            byte[] tempExifBuf = exifBlob;
+            var tempExifBuf = exifBlob;
             if (exifBlob.Length < exifHeader.Length)
             {
                 // Need to allocate a temporary array, this should be an extremely uncommon (TODO: impossible?) case
@@ -1170,11 +1170,11 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             dataLength -= exifHeader.Length;
 
             // Load the hex-encoded data, one line at a time
-            for (int i = 0; i < dataLength;)
+            for (var i = 0; i < dataLength;)
             {
-                ReadOnlySpan<char> lineSpan = dataSpan;
+                var lineSpan = dataSpan;
 
-                int newlineIndex = dataSpan.IndexOf('\n');
+                var newlineIndex = dataSpan.IndexOf('\n');
                 if (newlineIndex != -1)
                 {
                     lineSpan = dataSpan.Slice(0, newlineIndex);
@@ -1231,7 +1231,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         else
         {
             // Try to merge existing keys with the ones from the new profile
-            foreach (IExifValue newKey in newProfile.Values)
+            foreach (var newKey in newProfile.Values)
             {
                 if (replaceExistingKeys || metadata.ExifProfile.GetValueInternal(newKey.Tag) is null)
                 {
@@ -1259,63 +1259,63 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return;
         }
 
-        PngMetadata pngMetadata = metadata.GetPngMetadata();
-        int zeroIndexKeyword = data.IndexOf((byte)0);
+        var pngMetadata = metadata.GetPngMetadata();
+        var zeroIndexKeyword = data.IndexOf((byte)0);
         if (zeroIndexKeyword < PngConstants.MinTextKeywordLength || zeroIndexKeyword > PngConstants.MaxTextKeywordLength)
         {
             return;
         }
 
-        byte compressionFlag = data[zeroIndexKeyword + 1];
+        var compressionFlag = data[zeroIndexKeyword + 1];
         if (!(compressionFlag == 0 || compressionFlag == 1))
         {
             return;
         }
 
-        byte compressionMethod = data[zeroIndexKeyword + 2];
+        var compressionMethod = data[zeroIndexKeyword + 2];
         if (compressionMethod != 0)
         {
             // Only compression method 0 is supported (zlib datastream with deflate compression).
             return;
         }
 
-        int langStartIdx = zeroIndexKeyword + 3;
-        int languageLength = data.Slice(langStartIdx).IndexOf((byte)0);
+        var langStartIdx = zeroIndexKeyword + 3;
+        var languageLength = data.Slice(langStartIdx).IndexOf((byte)0);
         if (languageLength < 0)
         {
             return;
         }
 
-        string language = PngConstants.LanguageEncoding.GetString(data.Slice(langStartIdx, languageLength));
+        var language = PngConstants.LanguageEncoding.GetString(data.Slice(langStartIdx, languageLength));
 
-        int translatedKeywordStartIdx = langStartIdx + languageLength + 1;
-        int translatedKeywordLength = data.Slice(translatedKeywordStartIdx).IndexOf((byte)0);
-        string translatedKeyword = PngConstants.TranslatedEncoding.GetString(data.Slice(translatedKeywordStartIdx, translatedKeywordLength));
+        var translatedKeywordStartIdx = langStartIdx + languageLength + 1;
+        var translatedKeywordLength = data.Slice(translatedKeywordStartIdx).IndexOf((byte)0);
+        var translatedKeyword = PngConstants.TranslatedEncoding.GetString(data.Slice(translatedKeywordStartIdx, translatedKeywordLength));
 
-        ReadOnlySpan<byte> keywordBytes = data.Slice(0, zeroIndexKeyword);
-        if (!this.TryReadTextKeyword(keywordBytes, out string keyword))
+        var keywordBytes = data.Slice(0, zeroIndexKeyword);
+        if (!this.TryReadTextKeyword(keywordBytes, out var keyword))
         {
             return;
         }
 
-        int dataStartIdx = translatedKeywordStartIdx + translatedKeywordLength + 1;
+        var dataStartIdx = translatedKeywordStartIdx + translatedKeywordLength + 1;
         if (compressionFlag == 1)
         {
-            ReadOnlySpan<byte> compressedData = data.Slice(dataStartIdx);
+            var compressedData = data.Slice(dataStartIdx);
 
-            if (this.TryUncompressTextData(compressedData, PngConstants.TranslatedEncoding, out string uncompressed))
+            if (this.TryUncompressTextData(compressedData, PngConstants.TranslatedEncoding, out var uncompressed))
             {
                 pngMetadata.TextData.Add(new PngTextData(keyword, uncompressed, language, translatedKeyword));
             }
         }
         else if (this.IsXmpTextData(keywordBytes))
         {
-            XmpProfile xmpProfile = new XmpProfile(data.Slice(dataStartIdx).ToArray());
+            var xmpProfile = new XmpProfile(data.Slice(dataStartIdx).ToArray());
             metadata.XmpProfile = xmpProfile;
         }
         else
         {
-            string value = PngConstants.TranslatedEncoding.GetString(data.Slice(dataStartIdx));
+            var value = PngConstants.TranslatedEncoding.GetString(data.Slice(dataStartIdx));
             pngMetadata.TextData.Add(new PngTextData(keyword, value, language, translatedKeyword));
         }
     }
@@ -1342,7 +1342,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             var uncompressedBytes = new List<byte>();
 
             // Note: this uses a buffer which is only 4 bytes long to read the stream, maybe allocating a larger buffer makes sense here.
-            int bytesRead = inflateStream.CompressedStream.Read(this.buffer, 0, this.buffer.Length);
+            var bytesRead = inflateStream.CompressedStream.Read(this.buffer, 0, this.buffer.Length);
             while (bytesRead != 0)
             {
                 uncompressedBytes.AddRange(this.buffer.AsSpan(0, bytesRead).ToArray());
@@ -1367,7 +1367,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
 
         this.currentStream.ReadExactly(this.buffer, 0, 4);
 
-        if (this.TryReadChunk(out PngChunk chunk))
+        if (this.TryReadChunk(out var chunk))
         {
             if (chunk.Type == PngChunkType.Data)
             {
@@ -1399,7 +1399,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return true;
         }
 
-        if (!this.TryReadChunkLength(out int length))
+        if (!this.TryReadChunkLength(out var length))
         {
             chunk = default;
 
@@ -1418,7 +1418,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             }
         }
 
-        PngChunkType type = this.ReadChunkType();
+        var type = this.ReadChunkType();
 
         // If we're reading color metadata only we're only interested in the IHDR and tRNS chunks.
         // We can skip all other chunk data in the stream for better performance.
@@ -1429,7 +1429,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
             return true;
         }
 
-        long pos = this.currentStream.Position;
+        var pos = this.currentStream.Position;
         chunk = new PngChunk(
             length: length,
             type: type,
@@ -1453,19 +1453,19 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
     /// <param name="chunk">The <see cref="PngChunk"/>.</param>
     private void ValidateChunk(in PngChunk chunk)
     {
-        uint inputCrc = this.ReadChunkCrc();
+        var inputCrc = this.ReadChunkCrc();
 
         if (chunk.IsCritical)
         {
             Span<byte> chunkType = stackalloc byte[4];
             BinaryPrimitives.WriteUInt32BigEndian(chunkType, (uint)chunk.Type);
 
-            uint validCrc = Crc32.Calculate(chunkType);
+            var validCrc = Crc32.Calculate(chunkType);
             validCrc = Crc32.Calculate(validCrc, chunk.Data.GetSpan());
 
             if (validCrc != inputCrc)
             {
-                string chunkTypeName = Encoding.ASCII.GetString(chunkType);
+                var chunkTypeName = Encoding.ASCII.GetString(chunkType);
 
                 // ensure when throwing we dispose the data back to the memory allocator
                 chunk.Data?.Dispose();
@@ -1511,7 +1511,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         // We don't want to throw a degenerated memory exception here as we want to allow partial decoding
         // so limit the length.
         length = (int)Math.Min(length, this.currentStream.Length - this.currentStream.Position);
-        IMemoryOwner<byte> buffer = this.Configuration.MemoryAllocator.Allocate<byte>(length, AllocationOptions.Clean);
+        var buffer = this.Configuration.MemoryAllocator.Allocate<byte>(length, AllocationOptions.Clean);
 
         this.currentStream.Read(buffer.GetSpan(), 0, length);
 
@@ -1573,7 +1573,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
         name = string.Empty;
 
         // Keywords shall contain only printable Latin-1.
-        foreach (byte c in keywordBytes)
+        foreach (var c in keywordBytes)
         {
             if (!((c >= 32 && c <= 126) || (c >= 161 && c <= 255)))
             {
@@ -1595,7 +1595,7 @@ internal sealed class PngDecoderCore : IImageDecoderInternals
 
     private void SwapScanlineBuffers()
     {
-        IMemoryOwner<byte> temp = this.previousScanline;
+        var temp = this.previousScanline;
         this.previousScanline = this.scanline;
         this.scanline = temp;
     }

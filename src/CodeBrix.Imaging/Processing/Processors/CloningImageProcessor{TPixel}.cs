@@ -46,16 +46,16 @@ public abstract class CloningImageProcessor<TPixel> : ICloningImageProcessor<TPi
     /// <inheritdoc/>
     Image<TPixel> ICloningImageProcessor<TPixel>.CloneAndExecute()
     {
-        Image<TPixel> clone = this.CreateTarget();
+        var clone = this.CreateTarget();
         this.CheckFrameCount(this.Source, clone);
 
-        Configuration configuration = this.Configuration;
+        var configuration = this.Configuration;
         this.BeforeImageApply(clone);
 
-        for (int i = 0; i < this.Source.Frames.Count; i++)
+        for (var i = 0; i < this.Source.Frames.Count; i++)
         {
-            ImageFrame<TPixel> sourceFrame = this.Source.Frames[i];
-            ImageFrame<TPixel> clonedFrame = clone.Frames[i];
+            var sourceFrame = this.Source.Frames[i];
+            var clonedFrame = clone.Frames[i];
 
             this.BeforeFrameApply(sourceFrame, clonedFrame);
             this.OnFrameApply(sourceFrame, clonedFrame);
@@ -154,12 +154,12 @@ public abstract class CloningImageProcessor<TPixel> : ICloningImageProcessor<TPi
 
     private Image<TPixel> CreateTarget()
     {
-        Image<TPixel> source = this.Source;
-        Size destinationSize = this.GetDestinationSize();
+        var source = this.Source;
+        var destinationSize = this.GetDestinationSize();
 
         // We will always be creating the clone even for mutate because we may need to resize the canvas.
         var destinationFrames = new ImageFrame<TPixel>[source.Frames.Count];
-        for (int i = 0; i < destinationFrames.Length; i++)
+        for (var i = 0; i < destinationFrames.Length; i++)
         {
             destinationFrames[i] = new ImageFrame<TPixel>(
                 this.Configuration,

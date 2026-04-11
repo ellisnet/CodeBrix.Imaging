@@ -72,7 +72,7 @@ internal abstract class BitWriterBase
 
     protected void ResizeBuffer(int maxBytes, int sizeRequired)
     {
-        int newSize = (3 * maxBytes) >> 1;
+        var newSize = (3 * maxBytes) >> 1;
         if (newSize < sizeRequired)
         {
             newSize = sizeRequired;
@@ -103,8 +103,8 @@ internal abstract class BitWriterBase
     /// <returns>The metadata chunk size in bytes.</returns>
     protected uint MetadataChunkSize(byte[] metadataBytes)
     {
-        uint metaSize = (uint)metadataBytes.Length;
-        uint metaChunkSize = WebpConstants.ChunkHeaderSize + metaSize + (metaSize & 1);
+        var metaSize = (uint)metadataBytes.Length;
+        var metaChunkSize = WebpConstants.ChunkHeaderSize + metaSize + (metaSize & 1);
 
         return metaChunkSize;
     }
@@ -116,8 +116,8 @@ internal abstract class BitWriterBase
     /// <returns>The alpha data chunk size in bytes.</returns>
     protected uint AlphaChunkSize(Span<byte> alphaBytes)
     {
-        uint alphaSize = (uint)alphaBytes.Length + 1;
-        uint alphaChunkSize = WebpConstants.ChunkHeaderSize + alphaSize + (alphaSize & 1);
+        var alphaSize = (uint)alphaBytes.Length + 1;
+        var alphaChunkSize = WebpConstants.ChunkHeaderSize + alphaSize + (alphaSize & 1);
 
         return alphaChunkSize;
     }
@@ -132,8 +132,8 @@ internal abstract class BitWriterBase
     {
         DebugGuard.NotNull(metadataBytes, nameof(metadataBytes));
 
-        uint size = (uint)metadataBytes.Length;
-        Span<byte> buf = this.scratchBuffer.AsSpan(0, 4);
+        var size = (uint)metadataBytes.Length;
+        var buf = this.scratchBuffer.AsSpan(0, 4);
         BinaryPrimitives.WriteUInt32BigEndian(buf, (uint)chunkType);
         stream.Write(buf);
         BinaryPrimitives.WriteUInt32LittleEndian(buf, size);
@@ -155,8 +155,8 @@ internal abstract class BitWriterBase
     /// <param name="alphaDataIsCompressed">Indicates, if the alpha channel data is compressed.</param>
     protected void WriteAlphaChunk(Stream stream, Span<byte> dataBytes, bool alphaDataIsCompressed)
     {
-        uint size = (uint)dataBytes.Length + 1;
-        Span<byte> buf = this.scratchBuffer.AsSpan(0, 4);
+        var size = (uint)dataBytes.Length + 1;
+        var buf = this.scratchBuffer.AsSpan(0, 4);
         BinaryPrimitives.WriteUInt32BigEndian(buf, (uint)WebpChunkType.Alpha);
         stream.Write(buf);
         BinaryPrimitives.WriteUInt32LittleEndian(buf, size);
@@ -219,7 +219,7 @@ internal abstract class BitWriterBase
             flags |= 16;
         }
 
-        Span<byte> buf = this.scratchBuffer.AsSpan(0, 4);
+        var buf = this.scratchBuffer.AsSpan(0, 4);
         stream.Write(WebpConstants.Vp8XMagicBytes);
         BinaryPrimitives.WriteUInt32LittleEndian(buf, WebpConstants.Vp8XChunkSize);
         stream.Write(buf);

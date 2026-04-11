@@ -44,7 +44,7 @@ internal class RotateProcessor<TPixel> : AffineTransformProcessor<TPixel>
     /// <inheritdoc/>
     protected override void AfterImageApply(Image<TPixel> destination)
     {
-        ExifProfile profile = destination.Metadata.ExifProfile;
+        var profile = destination.Metadata.ExifProfile;
         if (profile is null)
         {
             return;
@@ -93,7 +93,7 @@ internal class RotateProcessor<TPixel> : AffineTransformProcessor<TPixel>
         Configuration configuration)
     {
         // Wrap the degrees to keep within 0-360 so we can apply optimizations when possible.
-        float degrees = WrapDegrees(this.degrees);
+        var degrees = WrapDegrees(this.degrees);
 
         if (MathF.Abs(degrees) < Constants.Epsilon)
         {
@@ -191,10 +191,10 @@ internal class RotateProcessor<TPixel> : AffineTransformProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixel> sourceRow = this.source.DangerousGetRowSpan(y);
-            Span<TPixel> targetRow = this.destination.DangerousGetRowSpan(this.height - y - 1);
+            var sourceRow = this.source.DangerousGetRowSpan(y);
+            var targetRow = this.destination.DangerousGetRowSpan(this.height - y - 1);
 
-            for (int x = 0; x < this.width; x++)
+            for (var x = 0; x < this.width; x++)
             {
                 targetRow[this.width - x - 1] = sourceRow[x];
             }
@@ -227,14 +227,14 @@ internal class RotateProcessor<TPixel> : AffineTransformProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(in RowInterval rows)
         {
-            for (int y = rows.Min; y < rows.Max; y++)
+            for (var y = rows.Min; y < rows.Max; y++)
             {
-                Span<TPixel> sourceRow = this.source.DangerousGetRowSpan(y);
-                for (int x = 0; x < this.width; x++)
+                var sourceRow = this.source.DangerousGetRowSpan(y);
+                for (var x = 0; x < this.width; x++)
                 {
-                    int newX = this.height - y - 1;
+                    var newX = this.height - y - 1;
                     newX = this.height - newX - 1;
-                    int newY = this.width - x - 1;
+                    var newY = this.width - x - 1;
 
                     if (this.bounds.Contains(newX, newY))
                     {
@@ -271,9 +271,9 @@ internal class RotateProcessor<TPixel> : AffineTransformProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixel> sourceRow = this.source.DangerousGetRowSpan(y);
-            int newX = this.height - y - 1;
-            for (int x = 0; x < this.width; x++)
+            var sourceRow = this.source.DangerousGetRowSpan(y);
+            var newX = this.height - y - 1;
+            for (var x = 0; x < this.width; x++)
             {
                 if (this.bounds.Contains(newX, x))
                 {

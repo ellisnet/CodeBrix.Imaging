@@ -14,7 +14,7 @@ internal class Vp8BandProbas
     public Vp8BandProbas()
     {
         this.Probabilities = new Vp8ProbaArray[WebpConstants.NumCtx];
-        for (int i = 0; i < WebpConstants.NumCtx; i++)
+        for (var i = 0; i < WebpConstants.NumCtx; i++)
         {
             this.Probabilities[i] = new Vp8ProbaArray();
         }

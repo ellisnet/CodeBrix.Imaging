@@ -36,8 +36,8 @@ internal readonly struct DefaultShuffle4Slice3 : IShuffle4Slice3
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref byte sBase = ref MemoryMarshal.GetReference(source);
-        ref byte dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
         int p2 = this.p2;
         int p1 = this.p1;
@@ -63,15 +63,15 @@ internal readonly struct XYZWShuffle4Slice3 : IShuffle4Slice3
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref uint sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
-        ref Byte3 dBase = ref Unsafe.As<byte, Byte3>(ref MemoryMarshal.GetReference(dest));
+        ref var sBase = ref Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(source));
+        ref var dBase = ref Unsafe.As<byte, Byte3>(ref MemoryMarshal.GetReference(dest));
 
-        int n = source.Length / 4;
-        int m = Numerics.Modulo4(n);
-        int u = n - m;
+        var n = source.Length / 4;
+        var m = Numerics.Modulo4(n);
+        var u = n - m;
 
-        ref uint sLoopEnd = ref Unsafe.Add(ref sBase, u);
-        ref uint sEnd = ref Unsafe.Add(ref sBase, n);
+        ref var sLoopEnd = ref Unsafe.Add(ref sBase, u);
+        ref var sEnd = ref Unsafe.Add(ref sBase, n);
 
         while (Unsafe.IsAddressLessThan(ref sBase, ref sLoopEnd))
         {

@@ -59,8 +59,8 @@ internal sealed class IccChromaticityTagDataEntry : IccTagDataEntry, IEquatable<
         this.ColorantType = colorantType;
         this.ChannelValues = channelValues;
 
-        int channelLength = channelValues[0].Length;
-        bool channelsNotSame = channelValues.Any(t => t is null || t.Length != channelLength);
+        var channelLength = channelValues[0].Length;
+        var channelsNotSame = channelValues.Any(t => t is null || t.Length != channelLength);
         Guard.IsFalse(channelsNotSame, nameof(channelValues), "The number of values per channel is not the same for all channels");
     }
 
@@ -154,7 +154,7 @@ internal sealed class IccChromaticityTagDataEntry : IccTagDataEntry, IEquatable<
             return false;
         }
 
-        for (int i = 0; i < this.ChannelValues.Length; i++)
+        for (var i = 0; i < this.ChannelValues.Length; i++)
         {
             if (!this.ChannelValues[i].AsSpan().SequenceEqual(entry.ChannelValues[i]))
             {

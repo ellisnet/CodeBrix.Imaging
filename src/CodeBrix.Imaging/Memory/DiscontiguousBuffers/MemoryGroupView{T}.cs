@@ -30,7 +30,7 @@ internal class MemoryGroupView<T> : IMemoryGroup<T>
         this.owner = owner;
         this.memoryWrappers = new MemoryOwnerWrapper[owner.Count];
 
-        for (int i = 0; i < owner.Count; i++)
+        for (var i = 0; i < owner.Count; i++)
         {
             this.memoryWrappers[i] = new MemoryOwnerWrapper(this, i);
         }
@@ -86,7 +86,7 @@ internal class MemoryGroupView<T> : IMemoryGroup<T>
     IEnumerator<Memory<T>> IEnumerable<Memory<T>>.GetEnumerator()
     {
         this.EnsureIsValid();
-        for (int i = 0; i < this.Count; i++)
+        for (var i = 0; i < this.Count; i++)
         {
             yield return this.memoryWrappers[i].Memory;
         }

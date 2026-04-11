@@ -44,23 +44,23 @@ internal sealed class KernelSamplingMap : IDisposable
         this.yOffsets = this.allocator.Allocate<int>(bounds.Height * kernelHeight);
         this.xOffsets = this.allocator.Allocate<int>(bounds.Width * kernelWidth);
 
-        int minY = bounds.Y;
-        int maxY = bounds.Bottom - 1;
-        int minX = bounds.X;
-        int maxX = bounds.Right - 1;
+        var minY = bounds.Y;
+        var maxY = bounds.Bottom - 1;
+        var minX = bounds.X;
+        var maxX = bounds.Right - 1;
 
-        int radiusY = kernelHeight >> 1;
-        int radiusX = kernelWidth >> 1;
+        var radiusY = kernelHeight >> 1;
+        var radiusX = kernelWidth >> 1;
 
         // Calculate the y and x sampling offsets clamped to the given rectangle.
         // While this isn't a hotpath we still dip into unsafe to avoid the span bounds
         // checks as the can potentially be looping over large arrays.
-        Span<int> ySpan = this.yOffsets.GetSpan();
-        ref int ySpanBase = ref MemoryMarshal.GetReference(ySpan);
-        for (int row = 0; row < bounds.Height; row++)
+        var ySpan = this.yOffsets.GetSpan();
+        ref var ySpanBase = ref MemoryMarshal.GetReference(ySpan);
+        for (var row = 0; row < bounds.Height; row++)
         {
-            int rowBase = row * kernelHeight;
-            for (int y = 0; y < kernelHeight; y++)
+            var rowBase = row * kernelHeight;
+            for (var y = 0; y < kernelHeight; y++)
             {
                 Unsafe.Add(ref ySpanBase, rowBase + y) = row + y + minY - radiusY;
             }
@@ -71,12 +71,12 @@ internal sealed class KernelSamplingMap : IDisposable
             Numerics.Clamp(ySpan, minY, maxY);
         }
 
-        Span<int> xSpan = this.xOffsets.GetSpan();
-        ref int xSpanBase = ref MemoryMarshal.GetReference(xSpan);
-        for (int column = 0; column < bounds.Width; column++)
+        var xSpan = this.xOffsets.GetSpan();
+        ref var xSpanBase = ref MemoryMarshal.GetReference(xSpan);
+        for (var column = 0; column < bounds.Width; column++)
         {
-            int columnBase = column * kernelWidth;
-            for (int x = 0; x < kernelWidth; x++)
+            var columnBase = column * kernelWidth;
+            for (var x = 0; x < kernelWidth; x++)
             {
                 Unsafe.Add(ref xSpanBase, columnBase + x) = column + x + minX - radiusX;
             }

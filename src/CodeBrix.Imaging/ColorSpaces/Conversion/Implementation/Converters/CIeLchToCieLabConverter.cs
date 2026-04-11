@@ -22,10 +22,10 @@ internal sealed class CieLchToCieLabConverter
         // Conversion algorithm described here:
         // https://en.wikipedia.org/wiki/Lab_color_space#Cylindrical_representation:_CIELCh_or_CIEHLC
         float l = input.L, c = input.C, hDegrees = input.H;
-        float hRadians = GeometryUtilities.DegreeToRadian(hDegrees);
+        var hRadians = GeometryUtilities.DegreeToRadian(hDegrees);
 
-        float a = c * MathF.Cos(hRadians);
-        float b = c * MathF.Sin(hRadians);
+        var a = c * MathF.Cos(hRadians);
+        var b = c * MathF.Sin(hRadians);
 
         return new CieLab(l, a, b, input.WhitePoint);
     }

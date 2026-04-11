@@ -32,17 +32,17 @@ internal class Rgba8888TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     /// <inheritdoc/>
     public override void Decode(ReadOnlySpan<byte> data, Buffer2D<TPixel> pixels, int left, int top, int width, int height)
     {
-        int offset = 0;
-        bool hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
+        var offset = 0;
+        var hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
 
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
-        using IMemoryOwner<Vector4> vectors = hasAssociatedAlpha ? this.memoryAllocator.Allocate<Vector4>(width) : null;
-        Span<Vector4> vectorsSpan = hasAssociatedAlpha ? vectors.GetSpan() : Span<Vector4>.Empty;
-        for (int y = top; y < top + height; y++)
+        using var vectors = hasAssociatedAlpha ? this.memoryAllocator.Allocate<Vector4>(width) : null;
+        var vectorsSpan = hasAssociatedAlpha ? vectors.GetSpan() : Span<Vector4>.Empty;
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            int byteCount = pixelRow.Length * 4;
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var byteCount = pixelRow.Length * 4;
             PixelOperations<TPixel>.Instance.FromRgba32Bytes(
                 this.configuration,
                 data.Slice(offset, byteCount),

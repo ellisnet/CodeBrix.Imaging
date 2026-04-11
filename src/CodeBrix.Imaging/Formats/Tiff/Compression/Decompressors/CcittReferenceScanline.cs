@@ -86,7 +86,7 @@ internal readonly ref struct CcittReferenceScanline
 
     private int FindB1ForNormalLine(int a0, byte a0Byte)
     {
-        int offset = 0;
+        var offset = 0;
         if (a0 < 0)
         {
             if (a0Byte != this.scanLine[0])
@@ -99,9 +99,9 @@ internal readonly ref struct CcittReferenceScanline
             offset = a0;
         }
 
-        ReadOnlySpan<byte> searchSpace = this.scanLine.Slice(offset);
-        byte searchByte = (byte)~a0Byte;
-        int index = searchSpace.IndexOf(searchByte);
+        var searchSpace = this.scanLine.Slice(offset);
+        var searchByte = (byte)~a0Byte;
+        var index = searchSpace.IndexOf(searchByte);
         if (index < 0)
         {
             return this.scanLine.Length;
@@ -139,10 +139,10 @@ internal readonly ref struct CcittReferenceScanline
             return this.scanLine.Length;
         }
 
-        byte searchByte = (byte)~this.scanLine[b1];
-        int offset = b1 + 1;
-        ReadOnlySpan<byte> searchSpace = this.scanLine.Slice(offset);
-        int index = searchSpace.IndexOf(searchByte);
+        var searchByte = (byte)~this.scanLine[b1];
+        var offset = b1 + 1;
+        var searchSpace = this.scanLine.Slice(offset);
+        var index = searchSpace.IndexOf(searchByte);
         if (index == -1)
         {
             return this.scanLine.Length;

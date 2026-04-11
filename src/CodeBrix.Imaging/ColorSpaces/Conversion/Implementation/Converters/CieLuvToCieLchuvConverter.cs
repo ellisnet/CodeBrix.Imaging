@@ -22,9 +22,9 @@ internal sealed class CieLuvToCieLchuvConverter
         // Conversion algorithm described here:
         // https://en.wikipedia.org/wiki/CIELUV#Cylindrical_representation_.28CIELCH.29
         float l = input.L, a = input.U, b = input.V;
-        float c = MathF.Sqrt((a * a) + (b * b));
-        float hRadians = MathF.Atan2(b, a);
-        float hDegrees = GeometryUtilities.RadianToDegree(hRadians);
+        var c = MathF.Sqrt((a * a) + (b * b));
+        var hRadians = MathF.Atan2(b, a);
+        var hDegrees = GeometryUtilities.RadianToDegree(hRadians);
 
         // Wrap the angle round at 360.
         hDegrees %= 360;

@@ -110,9 +110,9 @@ internal static class Quantization
         }
 
         int quality;
-        for (int i = 0; i < Block8x8F.Size; i++)
+        for (var i = 0; i < Block8x8F.Size; i++)
         {
-            int coeff = (int)table[i];
+            var coeff = (int)table[i];
 
             // Coefficients are actually int16 casted to float numbers so there's no truncating error.
             if (coeff != 0)
@@ -179,9 +179,9 @@ internal static class Quantization
     private static Block8x8F ScaleQuantizationTable(int scale, ReadOnlySpan<byte> unscaledTable)
     {
         Block8x8F table = default;
-        for (int j = 0; j < Block8x8F.Size; j++)
+        for (var j = 0; j < Block8x8F.Size; j++)
         {
-            int x = ((unscaledTable[j] * scale) + 50) / 100;
+            var x = ((unscaledTable[j] * scale) + 50) / 100;
             table[j] = Numerics.Clamp(x, 1, 255);
         }
 

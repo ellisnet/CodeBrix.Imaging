@@ -179,10 +179,10 @@ public partial struct NormalizedShort4 : IPixel<NormalizedShort4>, IPackedVector
         vector = Numerics.Clamp(vector, Min, Max);
 
         // Round rather than truncate.
-        ulong word4 = ((ulong)Convert.ToInt32(MathF.Round(vector.X)) & 0xFFFF) << 0x00;
-        ulong word3 = ((ulong)Convert.ToInt32(MathF.Round(vector.Y)) & 0xFFFF) << 0x10;
-        ulong word2 = ((ulong)Convert.ToInt32(MathF.Round(vector.Z)) & 0xFFFF) << 0x20;
-        ulong word1 = ((ulong)Convert.ToInt32(MathF.Round(vector.W)) & 0xFFFF) << 0x30;
+        var word4 = ((ulong)Convert.ToInt32(MathF.Round(vector.X)) & 0xFFFF) << 0x00;
+        var word3 = ((ulong)Convert.ToInt32(MathF.Round(vector.Y)) & 0xFFFF) << 0x10;
+        var word2 = ((ulong)Convert.ToInt32(MathF.Round(vector.Z)) & 0xFFFF) << 0x20;
+        var word1 = ((ulong)Convert.ToInt32(MathF.Round(vector.W)) & 0xFFFF) << 0x30;
 
         return word4 | word3 | word2 | word1;
     }

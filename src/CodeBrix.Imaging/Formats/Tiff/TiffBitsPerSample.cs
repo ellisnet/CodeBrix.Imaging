@@ -149,7 +149,7 @@ public readonly struct TiffBitsPerSample : IEquatable<TiffBitsPerSample>
     /// <returns>Bits per pixel.</returns>
     public TiffBitsPerPixel BitsPerPixel()
     {
-        int bitsPerPixel = this.Channel0 + this.Channel1 + this.Channel2 + this.Channel3;
+        var bitsPerPixel = this.Channel0 + this.Channel1 + this.Channel2 + this.Channel3;
         return (TiffBitsPerPixel)bitsPerPixel;
     }
 

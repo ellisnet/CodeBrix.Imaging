@@ -55,19 +55,19 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        MemoryAllocator memoryAllocator = this.Configuration.MemoryAllocator;
+        var memoryAllocator = this.Configuration.MemoryAllocator;
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = this.Configuration.MaxDegreeOfParallelism };
-        int tileWidth = source.Width / this.Tiles;
-        int tileHeight = tileWidth;
-        int pixelInTile = tileWidth * tileHeight;
-        int halfTileHeight = tileHeight / 2;
-        int halfTileWidth = halfTileHeight;
+        var tileWidth = source.Width / this.Tiles;
+        var tileHeight = tileWidth;
+        var pixelInTile = tileWidth * tileHeight;
+        var halfTileHeight = tileHeight / 2;
+        var halfTileWidth = halfTileHeight;
         var slidingWindowInfos = new SlidingWindowInfos(tileWidth, tileHeight, halfTileWidth, halfTileHeight, pixelInTile);
 
         // TODO: If the process was able to be switched to operate in parallel rows instead of columns
         // then we could take advantage of batching and allocate per-row buffers only once per batch.
-        using Buffer2D<TPixel> targetPixels = this.Configuration.MemoryAllocator.Allocate2D<TPixel>(source.Width, source.Height);
+        using var targetPixels = this.Configuration.MemoryAllocator.Allocate2D<TPixel>(source.Width, source.Height);
 
         // Process the inner tiles, which do not require to check the borders.
         var innerOperation = new SlidingWindowOperation(
@@ -185,7 +185,7 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
         }
         else if (y >= source.Height)
         {
-            int diff = y - source.Height;
+            var diff = y - source.Height;
             y = source.Height - diff - 1;
         }
 
@@ -193,8 +193,8 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
         if (x < 0)
         {
             rowPixels.Clear();
-            int idx = 0;
-            for (int dx = x; dx < x + tileWidth; dx++)
+            var idx = 0;
+            for (var dx = x; dx < x + tileWidth; dx++)
             {
                 rowPixels[idx] = source[Numerics.Abs(dx), y].ToVector4();
                 idx++;
@@ -205,12 +205,12 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
         else if (x + tileWidth > source.Width)
         {
             rowPixels.Clear();
-            int idx = 0;
-            for (int dx = x; dx < x + tileWidth; dx++)
+            var idx = 0;
+            for (var dx = x; dx < x + tileWidth; dx++)
             {
                 if (dx >= source.Width)
                 {
-                    int diff = dx - source.Width;
+                    var diff = dx - source.Width;
                     rowPixels[idx] = source[dx - diff - 1, y].ToVector4();
                 }
                 else
@@ -258,7 +258,7 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
     {
         for (nint idx = 0; idx < length; idx++)
         {
-            int luminance = ColorNumerics.GetBT709Luminance(ref Unsafe.Add(ref greyValuesBase, idx), luminanceLevels);
+            var luminance = ColorNumerics.GetBT709Luminance(ref Unsafe.Add(ref greyValuesBase, idx), luminanceLevels);
             Unsafe.Add(ref histogramBase, luminance)++;
         }
     }
@@ -273,9 +273,9 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
     [MethodImpl(InliningOptions.ShortMethod)]
     private void RemovePixelsFromHistogram(ref Vector4 greyValuesBase, ref int histogramBase, int luminanceLevels, int length)
     {
-        for (int idx = 0; idx < length; idx++)
+        for (var idx = 0; idx < length; idx++)
         {
-            int luminance = ColorNumerics.GetBT709Luminance(ref Unsafe.Add(ref greyValuesBase, idx), luminanceLevels);
+            var luminance = ColorNumerics.GetBT709Luminance(ref Unsafe.Add(ref greyValuesBase, idx), luminanceLevels);
             Unsafe.Add(ref histogramBase, luminance)--;
         }
     }
@@ -335,24 +335,24 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int x)
         {
-            using (IMemoryOwner<int> histogramBuffer = this.memoryAllocator.Allocate<int>(this.processor.LuminanceLevels, AllocationOptions.Clean))
-            using (IMemoryOwner<int> histogramBufferCopy = this.memoryAllocator.Allocate<int>(this.processor.LuminanceLevels, AllocationOptions.Clean))
-            using (IMemoryOwner<int> cdfBuffer = this.memoryAllocator.Allocate<int>(this.processor.LuminanceLevels, AllocationOptions.Clean))
-            using (IMemoryOwner<Vector4> pixelRowBuffer = this.memoryAllocator.Allocate<Vector4>(this.swInfos.TileWidth, AllocationOptions.Clean))
+            using (var histogramBuffer = this.memoryAllocator.Allocate<int>(this.processor.LuminanceLevels, AllocationOptions.Clean))
+            using (var histogramBufferCopy = this.memoryAllocator.Allocate<int>(this.processor.LuminanceLevels, AllocationOptions.Clean))
+            using (var cdfBuffer = this.memoryAllocator.Allocate<int>(this.processor.LuminanceLevels, AllocationOptions.Clean))
+            using (var pixelRowBuffer = this.memoryAllocator.Allocate<Vector4>(this.swInfos.TileWidth, AllocationOptions.Clean))
             {
-                Span<int> histogram = histogramBuffer.GetSpan();
-                ref int histogramBase = ref MemoryMarshal.GetReference(histogram);
+                var histogram = histogramBuffer.GetSpan();
+                ref var histogramBase = ref MemoryMarshal.GetReference(histogram);
 
-                Span<int> histogramCopy = histogramBufferCopy.GetSpan();
-                ref int histogramCopyBase = ref MemoryMarshal.GetReference(histogramCopy);
+                var histogramCopy = histogramBufferCopy.GetSpan();
+                ref var histogramCopyBase = ref MemoryMarshal.GetReference(histogramCopy);
 
-                ref int cdfBase = ref MemoryMarshal.GetReference(cdfBuffer.GetSpan());
+                ref var cdfBase = ref MemoryMarshal.GetReference(cdfBuffer.GetSpan());
 
-                Span<Vector4> pixelRow = pixelRowBuffer.GetSpan();
-                ref Vector4 pixelRowBase = ref MemoryMarshal.GetReference(pixelRow);
+                var pixelRow = pixelRowBuffer.GetSpan();
+                ref var pixelRowBase = ref MemoryMarshal.GetReference(pixelRow);
 
                 // Build the initial histogram of grayscale values.
-                for (int dy = this.yStart - this.swInfos.HalfTileHeight; dy < this.yStart + this.swInfos.HalfTileHeight; dy++)
+                for (var dy = this.yStart - this.swInfos.HalfTileHeight; dy < this.yStart + this.swInfos.HalfTileHeight; dy++)
                 {
                     if (this.useFastPath)
                     {
@@ -366,7 +366,7 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
                     this.processor.AddPixelsToHistogram(ref pixelRowBase, ref histogramBase, this.processor.LuminanceLevels, pixelRow.Length);
                 }
 
-                for (int y = this.yStart; y < this.yEnd; y++)
+                for (var y = this.yStart; y < this.yEnd; y++)
                 {
                     if (this.processor.ClipHistogramEnabled)
                     {
@@ -376,15 +376,15 @@ internal class AdaptiveHistogramEqualizationSlidingWindowProcessor<TPixel> : His
                     }
 
                     // Calculate the cumulative distribution function, which will map each input pixel in the current tile to a new value.
-                    int cdfMin = this.processor.ClipHistogramEnabled
+                    var cdfMin = this.processor.ClipHistogramEnabled
                         ? this.processor.CalculateCdf(ref cdfBase, ref histogramCopyBase, histogram.Length - 1)
                         : this.processor.CalculateCdf(ref cdfBase, ref histogramBase, histogram.Length - 1);
 
                     float numberOfPixelsMinusCdfMin = this.swInfos.PixelInTile - cdfMin;
 
                     // Map the current pixel to the new equalized value.
-                    int luminance = GetLuminance(this.source[x, y], this.processor.LuminanceLevels);
-                    float luminanceEqualized = Unsafe.Add(ref cdfBase, luminance) / numberOfPixelsMinusCdfMin;
+                    var luminance = GetLuminance(this.source[x, y], this.processor.LuminanceLevels);
+                    var luminanceEqualized = Unsafe.Add(ref cdfBase, luminance) / numberOfPixelsMinusCdfMin;
                     this.targetPixels[x, y].FromVector4(new Vector4(luminanceEqualized, luminanceEqualized, luminanceEqualized, this.source[x, y].ToVector4().W));
 
                     // Remove top most row from the histogram, mirroring rows which exceeds the borders.

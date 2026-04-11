@@ -67,27 +67,27 @@ internal class JpegComponentPostProcessor : IDisposable
     /// </summary>
     public void CopyBlocksToColorBuffer(int spectralStep)
     {
-        Buffer2D<Block8x8> spectralBuffer = this.component.SpectralBlocks;
+        var spectralBuffer = this.component.SpectralBlocks;
 
-        float maximumValue = this.frame.MaxColorChannelValue;
+        var maximumValue = this.frame.MaxColorChannelValue;
 
-        int destAreaStride = this.ColorBuffer.Width;
+        var destAreaStride = this.ColorBuffer.Width;
 
-        int yBlockStart = spectralStep * this.blockRowsPerStep;
+        var yBlockStart = spectralStep * this.blockRowsPerStep;
 
-        Size subSamplingDivisors = this.component.SubSamplingDivisors;
+        var subSamplingDivisors = this.component.SubSamplingDivisors;
 
-        Block8x8F dequantTable = this.rawJpeg.QuantizationTables[this.component.QuantizationTableIndex];
+        var dequantTable = this.rawJpeg.QuantizationTables[this.component.QuantizationTableIndex];
         Block8x8F workspaceBlock = default;
 
-        for (int y = 0; y < this.blockRowsPerStep; y++)
+        for (var y = 0; y < this.blockRowsPerStep; y++)
         {
-            int yBuffer = y * this.blockAreaSize.Height;
+            var yBuffer = y * this.blockAreaSize.Height;
 
-            Span<float> colorBufferRow = this.ColorBuffer.DangerousGetRowSpan(yBuffer);
-            Span<Block8x8> blockRow = spectralBuffer.DangerousGetRowSpan(yBlockStart + y);
+            var colorBufferRow = this.ColorBuffer.DangerousGetRowSpan(yBuffer);
+            var blockRow = spectralBuffer.DangerousGetRowSpan(yBlockStart + y);
 
-            for (int xBlock = 0; xBlock < spectralBuffer.Width; xBlock++)
+            for (var xBlock = 0; xBlock < spectralBuffer.Width; xBlock++)
             {
                 // Integer to float
                 workspaceBlock.LoadFrom(ref blockRow[xBlock]);
@@ -104,7 +104,7 @@ internal class JpegComponentPostProcessor : IDisposable
                 workspaceBlock.NormalizeColorsAndRoundInPlace(maximumValue);
 
                 // Write to color buffer acording to sampling factors
-                int xColorBufferStart = xBlock * this.blockAreaSize.Width;
+                var xColorBufferStart = xBlock * this.blockAreaSize.Width;
                 workspaceBlock.ScaledCopyTo(
                     ref colorBufferRow[xColorBufferStart],
                     destAreaStride,
@@ -116,8 +116,8 @@ internal class JpegComponentPostProcessor : IDisposable
 
     public void ClearSpectralBuffers()
     {
-        Buffer2D<Block8x8> spectralBlocks = this.component.SpectralBlocks;
-        for (int i = 0; i < spectralBlocks.Height; i++)
+        var spectralBlocks = this.component.SpectralBlocks;
+        for (var i = 0; i < spectralBlocks.Height; i++)
         {
             spectralBlocks.DangerousGetRowSpan(i).Clear();
         }

@@ -53,7 +53,7 @@ public partial struct HalfSingle : IPixel<HalfSingle>, IPackedVector<ushort>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromScaledVector4(Vector4 vector)
     {
-        float scaled = vector.X;
+        var scaled = vector.X;
         scaled *= 2F;
         scaled--;
         this.PackedValue = HalfTypeHelper.Pack(scaled);
@@ -63,7 +63,7 @@ public partial struct HalfSingle : IPixel<HalfSingle>, IPackedVector<ushort>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Vector4 ToScaledVector4()
     {
-        float single = this.ToSingle() + 1F;
+        var single = this.ToSingle() + 1F;
         single /= 2F;
         return new Vector4(single, 0, 0, 1F);
     }

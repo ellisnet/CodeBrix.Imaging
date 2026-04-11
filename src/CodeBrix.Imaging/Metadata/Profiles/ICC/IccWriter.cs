@@ -22,7 +22,7 @@ internal sealed class IccWriter
 
         using (var writer = new IccDataWriter())
         {
-            IccTagTableEntry[] tagTable = this.WriteTagData(writer, profile.Entries);
+            var tagTable = this.WriteTagData(writer, profile.Entries);
             this.WriteTagTable(writer, tagTable);
             this.WriteHeader(writer, profile.Header);
             return writer.GetData();
@@ -50,7 +50,7 @@ internal sealed class IccWriter
         writer.WriteXyzNumber(header.PcsIlluminant);
         writer.WriteAsciiString(header.CreatorSignature, 4, false);
 
-        IccProfileId id = IccProfile.CalculateHash(writer.GetData());
+        var id = IccProfile.CalculateHash(writer.GetData());
         writer.WriteProfileId(id);
     }
 
@@ -60,7 +60,7 @@ internal sealed class IccWriter
         writer.SetIndex(128);
 
         writer.WriteUInt32((uint)table.Length);
-        foreach (IccTagTableEntry entry in table)
+        foreach (var entry in table)
         {
             writer.WriteUInt32((uint)entry.Signature);
             writer.WriteUInt32(entry.Offset);
@@ -71,16 +71,16 @@ internal sealed class IccWriter
     private IccTagTableEntry[] WriteTagData(IccDataWriter writer, IccTagDataEntry[] entries)
     {
         // TODO: Investigate cost of Linq GroupBy
-        IEnumerable<IGrouping<IccTagDataEntry, IccTagDataEntry>> grouped = entries.GroupBy(t => t);
+        var grouped = entries.GroupBy(t => t);
 
         // (Header size) + (entry count) + (nr of entries) * (size of table entry)
         writer.SetIndex(128 + 4 + (entries.Length * 12));
 
         var table = new List<IccTagTableEntry>();
-        foreach (IGrouping<IccTagDataEntry, IccTagDataEntry> group in grouped)
+        foreach (var group in grouped)
         {
-            writer.WriteTagDataEntry(group.Key, out IccTagTableEntry tableEntry);
-            foreach (IccTagDataEntry item in group)
+            writer.WriteTagDataEntry(group.Key, out var tableEntry);
+            foreach (var item in group)
             {
                 table.Add(new IccTagTableEntry(item.TagSignature, tableEntry.Offset, tableEntry.DataSize));
             }

@@ -70,7 +70,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WriteArray(ushort[] data)
     {
-        for (int i = 0; i < data.Length; i++)
+        for (var i = 0; i < data.Length; i++)
         {
             this.WriteUInt16(data[i]);
         }
@@ -85,7 +85,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WriteArray(short[] data)
     {
-        for (int i = 0; i < data.Length; i++)
+        for (var i = 0; i < data.Length; i++)
         {
             this.WriteInt16(data[i]);
         }
@@ -100,7 +100,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WriteArray(uint[] data)
     {
-        for (int i = 0; i < data.Length; i++)
+        for (var i = 0; i < data.Length; i++)
         {
             this.WriteUInt32(data[i]);
         }
@@ -115,7 +115,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WriteArray(int[] data)
     {
-        for (int i = 0; i < data.Length; i++)
+        for (var i = 0; i < data.Length; i++)
         {
             this.WriteInt32(data[i]);
         }
@@ -130,7 +130,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WriteArray(ulong[] data)
     {
-        for (int i = 0; i < data.Length; i++)
+        for (var i = 0; i < data.Length; i++)
         {
             this.WriteUInt64(data[i]);
         }
@@ -145,7 +145,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WriteEmpty(int length)
     {
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
             this.dataStream.WriteByte(0);
         }
@@ -159,7 +159,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     public int WritePadding()
     {
-        int p = 4 - ((int)this.dataStream.Position % 4);
+        var p = 4 - ((int)this.dataStream.Position % 4);
         return this.WriteEmpty(p >= 4 ? 0 : p);
     }
 
@@ -179,7 +179,7 @@ internal sealed partial class IccDataWriter : IDisposable
     {
         if (BitConverter.IsLittleEndian)
         {
-            for (int i = length - 1; i >= 0; i--)
+            for (var i = length - 1; i >= 0; i--)
             {
                 this.dataStream.WriteByte(data[i]);
             }
@@ -200,7 +200,7 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     private unsafe int WriteBytesDirect(byte* data, int length)
     {
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
             this.dataStream.WriteByte(data[i]);
         }
@@ -215,8 +215,8 @@ internal sealed partial class IccDataWriter : IDisposable
     /// <returns>The number of bytes written</returns>
     private int WriteCurves(IccTagDataEntry[] curves)
     {
-        int count = 0;
-        foreach (IccTagDataEntry curve in curves)
+        var count = 0;
+        foreach (var curve in curves)
         {
             if (curve.Signature != IccTypeSignature.Curve && curve.Signature != IccTypeSignature.ParametricCurve)
             {

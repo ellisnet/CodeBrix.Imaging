@@ -46,11 +46,11 @@ internal class GlobalHistogramEqualizationProcessor<TPixel> : HistogramEqualizat
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        MemoryAllocator memoryAllocator = this.Configuration.MemoryAllocator;
-        int numberOfPixels = source.Width * source.Height;
+        var memoryAllocator = this.Configuration.MemoryAllocator;
+        var numberOfPixels = source.Width * source.Height;
         var interest = Rectangle.Intersect(this.SourceRectangle, source.Bounds());
 
-        using IMemoryOwner<int> histogramBuffer = memoryAllocator.Allocate<int>(this.LuminanceLevels, AllocationOptions.Clean);
+        using var histogramBuffer = memoryAllocator.Allocate<int>(this.LuminanceLevels, AllocationOptions.Clean);
 
         // Build the histogram of the grayscale levels.
         var grayscaleOperation = new GrayscaleLevelsRowOperation(interest, histogramBuffer, source.PixelBuffer, this.LuminanceLevels);
@@ -59,16 +59,16 @@ internal class GlobalHistogramEqualizationProcessor<TPixel> : HistogramEqualizat
             interest,
             in grayscaleOperation);
 
-        Span<int> histogram = histogramBuffer.GetSpan();
+        var histogram = histogramBuffer.GetSpan();
         if (this.ClipHistogramEnabled)
         {
             this.ClipHistogram(histogram, this.ClipLimit);
         }
 
-        using IMemoryOwner<int> cdfBuffer = memoryAllocator.Allocate<int>(this.LuminanceLevels, AllocationOptions.Clean);
+        using var cdfBuffer = memoryAllocator.Allocate<int>(this.LuminanceLevels, AllocationOptions.Clean);
 
         // Calculate the cumulative distribution function, which will map each input pixel to a new value.
-        int cdfMin = this.CalculateCdf(
+        var cdfMin = this.CalculateCdf(
             ref MemoryMarshal.GetReference(cdfBuffer.GetSpan()),
             ref MemoryMarshal.GetReference(histogram),
             histogram.Length - 1);
@@ -110,15 +110,15 @@ internal class GlobalHistogramEqualizationProcessor<TPixel> : HistogramEqualizat
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            ref int histogramBase = ref MemoryMarshal.GetReference(this.histogramBuffer.GetSpan());
-            Span<TPixel> pixelRow = this.source.DangerousGetRowSpan(y);
-            int levels = this.luminanceLevels;
+            ref var histogramBase = ref MemoryMarshal.GetReference(this.histogramBuffer.GetSpan());
+            var pixelRow = this.source.DangerousGetRowSpan(y);
+            var levels = this.luminanceLevels;
 
-            for (int x = 0; x < this.bounds.Width; x++)
+            for (var x = 0; x < this.bounds.Width; x++)
             {
                 // TODO: We should bulk convert here.
                 var vector = pixelRow[x].ToVector4();
-                int luminance = ColorNumerics.GetBT709Luminance(ref vector, levels);
+                var luminance = ColorNumerics.GetBT709Luminance(ref vector, levels);
                 Interlocked.Increment(ref Unsafe.Add(ref histogramBase, luminance));
             }
         }
@@ -154,18 +154,18 @@ internal class GlobalHistogramEqualizationProcessor<TPixel> : HistogramEqualizat
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            ref int cdfBase = ref MemoryMarshal.GetReference(this.cdfBuffer.GetSpan());
-            Span<TPixel> pixelRow = this.source.DangerousGetRowSpan(y);
-            int levels = this.luminanceLevels;
-            float noOfPixelsMinusCdfMin = this.numberOfPixelsMinusCdfMin;
+            ref var cdfBase = ref MemoryMarshal.GetReference(this.cdfBuffer.GetSpan());
+            var pixelRow = this.source.DangerousGetRowSpan(y);
+            var levels = this.luminanceLevels;
+            var noOfPixelsMinusCdfMin = this.numberOfPixelsMinusCdfMin;
 
-            for (int x = 0; x < this.bounds.Width; x++)
+            for (var x = 0; x < this.bounds.Width; x++)
             {
                 // TODO: We should bulk convert here.
-                ref TPixel pixel = ref pixelRow[x];
+                ref var pixel = ref pixelRow[x];
                 var vector = pixel.ToVector4();
-                int luminance = ColorNumerics.GetBT709Luminance(ref vector, levels);
-                float luminanceEqualized = Unsafe.Add(ref cdfBase, luminance) / noOfPixelsMinusCdfMin;
+                var luminance = ColorNumerics.GetBT709Luminance(ref vector, levels);
+                var luminanceEqualized = Unsafe.Add(ref cdfBase, luminance) / noOfPixelsMinusCdfMin;
                 pixel.FromVector4(new Vector4(luminanceEqualized, luminanceEqualized, luminanceEqualized, vector.W));
             }
         }

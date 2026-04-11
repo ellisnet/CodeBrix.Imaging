@@ -18,8 +18,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written (excluding padding)</returns>
     public int WriteTagDataEntry(IccTagDataEntry data, out IccTagTableEntry table)
     {
-        uint offset = (uint)this.dataStream.Position;
-        int count = this.WriteTagDataEntry(data);
+        var offset = (uint)this.dataStream.Position;
+        var count = this.WriteTagDataEntry(data);
         this.WritePadding();
         table = new IccTagTableEntry(data.TagSignature, offset, (uint)count);
         return count;
@@ -32,7 +32,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteTagDataEntry(IccTagDataEntry entry)
     {
-        int count = this.WriteTagDataEntryHeader(entry.Signature);
+        var count = this.WriteTagDataEntryHeader(entry.Signature);
 
         switch (entry.Signature)
         {
@@ -172,10 +172,10 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteChromaticityTagDataEntry(IccChromaticityTagDataEntry value)
     {
-        int count = this.WriteUInt16((ushort)value.ChannelCount);
+        var count = this.WriteUInt16((ushort)value.ChannelCount);
         count += this.WriteUInt16((ushort)value.ColorantType);
 
-        for (int i = 0; i < value.ChannelCount; i++)
+        for (var i = 0; i < value.ChannelCount; i++)
         {
             count += this.WriteUFix16(value.ChannelValues[i][0]);
             count += this.WriteUFix16(value.ChannelValues[i][1]);
@@ -202,11 +202,11 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteColorantTableTagDataEntry(IccColorantTableTagDataEntry value)
     {
-        int count = this.WriteUInt32((uint)value.ColorantData.Length);
+        var count = this.WriteUInt32((uint)value.ColorantData.Length);
 
-        for (int i = 0; i < value.ColorantData.Length; i++)
+        for (var i = 0; i < value.ColorantData.Length; i++)
         {
-            ref IccColorantTableEntry colorant = ref value.ColorantData[i];
+            ref var colorant = ref value.ColorantData[i];
 
             count += this.WriteAsciiString(colorant.Name, 32, true);
             count += this.WriteUInt16(colorant.Pcs1);
@@ -224,7 +224,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteCurveTagDataEntry(IccCurveTagDataEntry value)
     {
-        int count = 0;
+        var count = 0;
 
         if (value.IsIdentityResponse)
         {
@@ -238,7 +238,7 @@ internal sealed partial class IccDataWriter
         else
         {
             count += this.WriteUInt32((uint)value.CurveData.Length);
-            for (int i = 0; i < value.CurveData.Length; i++)
+            for (var i = 0; i < value.CurveData.Length; i++)
             {
                 count += this.WriteUInt16((ushort)Numerics.Clamp((value.CurveData[i] * ushort.MaxValue) + 0.5F, 0, ushort.MaxValue));
             }
@@ -275,7 +275,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteLut16TagDataEntry(IccLut16TagDataEntry value)
     {
-        int count = this.WriteByte((byte)value.InputValues.Length);
+        var count = this.WriteByte((byte)value.InputValues.Length);
         count += this.WriteByte((byte)value.OutputValues.Length);
         count += this.WriteByte(value.ClutValues.GridPointCount[0]);
         count += this.WriteEmpty(1);
@@ -285,14 +285,14 @@ internal sealed partial class IccDataWriter
         count += this.WriteUInt16((ushort)value.InputValues[0].Values.Length);
         count += this.WriteUInt16((ushort)value.OutputValues[0].Values.Length);
 
-        foreach (IccLut lut in value.InputValues)
+        foreach (var lut in value.InputValues)
         {
             count += this.WriteLut16(lut);
         }
 
         count += this.WriteClut16(value.ClutValues);
 
-        foreach (IccLut lut in value.OutputValues)
+        foreach (var lut in value.OutputValues)
         {
             count += this.WriteLut16(lut);
         }
@@ -307,21 +307,21 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteLut8TagDataEntry(IccLut8TagDataEntry value)
     {
-        int count = this.WriteByte((byte)value.InputChannelCount);
+        var count = this.WriteByte((byte)value.InputChannelCount);
         count += this.WriteByte((byte)value.OutputChannelCount);
         count += this.WriteByte((byte)value.ClutValues.Values[0].Length);
         count += this.WriteEmpty(1);
 
         count += this.WriteMatrix(value.Matrix, false);
 
-        foreach (IccLut lut in value.InputValues)
+        foreach (var lut in value.InputValues)
         {
             count += this.WriteLut8(lut);
         }
 
         count += this.WriteClut8(value.ClutValues);
 
-        foreach (IccLut lut in value.OutputValues)
+        foreach (var lut in value.OutputValues)
         {
             count += this.WriteLut8(lut);
         }
@@ -336,9 +336,9 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteLutAtoBTagDataEntry(IccLutAToBTagDataEntry value)
     {
-        long start = this.dataStream.Position - 8;  // 8 is the tag header size
+        var start = this.dataStream.Position - 8;  // 8 is the tag header size
 
-        int count = this.WriteByte((byte)value.InputChannelCount);
+        var count = this.WriteByte((byte)value.InputChannelCount);
         count += this.WriteByte((byte)value.OutputChannelCount);
         count += this.WriteEmpty(2);
 
@@ -349,7 +349,7 @@ internal sealed partial class IccDataWriter
         long aCurveOffset = 0;
 
         // Jump over offset values
-        long offsetpos = this.dataStream.Position;
+        var offsetpos = this.dataStream.Position;
         this.dataStream.Position += 5 * 4;
 
         if (value.CurveB != null)
@@ -389,7 +389,7 @@ internal sealed partial class IccDataWriter
         }
 
         // Set offset values
-        long lpos = this.dataStream.Position;
+        var lpos = this.dataStream.Position;
         this.dataStream.Position = offsetpos;
 
         if (bCurveOffset != 0)
@@ -434,9 +434,9 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteLutBtoATagDataEntry(IccLutBToATagDataEntry value)
     {
-        long start = this.dataStream.Position - 8;  // 8 is the tag header size
+        var start = this.dataStream.Position - 8;  // 8 is the tag header size
 
-        int count = this.WriteByte((byte)value.InputChannelCount);
+        var count = this.WriteByte((byte)value.InputChannelCount);
         count += this.WriteByte((byte)value.OutputChannelCount);
         count += this.WriteEmpty(2);
 
@@ -447,7 +447,7 @@ internal sealed partial class IccDataWriter
         long aCurveOffset = 0;
 
         // Jump over offset values
-        long offsetpos = this.dataStream.Position;
+        var offsetpos = this.dataStream.Position;
         this.dataStream.Position += 5 * 4;
 
         if (value.CurveB != null)
@@ -487,7 +487,7 @@ internal sealed partial class IccDataWriter
         }
 
         // Set offset values
-        long lpos = this.dataStream.Position;
+        var lpos = this.dataStream.Position;
         this.dataStream.Position = offsetpos;
 
         if (bCurveOffset != 0)
@@ -546,37 +546,37 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMultiLocalizedUnicodeTagDataEntry(IccMultiLocalizedUnicodeTagDataEntry value)
     {
-        long start = this.dataStream.Position - 8;  // 8 is the tag header size
+        var start = this.dataStream.Position - 8;  // 8 is the tag header size
 
-        int cultureCount = value.Texts.Length;
+        var cultureCount = value.Texts.Length;
 
-        int count = this.WriteUInt32((uint)cultureCount);
+        var count = this.WriteUInt32((uint)cultureCount);
         count += this.WriteUInt32(12);  // One record has always 12 bytes size
 
         // Jump over position table
-        long tpos = this.dataStream.Position;
+        var tpos = this.dataStream.Position;
         this.dataStream.Position += cultureCount * 12;
 
         // TODO: Investigate cost of Linq GroupBy
-        IGrouping<string, IccLocalizedString>[] texts = value.Texts.GroupBy(t => t.Text).ToArray();
+        var texts = value.Texts.GroupBy(t => t.Text).ToArray();
 
         var offset = new uint[texts.Length];
         var lengths = new int[texts.Length];
 
-        for (int i = 0; i < texts.Length; i++)
+        for (var i = 0; i < texts.Length; i++)
         {
             offset[i] = (uint)(this.dataStream.Position - start);
             count += lengths[i] = this.WriteUnicodeString(texts[i].Key);
         }
 
         // Write position table
-        long lpos = this.dataStream.Position;
+        var lpos = this.dataStream.Position;
         this.dataStream.Position = tpos;
-        for (int i = 0; i < texts.Length; i++)
+        for (var i = 0; i < texts.Length; i++)
         {
-            foreach (IccLocalizedString localizedString in texts[i])
+            foreach (var localizedString in texts[i])
             {
-                string cultureName = localizedString.Culture.Name;
+                var cultureName = localizedString.Culture.Name;
                 if (string.IsNullOrEmpty(cultureName))
                 {
                     count += this.WriteAsciiString("xx", 2, false);
@@ -584,7 +584,7 @@ internal sealed partial class IccDataWriter
                 }
                 else if (cultureName.Contains("-"))
                 {
-                    string[] code = cultureName.Split('-');
+                    var code = cultureName.Split('-');
                     count += this.WriteAsciiString(code[0].ToLower(), 2, false);
                     count += this.WriteAsciiString(code[1].ToUpper(), 2, false);
                 }
@@ -610,30 +610,30 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMultiProcessElementsTagDataEntry(IccMultiProcessElementsTagDataEntry value)
     {
-        long start = this.dataStream.Position - 8;  // 8 is the tag header size
+        var start = this.dataStream.Position - 8;  // 8 is the tag header size
 
-        int count = this.WriteUInt16((ushort)value.InputChannelCount);
+        var count = this.WriteUInt16((ushort)value.InputChannelCount);
         count += this.WriteUInt16((ushort)value.OutputChannelCount);
         count += this.WriteUInt32((uint)value.Data.Length);
 
         // Jump over position table
-        long tpos = this.dataStream.Position;
+        var tpos = this.dataStream.Position;
         this.dataStream.Position += value.Data.Length * 8;
 
         var posTable = new IccPositionNumber[value.Data.Length];
-        for (int i = 0; i < value.Data.Length; i++)
+        for (var i = 0; i < value.Data.Length; i++)
         {
-            uint offset = (uint)(this.dataStream.Position - start);
-            int size = this.WriteMultiProcessElement(value.Data[i]);
+            var offset = (uint)(this.dataStream.Position - start);
+            var size = this.WriteMultiProcessElement(value.Data[i]);
             count += this.WritePadding();
             posTable[i] = new IccPositionNumber(offset, (uint)size);
             count += size;
         }
 
         // Write position table
-        long lpos = this.dataStream.Position;
+        var lpos = this.dataStream.Position;
         this.dataStream.Position = tpos;
-        foreach (IccPositionNumber pos in posTable)
+        foreach (var pos in posTable)
         {
             count += this.WritePositionNumber(pos);
         }
@@ -649,13 +649,13 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteNamedColor2TagDataEntry(IccNamedColor2TagDataEntry value)
     {
-        int count = this.WriteInt32(value.VendorFlags)
+        var count = this.WriteInt32(value.VendorFlags)
                     + this.WriteUInt32((uint)value.Colors.Length)
                     + this.WriteUInt32((uint)value.CoordinateCount)
                     + this.WriteAsciiString(value.Prefix, 32, true)
                     + this.WriteAsciiString(value.Suffix, 32, true);
 
-        foreach (IccNamedColor color in value.Colors)
+        foreach (var color in value.Colors)
         {
             count += this.WriteNamedColor(color);
         }
@@ -677,11 +677,11 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteProfileSequenceDescTagDataEntry(IccProfileSequenceDescTagDataEntry value)
     {
-        int count = this.WriteUInt32((uint)value.Descriptions.Length);
+        var count = this.WriteUInt32((uint)value.Descriptions.Length);
 
-        for (int i = 0; i < value.Descriptions.Length; i++)
+        for (var i = 0; i < value.Descriptions.Length; i++)
         {
-            ref IccProfileDescription desc = ref value.Descriptions[i];
+            ref var desc = ref value.Descriptions[i];
 
             count += this.WriteProfileDescription(desc);
         }
@@ -696,22 +696,22 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteProfileSequenceIdentifierTagDataEntry(IccProfileSequenceIdentifierTagDataEntry value)
     {
-        long start = this.dataStream.Position - 8;  // 8 is the tag header size
-        int length = value.Data.Length;
+        var start = this.dataStream.Position - 8;  // 8 is the tag header size
+        var length = value.Data.Length;
 
-        int count = this.WriteUInt32((uint)length);
+        var count = this.WriteUInt32((uint)length);
 
         // Jump over position table
-        long tablePosition = this.dataStream.Position;
+        var tablePosition = this.dataStream.Position;
         this.dataStream.Position += length * 8;
         var table = new IccPositionNumber[length];
 
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
-            ref IccProfileSequenceIdentifier sequenceIdentifier = ref value.Data[i];
+            ref var sequenceIdentifier = ref value.Data[i];
 
-            uint offset = (uint)(this.dataStream.Position - start);
-            int size = this.WriteProfileId(sequenceIdentifier.Id);
+            var offset = (uint)(this.dataStream.Position - start);
+            var size = this.WriteProfileId(sequenceIdentifier.Id);
             size += this.WriteTagDataEntry(new IccMultiLocalizedUnicodeTagDataEntry(sequenceIdentifier.Description));
             size += this.WritePadding();
             table[i] = new IccPositionNumber(offset, (uint)size);
@@ -719,9 +719,9 @@ internal sealed partial class IccDataWriter
         }
 
         // Write position table
-        long lpos = this.dataStream.Position;
+        var lpos = this.dataStream.Position;
         this.dataStream.Position = tablePosition;
-        foreach (IccPositionNumber pos in table)
+        foreach (var pos in table)
         {
             count += this.WritePositionNumber(pos);
         }
@@ -737,18 +737,18 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteResponseCurveSet16TagDataEntry(IccResponseCurveSet16TagDataEntry value)
     {
-        long start = this.dataStream.Position - 8;
+        var start = this.dataStream.Position - 8;
 
-        int count = this.WriteUInt16(value.ChannelCount);
+        var count = this.WriteUInt16(value.ChannelCount);
         count += this.WriteUInt16((ushort)value.Curves.Length);
 
         // Jump over position table
-        long tablePosition = this.dataStream.Position;
+        var tablePosition = this.dataStream.Position;
         this.dataStream.Position += value.Curves.Length * 4;
 
         var offset = new uint[value.Curves.Length];
 
-        for (int i = 0; i < value.Curves.Length; i++)
+        for (var i = 0; i < value.Curves.Length; i++)
         {
             offset[i] = (uint)(this.dataStream.Position - start);
             count += this.WriteResponseCurve(value.Curves[i]);
@@ -756,7 +756,7 @@ internal sealed partial class IccDataWriter
         }
 
         // Write position table
-        long lpos = this.dataStream.Position;
+        var lpos = this.dataStream.Position;
         this.dataStream.Position = tablePosition;
         count += this.WriteArray(offset);
 
@@ -771,8 +771,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteFix16ArrayTagDataEntry(IccFix16ArrayTagDataEntry value)
     {
-        int count = 0;
-        for (int i = 0; i < value.Data.Length; i++)
+        var count = 0;
+        for (var i = 0; i < value.Data.Length; i++)
         {
             count += this.WriteFix16(value.Data[i] * 256d);
         }
@@ -801,8 +801,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteUFix16ArrayTagDataEntry(IccUFix16ArrayTagDataEntry value)
     {
-        int count = 0;
-        for (int i = 0; i < value.Data.Length; i++)
+        var count = 0;
+        for (var i = 0; i < value.Data.Length; i++)
         {
             count += this.WriteUFix16(value.Data[i]);
         }
@@ -857,8 +857,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteXyzTagDataEntry(IccXyzTagDataEntry value)
     {
-        int count = 0;
-        for (int i = 0; i < value.Data.Length; i++)
+        var count = 0;
+        for (var i = 0; i < value.Data.Length; i++)
         {
             count += this.WriteXyzNumber(value.Data[i]);
         }
@@ -929,7 +929,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteCrdInfoTagDataEntry(IccCrdInfoTagDataEntry value)
     {
-        int count = 0;
+        var count = 0;
         WriteString(value.PostScriptProductName);
         WriteString(value.RenderingIntent0Crd);
         WriteString(value.RenderingIntent1Crd);
@@ -962,11 +962,11 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteScreeningTagDataEntry(IccScreeningTagDataEntry value)
     {
-        int count = 0;
+        var count = 0;
 
         count += this.WriteInt32((int)value.Flags);
         count += this.WriteUInt32((uint)value.Channels.Length);
-        for (int i = 0; i < value.Channels.Length; i++)
+        for (var i = 0; i < value.Channels.Length; i++)
         {
             count += this.WriteScreeningChannel(value.Channels[i]);
         }
@@ -981,16 +981,16 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteUcrBgTagDataEntry(IccUcrBgTagDataEntry value)
     {
-        int count = 0;
+        var count = 0;
 
         count += this.WriteUInt32((uint)value.UcrCurve.Length);
-        for (int i = 0; i < value.UcrCurve.Length; i++)
+        for (var i = 0; i < value.UcrCurve.Length; i++)
         {
             count += this.WriteUInt16(value.UcrCurve[i]);
         }
 
         count += this.WriteUInt32((uint)value.BgCurve.Length);
-        for (int i = 0; i < value.BgCurve.Length; i++)
+        for (var i = 0; i < value.BgCurve.Length; i++)
         {
             count += this.WriteUInt16(value.BgCurve[i]);
         }

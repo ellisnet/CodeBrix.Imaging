@@ -373,7 +373,7 @@ internal struct BmpInfoHeader
             planes: BinaryPrimitives.ReadInt16LittleEndian(data.Slice(12, 2)),
             bitsPerPixel: BinaryPrimitives.ReadInt16LittleEndian(data.Slice(14, 2)));
 
-        int compression = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(16, 4));
+        var compression = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(16, 4));
 
         // The compression value in OS/2 bitmap has a different meaning than in windows bitmaps.
         // Map the OS/2 value to the windows values.
@@ -449,7 +449,7 @@ internal struct BmpInfoHeader
     /// <param name="buffer">The buffer to write to.</param>
     public void WriteV4Header(Span<byte> buffer)
     {
-        ref BmpInfoHeader dest = ref Unsafe.As<byte, BmpInfoHeader>(ref MemoryMarshal.GetReference(buffer));
+        ref var dest = ref Unsafe.As<byte, BmpInfoHeader>(ref MemoryMarshal.GetReference(buffer));
 
         dest = this;
     }

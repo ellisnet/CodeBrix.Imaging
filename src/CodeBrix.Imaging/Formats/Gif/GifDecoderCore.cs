@@ -127,7 +127,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
             this.ReadLogicalScreenDescriptorAndGlobalColorTable(stream);
 
             // Loop though the respective gif parts and read the data.
-            int nextFlag = stream.ReadByte();
+            var nextFlag = stream.ReadByte();
             while (nextFlag != GifConstants.Terminator)
             {
                 if (nextFlag == GifConstants.ImageLabel)
@@ -198,7 +198,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
             this.ReadLogicalScreenDescriptorAndGlobalColorTable(stream);
 
             // Loop though the respective gif parts and read the data.
-            int nextFlag = stream.ReadByte();
+            var nextFlag = stream.ReadByte();
             while (nextFlag != GifConstants.Terminator)
             {
                 if (nextFlag == GifConstants.ImageLabel)
@@ -269,7 +269,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
     /// <param name="stream">The <see cref="BufferedReadStream"/> containing image data.</param>
     private void ReadGraphicalControlExtension(BufferedReadStream stream)
     {
-        int bytesRead = stream.Read(this.buffer, 0, 6);
+        var bytesRead = stream.Read(this.buffer, 0, 6);
         if (bytesRead != 6)
         {
             GifThrowHelper.ThrowInvalidImageContentException("Not enough data to read the graphic control extension");
@@ -284,7 +284,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
     /// <param name="stream">The <see cref="BufferedReadStream"/> containing image data.</param>
     private void ReadImageDescriptor(BufferedReadStream stream)
     {
-        int bytesRead = stream.Read(this.buffer, 0, 9);
+        var bytesRead = stream.Read(this.buffer, 0, 9);
         if (bytesRead != 9)
         {
             GifThrowHelper.ThrowInvalidImageContentException("Not enough data to read the image descriptor");
@@ -303,7 +303,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
     /// <param name="stream">The <see cref="BufferedReadStream"/> containing image data.</param>
     private void ReadLogicalScreenDescriptor(BufferedReadStream stream)
     {
-        int bytesRead = stream.Read(this.buffer, 0, 7);
+        var bytesRead = stream.Read(this.buffer, 0, 7);
         if (bytesRead != 7)
         {
             GifThrowHelper.ThrowInvalidImageContentException("Not enough data to read the logical screen descriptor");
@@ -319,18 +319,18 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
     /// <param name="stream">The <see cref="BufferedReadStream"/> containing image data.</param>
     private void ReadApplicationExtension(BufferedReadStream stream)
     {
-        int appLength = stream.ReadByte();
+        var appLength = stream.ReadByte();
 
         // If the length is 11 then it's a valid extension and most likely
         // a NETSCAPE, XMP or ANIMEXTS extension. We want the loop count from this.
-        long position = stream.Position;
+        var position = stream.Position;
         if (appLength == GifConstants.ApplicationBlockSize)
         {
             stream.ReadExactly(this.buffer, 0, GifConstants.ApplicationBlockSize);
-            bool isXmp = this.buffer.AsSpan().StartsWith(GifConstants.XmpApplicationIdentificationBytes);
+            var isXmp = this.buffer.AsSpan().StartsWith(GifConstants.XmpApplicationIdentificationBytes);
             if (isXmp && !this.skipMetadata)
             {
-                GifXmpApplicationExtension extension = GifXmpApplicationExtension.Read(stream, this.memoryAllocator);
+                var extension = GifXmpApplicationExtension.Read(stream, this.memoryAllocator);
                 if (extension.Data.Length > 0)
                 {
                     this.metadata!.XmpProfile = new XmpProfile(extension.Data);
@@ -345,7 +345,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
                 return;
             }
 
-            int subBlockSize = stream.ReadByte();
+            var subBlockSize = stream.ReadByte();
 
             // TODO: There's also a NETSCAPE buffer extension.
             // http://www.vurdalakov.net/misc/gif/netscape-buffering-application-extension
@@ -414,11 +414,11 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
                 continue;
             }
 
-            using IMemoryOwner<byte> commentsBuffer = this.memoryAllocator.Allocate<byte>(length);
-            Span<byte> commentsSpan = commentsBuffer.GetSpan();
+            using var commentsBuffer = this.memoryAllocator.Allocate<byte>(length);
+            var commentsSpan = commentsBuffer.GetSpan();
 
             stream.ReadExactly(commentsSpan);
-            string commentPart = GifConstants.Encoding.GetString(commentsSpan);
+            var commentPart = GifConstants.Encoding.GetString(commentsSpan);
             stringBuilder.Append(commentPart);
         }
 
@@ -441,12 +441,12 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
         this.ReadImageDescriptor(stream);
 
         // Determine the color table for this frame. If there is a local one, use it otherwise use the global color table.
-        bool hasLocalColorTable = this.imageDescriptor.LocalColorTableFlag;
+        var hasLocalColorTable = this.imageDescriptor.LocalColorTableFlag;
 
         if (hasLocalColorTable)
         {
             // Read and store the local color table. We allocate the maximum possible size and slice to match.
-            int length = this.currentLocalColorTableSize = this.imageDescriptor.LocalColorTableSize * 3;
+            var length = this.currentLocalColorTableSize = this.imageDescriptor.LocalColorTableSize * 3;
             this.currentLocalColorTable ??= this.configuration.MemoryAllocator.Allocate<byte>(768, AllocationOptions.Clean);
             stream.ReadExactly(this.currentLocalColorTable.GetSpan().Slice(0, length));
         }
@@ -487,7 +487,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
     {
         int imageWidth = this.logicalScreenDescriptor.Width;
         int imageHeight = this.logicalScreenDescriptor.Height;
-        bool transFlag = this.graphicsControlExtension.TransparencyFlag;
+        var transFlag = this.graphicsControlExtension.TransparencyFlag;
 
         ImageFrame<TPixel> prevFrame = null;
         ImageFrame<TPixel> currentFrame = null;
@@ -533,28 +533,28 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
             return;
         }
 
-        int interlacePass = 0; // The interlace pass
-        int interlaceIncrement = 8; // The interlacing line increment
-        int interlaceY = 0; // The current interlaced line
+        var interlacePass = 0; // The interlace pass
+        var interlaceIncrement = 8; // The interlacing line increment
+        var interlaceY = 0; // The current interlaced line
         int descriptorTop = descriptor.Top;
-        int descriptorBottom = descriptorTop + descriptor.Height;
+        var descriptorBottom = descriptorTop + descriptor.Height;
         int descriptorLeft = descriptor.Left;
-        int descriptorRight = descriptorLeft + descriptor.Width;
-        byte transIndex = this.graphicsControlExtension.TransparencyIndex;
-        int colorTableMaxIdx = colorTable.Length - 1;
+        var descriptorRight = descriptorLeft + descriptor.Width;
+        var transIndex = this.graphicsControlExtension.TransparencyIndex;
+        var colorTableMaxIdx = colorTable.Length - 1;
 
         // For a properly encoded gif the descriptor dimensions will never exceed the logical screen dimensions.
         // However we have images that exceed this that can be decoded by other libraries. #1530
-        using IMemoryOwner<byte> indicesRowOwner = this.memoryAllocator.Allocate<byte>(descriptor.Width);
-        Span<byte> indicesRow = indicesRowOwner.Memory.Span;
-        ref byte indicesRowRef = ref MemoryMarshal.GetReference(indicesRow);
+        using var indicesRowOwner = this.memoryAllocator.Allocate<byte>(descriptor.Width);
+        var indicesRow = indicesRowOwner.Memory.Span;
+        ref var indicesRowRef = ref MemoryMarshal.GetReference(indicesRow);
 
-        int minCodeSize = stream.ReadByte();
+        var minCodeSize = stream.ReadByte();
         if (LzwDecoder.IsValidMinCodeSize(minCodeSize))
         {
             using LzwDecoder lzwDecoder = new(this.configuration.MemoryAllocator, stream, minCodeSize);
 
-            for (int y = descriptorTop; y < descriptorBottom && y < imageHeight; y++)
+            for (var y = descriptorTop; y < descriptorBottom && y < imageHeight; y++)
             {
                 // Check if this image is interlaced.
                 int writeY; // the target y offset to write to
@@ -591,22 +591,22 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
                 }
 
                 lzwDecoder.DecodePixelRow(indicesRow);
-                ref TPixel rowRef = ref MemoryMarshal.GetReference(imageFrame.PixelBuffer.DangerousGetRowSpan(writeY));
+                ref var rowRef = ref MemoryMarshal.GetReference(imageFrame.PixelBuffer.DangerousGetRowSpan(writeY));
 
                 if (!transFlag)
                 {
                     // #403 The left + width value can be larger than the image width
-                    for (int x = descriptorLeft; x < descriptorRight && x < imageWidth; x++)
+                    for (var x = descriptorLeft; x < descriptorRight && x < imageWidth; x++)
                     {
-                        int index = Numerics.Clamp(Unsafe.Add(ref indicesRowRef, x - descriptorLeft), 0, colorTableMaxIdx);
-                        ref TPixel pixel = ref Unsafe.Add(ref rowRef, x);
-                        Rgb24 rgb = colorTable[index];
+                        var index = Numerics.Clamp(Unsafe.Add(ref indicesRowRef, x - descriptorLeft), 0, colorTableMaxIdx);
+                        ref var pixel = ref Unsafe.Add(ref rowRef, x);
+                        var rgb = colorTable[index];
                         pixel.FromRgb24(rgb);
                     }
                 }
                 else
                 {
-                    for (int x = descriptorLeft; x < descriptorRight && x < imageWidth; x++)
+                    for (var x = descriptorLeft; x < descriptorRight && x < imageWidth; x++)
                     {
                         int index = Unsafe.Add(ref indicesRowRef, x - descriptorLeft);
 
@@ -616,8 +616,8 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
                             continue;
                         }
 
-                        ref TPixel pixel = ref Unsafe.Add(ref rowRef, x);
-                        Rgb24 rgb = colorTable[index];
+                        ref var pixel = ref Unsafe.Add(ref rowRef, x);
+                        var rgb = colorTable[index];
                         pixel.FromRgb24(rgb);
                     }
                 }
@@ -652,14 +652,14 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
         if (this.imageDescriptor.LocalColorTableFlag)
         {
             // Read and store the local color table. We allocate the maximum possible size and slice to match.
-            int length = this.currentLocalColorTableSize = this.imageDescriptor.LocalColorTableSize * 3;
+            var length = this.currentLocalColorTableSize = this.imageDescriptor.LocalColorTableSize * 3;
             this.currentLocalColorTable ??= this.configuration.MemoryAllocator.Allocate<byte>(768, AllocationOptions.Clean);
             stream.ReadExactly(this.currentLocalColorTable.GetSpan().Slice(0, length));
         }
 
         // Skip the frame indices. Pixels length + mincode size.
         // The gif format does not tell us the length of the compressed data beforehand.
-        int minCodeSize = stream.ReadByte();
+        var minCodeSize = stream.ReadByte();
         if (LzwDecoder.IsValidMinCodeSize(minCodeSize))
         {
             using LzwDecoder lzwDecoder = new(this.configuration.MemoryAllocator, stream, minCodeSize);
@@ -688,8 +688,8 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
             return;
         }
 
-        Rectangle interest = Rectangle.Intersect(frame.Bounds(), this.restoreArea.Value);
-        Buffer2DRegion<TPixel> pixelRegion = frame.PixelBuffer.GetRegion(interest);
+        var interest = Rectangle.Intersect(frame.Bounds(), this.restoreArea.Value);
+        var pixelRegion = frame.PixelBuffer.GetRegion(interest);
         pixelRegion.Clear();
 
         this.restoreArea = null;
@@ -702,7 +702,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetFrameMetadata(ImageFrameMetadata meta)
     {
-        GifFrameMetadata gifMeta = meta.GetGifMetadata();
+        var gifMeta = meta.GetGifMetadata();
         if (this.graphicsControlExtension.DelayTime > 0)
         {
             gifMeta.FrameDelay = this.graphicsControlExtension.DelayTime;
@@ -747,7 +747,7 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
         if (this.logicalScreenDescriptor.PixelAspectRatio > 0)
         {
             meta.ResolutionUnits = PixelResolutionUnit.AspectRatio;
-            float ratio = (this.logicalScreenDescriptor.PixelAspectRatio + 15) / 64F;
+            var ratio = (this.logicalScreenDescriptor.PixelAspectRatio + 15) / 64F;
 
             if (ratio > 1)
             {
@@ -769,13 +769,13 @@ internal sealed class GifDecoderCore : IImageDecoderInternals
 
         if (this.logicalScreenDescriptor.GlobalColorTableFlag)
         {
-            int globalColorTableLength = this.logicalScreenDescriptor.GlobalColorTableSize * 3;
+            var globalColorTableLength = this.logicalScreenDescriptor.GlobalColorTableSize * 3;
             if (globalColorTableLength > 0)
             {
                 this.globalColorTable = this.memoryAllocator.Allocate<byte>(globalColorTableLength, AllocationOptions.Clean);
 
                 // Read the global color table data from the stream and preserve it in the gif metadata
-                Span<byte> globalColorTableSpan = this.globalColorTable.GetSpan();
+                var globalColorTableSpan = this.globalColorTable.GetSpan();
                 stream.ReadExactly(globalColorTableSpan);
 
                 //Color[] colorTable = new Color[this.logicalScreenDescriptor.GlobalColorTableSize];

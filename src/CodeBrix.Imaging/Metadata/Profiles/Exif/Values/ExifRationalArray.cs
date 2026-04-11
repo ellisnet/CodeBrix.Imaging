@@ -59,9 +59,9 @@ internal sealed class ExifRationalArray : ExifArrayValue<Rational>
         }
 
         var unsigned = new Rational[signed.Length];
-        for (int i = 0; i < signed.Length; i++)
+        for (var i = 0; i < signed.Length; i++)
         {
-            SignedRational s = signed[i];
+            var s = signed[i];
             unsigned[i] = new Rational((uint)s.Numerator, (uint)s.Denominator);
         }
 

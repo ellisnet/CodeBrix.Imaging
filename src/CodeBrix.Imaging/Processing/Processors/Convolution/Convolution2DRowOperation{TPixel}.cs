@@ -65,43 +65,43 @@ internal readonly struct Convolution2DRowOperation<TPixel> : IRowOperation<Vecto
     private void Convolve3(int y, Span<Vector4> span)
     {
         // Span is 3x bounds.
-        int boundsX = this.bounds.X;
-        int boundsWidth = this.bounds.Width;
-        Span<Vector4> sourceBuffer = span.Slice(0, boundsWidth);
-        Span<Vector4> targetYBuffer = span.Slice(boundsWidth, boundsWidth);
-        Span<Vector4> targetXBuffer = span.Slice(boundsWidth * 2, boundsWidth);
+        var boundsX = this.bounds.X;
+        var boundsWidth = this.bounds.Width;
+        var sourceBuffer = span.Slice(0, boundsWidth);
+        var targetYBuffer = span.Slice(boundsWidth, boundsWidth);
+        var targetXBuffer = span.Slice(boundsWidth * 2, boundsWidth);
 
         var state = new Convolution2DState(in this.kernelMatrixY, in this.kernelMatrixX, this.map);
-        ref int sampleRowBase = ref state.GetSampleRow(y - this.bounds.Y);
+        ref var sampleRowBase = ref state.GetSampleRow(y - this.bounds.Y);
 
         // Clear the target buffers for each row run.
         targetYBuffer.Clear();
         targetXBuffer.Clear();
-        ref Vector4 targetBaseY = ref MemoryMarshal.GetReference(targetYBuffer);
-        ref Vector4 targetBaseX = ref MemoryMarshal.GetReference(targetXBuffer);
+        ref var targetBaseY = ref MemoryMarshal.GetReference(targetYBuffer);
+        ref var targetBaseX = ref MemoryMarshal.GetReference(targetXBuffer);
 
-        ReadOnlyKernel kernelY = state.KernelY;
-        ReadOnlyKernel kernelX = state.KernelX;
+        var kernelY = state.KernelY;
+        var kernelX = state.KernelX;
         Span<TPixel> sourceRow;
-        for (int kY = 0; kY < kernelY.Rows; kY++)
+        for (var kY = 0; kY < kernelY.Rows; kY++)
         {
             // Get the precalculated source sample row for this kernel row and copy to our buffer.
-            int sampleY = Unsafe.Add(ref sampleRowBase, kY);
+            var sampleY = Unsafe.Add(ref sampleRowBase, kY);
             sourceRow = this.sourcePixels.DangerousGetRowSpan(sampleY).Slice(boundsX, boundsWidth);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, sourceRow, sourceBuffer);
 
-            ref Vector4 sourceBase = ref MemoryMarshal.GetReference(sourceBuffer);
+            ref var sourceBase = ref MemoryMarshal.GetReference(sourceBuffer);
 
-            for (int x = 0; x < sourceBuffer.Length; x++)
+            for (var x = 0; x < sourceBuffer.Length; x++)
             {
-                ref int sampleColumnBase = ref state.GetSampleColumn(x);
-                ref Vector4 targetY = ref Unsafe.Add(ref targetBaseY, x);
-                ref Vector4 targetX = ref Unsafe.Add(ref targetBaseX, x);
+                ref var sampleColumnBase = ref state.GetSampleColumn(x);
+                ref var targetY = ref Unsafe.Add(ref targetBaseY, x);
+                ref var targetX = ref Unsafe.Add(ref targetBaseX, x);
 
-                for (int kX = 0; kX < kernelY.Columns; kX++)
+                for (var kX = 0; kX < kernelY.Columns; kX++)
                 {
-                    int sampleX = Unsafe.Add(ref sampleColumnBase, kX) - boundsX;
-                    Vector4 sample = Unsafe.Add(ref sourceBase, sampleX);
+                    var sampleX = Unsafe.Add(ref sampleColumnBase, kX) - boundsX;
+                    var sample = Unsafe.Add(ref sourceBase, sampleX);
                     targetY += kernelX[kY, kX] * sample;
                     targetX += kernelY[kY, kX] * sample;
                 }
@@ -113,17 +113,17 @@ internal readonly struct Convolution2DRowOperation<TPixel> : IRowOperation<Vecto
         sourceRow = this.sourcePixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
         PixelOperations<TPixel>.Instance.ToVector4(this.configuration, sourceRow, sourceBuffer);
 
-        for (int x = 0; x < sourceRow.Length; x++)
+        for (var x = 0; x < sourceRow.Length; x++)
         {
-            ref Vector4 target = ref Unsafe.Add(ref targetBaseY, x);
-            Vector4 vectorY = target;
-            Vector4 vectorX = Unsafe.Add(ref targetBaseX, x);
+            ref var target = ref Unsafe.Add(ref targetBaseY, x);
+            var vectorY = target;
+            var vectorX = Unsafe.Add(ref targetBaseX, x);
 
             target = Vector4.SquareRoot((vectorX * vectorX) + (vectorY * vectorY));
             target.W = Unsafe.Add(ref MemoryMarshal.GetReference(sourceBuffer), x).W;
         }
 
-        Span<TPixel> targetRowSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
+        var targetRowSpan = this.targetPixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
         PixelOperations<TPixel>.Instance.FromVector4Destructive(this.configuration, targetYBuffer, targetRowSpan);
     }
 
@@ -131,43 +131,43 @@ internal readonly struct Convolution2DRowOperation<TPixel> : IRowOperation<Vecto
     private void Convolve4(int y, Span<Vector4> span)
     {
         // Span is 3x bounds.
-        int boundsX = this.bounds.X;
-        int boundsWidth = this.bounds.Width;
-        Span<Vector4> sourceBuffer = span.Slice(0, boundsWidth);
-        Span<Vector4> targetYBuffer = span.Slice(boundsWidth, boundsWidth);
-        Span<Vector4> targetXBuffer = span.Slice(boundsWidth * 2, boundsWidth);
+        var boundsX = this.bounds.X;
+        var boundsWidth = this.bounds.Width;
+        var sourceBuffer = span.Slice(0, boundsWidth);
+        var targetYBuffer = span.Slice(boundsWidth, boundsWidth);
+        var targetXBuffer = span.Slice(boundsWidth * 2, boundsWidth);
 
         var state = new Convolution2DState(in this.kernelMatrixY, in this.kernelMatrixX, this.map);
-        ref int sampleRowBase = ref state.GetSampleRow(y - this.bounds.Y);
+        ref var sampleRowBase = ref state.GetSampleRow(y - this.bounds.Y);
 
         // Clear the target buffers for each row run.
         targetYBuffer.Clear();
         targetXBuffer.Clear();
-        ref Vector4 targetBaseY = ref MemoryMarshal.GetReference(targetYBuffer);
-        ref Vector4 targetBaseX = ref MemoryMarshal.GetReference(targetXBuffer);
+        ref var targetBaseY = ref MemoryMarshal.GetReference(targetYBuffer);
+        ref var targetBaseX = ref MemoryMarshal.GetReference(targetXBuffer);
 
-        ReadOnlyKernel kernelY = state.KernelY;
-        ReadOnlyKernel kernelX = state.KernelX;
-        for (int kY = 0; kY < kernelY.Rows; kY++)
+        var kernelY = state.KernelY;
+        var kernelX = state.KernelX;
+        for (var kY = 0; kY < kernelY.Rows; kY++)
         {
             // Get the precalculated source sample row for this kernel row and copy to our buffer.
-            int sampleY = Unsafe.Add(ref sampleRowBase, kY);
-            Span<TPixel> sourceRow = this.sourcePixels.DangerousGetRowSpan(sampleY).Slice(boundsX, boundsWidth);
+            var sampleY = Unsafe.Add(ref sampleRowBase, kY);
+            var sourceRow = this.sourcePixels.DangerousGetRowSpan(sampleY).Slice(boundsX, boundsWidth);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, sourceRow, sourceBuffer);
 
             Numerics.Premultiply(sourceBuffer);
-            ref Vector4 sourceBase = ref MemoryMarshal.GetReference(sourceBuffer);
+            ref var sourceBase = ref MemoryMarshal.GetReference(sourceBuffer);
 
-            for (int x = 0; x < sourceBuffer.Length; x++)
+            for (var x = 0; x < sourceBuffer.Length; x++)
             {
-                ref int sampleColumnBase = ref state.GetSampleColumn(x);
-                ref Vector4 targetY = ref Unsafe.Add(ref targetBaseY, x);
-                ref Vector4 targetX = ref Unsafe.Add(ref targetBaseX, x);
+                ref var sampleColumnBase = ref state.GetSampleColumn(x);
+                ref var targetY = ref Unsafe.Add(ref targetBaseY, x);
+                ref var targetX = ref Unsafe.Add(ref targetBaseX, x);
 
-                for (int kX = 0; kX < kernelY.Columns; kX++)
+                for (var kX = 0; kX < kernelY.Columns; kX++)
                 {
-                    int sampleX = Unsafe.Add(ref sampleColumnBase, kX) - boundsX;
-                    Vector4 sample = Unsafe.Add(ref sourceBase, sampleX);
+                    var sampleX = Unsafe.Add(ref sampleColumnBase, kX) - boundsX;
+                    var sample = Unsafe.Add(ref sourceBase, sampleX);
                     targetY += kernelX[kY, kX] * sample;
                     targetX += kernelY[kY, kX] * sample;
                 }
@@ -175,18 +175,18 @@ internal readonly struct Convolution2DRowOperation<TPixel> : IRowOperation<Vecto
         }
 
         // Now we need to combine the values
-        for (int x = 0; x < targetYBuffer.Length; x++)
+        for (var x = 0; x < targetYBuffer.Length; x++)
         {
-            ref Vector4 target = ref Unsafe.Add(ref targetBaseY, x);
-            Vector4 vectorY = target;
-            Vector4 vectorX = Unsafe.Add(ref targetBaseX, x);
+            ref var target = ref Unsafe.Add(ref targetBaseY, x);
+            var vectorY = target;
+            var vectorX = Unsafe.Add(ref targetBaseX, x);
 
             target = Vector4.SquareRoot((vectorX * vectorX) + (vectorY * vectorY));
         }
 
         Numerics.UnPremultiply(targetYBuffer);
 
-        Span<TPixel> targetRow = this.targetPixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
+        var targetRow = this.targetPixels.DangerousGetRowSpan(y).Slice(boundsX, boundsWidth);
         PixelOperations<TPixel>.Instance.FromVector4Destructive(this.configuration, targetYBuffer, targetRow);
     }
 }

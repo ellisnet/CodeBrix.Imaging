@@ -32,13 +32,13 @@ internal class WhiteIsZeroTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
 
         var bitReader = new BitReader(data);
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                int value = bitReader.ReadBits(this.bitsPerSample0);
-                float intensity = 1.0f - (value / this.factor);
+                var value = bitReader.ReadBits(this.bitsPerSample0);
+                var intensity = 1.0f - (value / this.factor);
 
                 color.FromScaledVector4(new Vector4(intensity, intensity, intensity, 1.0f));
                 pixelRow[x] = color;

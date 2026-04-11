@@ -54,10 +54,10 @@ internal class ProjectiveTransformProcessor<TPixel> : TransformProcessor<TPixel>
     public void ApplyTransform<TResampler>(in TResampler sampler)
         where TResampler : struct, IResampler
     {
-        Configuration configuration = this.Configuration;
-        ImageFrame<TPixel> source = this.source;
-        ImageFrame<TPixel> destination = this.destination;
-        Matrix4x4 matrix = this.transformMatrix;
+        var configuration = this.Configuration;
+        var source = this.source;
+        var destination = this.destination;
+        var matrix = this.transformMatrix;
 
         // Handle transforms that result in output identical to the original.
         // Degenerate matrices are already handled in the upstream definition.
@@ -65,9 +65,9 @@ internal class ProjectiveTransformProcessor<TPixel> : TransformProcessor<TPixel>
         {
             // The clone will be blank here copy all the pixel data over
             var interest = Rectangle.Intersect(this.SourceRectangle, destination.Bounds());
-            Buffer2DRegion<TPixel> sourceBuffer = source.PixelBuffer.GetRegion(interest);
-            Buffer2DRegion<TPixel> destbuffer = destination.PixelBuffer.GetRegion(interest);
-            for (int y = 0; y < sourceBuffer.Height; y++)
+            var sourceBuffer = source.PixelBuffer.GetRegion(interest);
+            var destbuffer = destination.PixelBuffer.GetRegion(interest);
+            for (var y = 0; y < sourceBuffer.Height; y++)
             {
                 sourceBuffer.DangerousGetRowSpan(y).CopyTo(destbuffer.DangerousGetRowSpan(y));
             }
@@ -131,13 +131,13 @@ internal class ProjectiveTransformProcessor<TPixel> : TransformProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixel> destRow = this.destination.DangerousGetRowSpan(y);
+            var destRow = this.destination.DangerousGetRowSpan(y);
 
-            for (int x = 0; x < destRow.Length; x++)
+            for (var x = 0; x < destRow.Length; x++)
             {
-                Vector2 point = TransformUtils.ProjectiveTransform2D(x, y, this.matrix);
-                int px = (int)MathF.Round(point.X);
-                int py = (int)MathF.Round(point.Y);
+                var point = TransformUtils.ProjectiveTransform2D(x, y, this.matrix);
+                var px = (int)MathF.Round(point.X);
+                var py = (int)MathF.Round(point.Y);
 
                 if (this.bounds.Contains(px, py))
                 {
@@ -195,50 +195,50 @@ internal class ProjectiveTransformProcessor<TPixel> : TransformProcessor<TPixel>
                 return;
             }
 
-            Matrix4x4 matrix = this.matrix;
-            TResampler sampler = this.sampler;
-            float yRadius = this.yRadius;
-            float xRadius = this.xRadius;
-            int minY = this.bounds.Y;
-            int maxY = this.bounds.Bottom - 1;
-            int minX = this.bounds.X;
-            int maxX = this.bounds.Right - 1;
+            var matrix = this.matrix;
+            var sampler = this.sampler;
+            var yRadius = this.yRadius;
+            var xRadius = this.xRadius;
+            var minY = this.bounds.Y;
+            var maxY = this.bounds.Bottom - 1;
+            var minX = this.bounds.X;
+            var maxX = this.bounds.Right - 1;
 
-            for (int y = rows.Min; y < rows.Max; y++)
+            for (var y = rows.Min; y < rows.Max; y++)
             {
-                Span<TPixel> rowSpan = this.destination.DangerousGetRowSpan(y);
+                var rowSpan = this.destination.DangerousGetRowSpan(y);
                 PixelOperations<TPixel>.Instance.ToVector4(
                     this.configuration,
                     rowSpan,
                     span,
                     PixelConversionModifiers.Scale);
 
-                for (int x = 0; x < span.Length; x++)
+                for (var x = 0; x < span.Length; x++)
                 {
-                    Vector2 point = TransformUtils.ProjectiveTransform2D(x, y, matrix);
-                    float pY = point.Y;
-                    float pX = point.X;
+                    var point = TransformUtils.ProjectiveTransform2D(x, y, matrix);
+                    var pY = point.Y;
+                    var pX = point.X;
 
-                    int top = LinearTransformUtility.GetRangeStart(yRadius, pY, minY, maxY);
-                    int bottom = LinearTransformUtility.GetRangeEnd(yRadius, pY, minY, maxY);
-                    int left = LinearTransformUtility.GetRangeStart(xRadius, pX, minX, maxX);
-                    int right = LinearTransformUtility.GetRangeEnd(xRadius, pX, minX, maxX);
+                    var top = LinearTransformUtility.GetRangeStart(yRadius, pY, minY, maxY);
+                    var bottom = LinearTransformUtility.GetRangeEnd(yRadius, pY, minY, maxY);
+                    var left = LinearTransformUtility.GetRangeStart(xRadius, pX, minX, maxX);
+                    var right = LinearTransformUtility.GetRangeEnd(xRadius, pX, minX, maxX);
 
                     if (bottom <= top || right <= left)
                     {
                         continue;
                     }
 
-                    Vector4 sum = Vector4.Zero;
-                    for (int yK = top; yK <= bottom; yK++)
+                    var sum = Vector4.Zero;
+                    for (var yK = top; yK <= bottom; yK++)
                     {
-                        float yWeight = sampler.GetValue(yK - pY);
+                        var yWeight = sampler.GetValue(yK - pY);
 
-                        for (int xK = left; xK <= right; xK++)
+                        for (var xK = left; xK <= right; xK++)
                         {
-                            float xWeight = sampler.GetValue(xK - pX);
+                            var xWeight = sampler.GetValue(xK - pX);
 
-                            Vector4 current = this.source.GetElementUnsafe(xK, yK).ToScaledVector4();
+                            var current = this.source.GetElementUnsafe(xK, yK).ToScaledVector4();
                             Numerics.Premultiply(ref current);
                             sum += current * xWeight * yWeight;
                         }
@@ -260,50 +260,50 @@ internal class ProjectiveTransformProcessor<TPixel> : TransformProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void InvokeMacOS(in RowInterval rows, Span<Vector4> span)
         {
-            Matrix4x4 matrix = this.matrix;
-            TResampler sampler = this.sampler;
-            float yRadius = this.yRadius;
-            float xRadius = this.xRadius;
-            int minY = this.bounds.Y;
-            int maxY = this.bounds.Bottom - 1;
-            int minX = this.bounds.X;
-            int maxX = this.bounds.Right - 1;
+            var matrix = this.matrix;
+            var sampler = this.sampler;
+            var yRadius = this.yRadius;
+            var xRadius = this.xRadius;
+            var minY = this.bounds.Y;
+            var maxY = this.bounds.Bottom - 1;
+            var minX = this.bounds.X;
+            var maxX = this.bounds.Right - 1;
 
-            for (int y = rows.Min; y < rows.Max; y++)
+            for (var y = rows.Min; y < rows.Max; y++)
             {
-                Span<TPixel> rowSpan = this.destination.DangerousGetRowSpan(y);
+                var rowSpan = this.destination.DangerousGetRowSpan(y);
                 PixelOperations<TPixel>.Instance.ToVector4(
                     this.configuration,
                     rowSpan,
                     span,
                     PixelConversionModifiers.Scale);
 
-                for (int x = 0; x < span.Length; x++)
+                for (var x = 0; x < span.Length; x++)
                 {
-                    Vector2 point = TransformUtils.ProjectiveTransform2D(x, y, matrix);
-                    float pY = point.Y;
-                    float pX = point.X;
+                    var point = TransformUtils.ProjectiveTransform2D(x, y, matrix);
+                    var pY = point.Y;
+                    var pX = point.X;
 
-                    int top = LinearTransformUtility.GetRangeStart(yRadius, pY, minY, maxY);
-                    int bottom = LinearTransformUtility.GetRangeEnd(yRadius, pY, minY, maxY);
-                    int left = LinearTransformUtility.GetRangeStart(xRadius, pX, minX, maxX);
-                    int right = LinearTransformUtility.GetRangeEnd(xRadius, pX, minX, maxX);
+                    var top = LinearTransformUtility.GetRangeStart(yRadius, pY, minY, maxY);
+                    var bottom = LinearTransformUtility.GetRangeEnd(yRadius, pY, minY, maxY);
+                    var left = LinearTransformUtility.GetRangeStart(xRadius, pX, minX, maxX);
+                    var right = LinearTransformUtility.GetRangeEnd(xRadius, pX, minX, maxX);
 
                     if (bottom <= top || right <= left)
                     {
                         continue;
                     }
 
-                    Vector4 sum = Vector4.Zero;
-                    for (int yK = top; yK <= bottom; yK++)
+                    var sum = Vector4.Zero;
+                    for (var yK = top; yK <= bottom; yK++)
                     {
-                        float yWeight = sampler.GetValue(yK - pY);
+                        var yWeight = sampler.GetValue(yK - pY);
 
-                        for (int xK = left; xK <= right; xK++)
+                        for (var xK = left; xK <= right; xK++)
                         {
-                            float xWeight = sampler.GetValue(xK - pX);
+                            var xWeight = sampler.GetValue(xK - pX);
 
-                            Vector4 current = this.source.GetElementUnsafe(xK, yK).ToScaledVector4();
+                            var current = this.source.GetElementUnsafe(xK, yK).ToScaledVector4();
                             Numerics.Premultiply(ref current);
                             sum += current * xWeight * yWeight;
                         }

@@ -39,7 +39,7 @@ internal class Vp8Decoder : IDisposable
         this.MacroBlockData = new Vp8MacroBlockData[this.MbWidth];
         this.YuvTopSamples = new Vp8TopSamples[this.MbWidth];
         this.FilterInfo = new Vp8FilterInfo[this.MbWidth];
-        for (int i = 0; i < this.MbWidth; i++)
+        for (var i = 0; i < this.MbWidth; i++)
         {
             this.MacroBlockInfo[i] = new Vp8MacroBlock();
             this.MacroBlockData[i] = new Vp8MacroBlockData();
@@ -51,24 +51,24 @@ internal class Vp8Decoder : IDisposable
 
         this.DeQuantMatrices = new Vp8QuantMatrix[WebpConstants.NumMbSegments];
         this.FilterStrength = new Vp8FilterInfo[WebpConstants.NumMbSegments, 2];
-        for (int i = 0; i < WebpConstants.NumMbSegments; i++)
+        for (var i = 0; i < WebpConstants.NumMbSegments; i++)
         {
             this.DeQuantMatrices[i] = new Vp8QuantMatrix();
-            for (int j = 0; j < 2; j++)
+            for (var j = 0; j < 2; j++)
             {
                 this.FilterStrength[i, j] = new Vp8FilterInfo();
             }
         }
 
-        uint width = pictureHeader.Width;
-        uint height = pictureHeader.Height;
+        var width = pictureHeader.Width;
+        var height = pictureHeader.Height;
 
         int extraRows = WebpConstants.FilterExtraRows[(int)LoopFilter.Complex]; // assuming worst case: complex filter
-        int extraY = extraRows * this.CacheYStride;
-        int extraUv = extraRows / 2 * this.CacheUvStride;
+        var extraY = extraRows * this.CacheYStride;
+        var extraUv = extraRows / 2 * this.CacheUvStride;
         this.YuvBuffer = memoryAllocator.Allocate<byte>((WebpConstants.Bps * 17) + (WebpConstants.Bps * 9) + extraY);
         this.CacheY = memoryAllocator.Allocate<byte>((16 * this.CacheYStride) + extraY);
-        int cacheUvSize = (16 * this.CacheUvStride) + extraUv;
+        var cacheUvSize = (16 * this.CacheUvStride) + extraUv;
         this.CacheU = memoryAllocator.Allocate<byte>(cacheUvSize);
         this.CacheV = memoryAllocator.Allocate<byte>(cacheUvSize);
         this.TmpYBuffer = memoryAllocator.Allocate<byte>((int)width);
@@ -256,8 +256,8 @@ internal class Vp8Decoder : IDisposable
             return;
         }
 
-        Vp8FilterHeader hdr = this.FilterHeader;
-        for (int s = 0; s < WebpConstants.NumMbSegments; ++s)
+        var hdr = this.FilterHeader;
+        for (var s = 0; s < WebpConstants.NumMbSegments; ++s)
         {
             int baseLevel;
 
@@ -275,10 +275,10 @@ internal class Vp8Decoder : IDisposable
                 baseLevel = hdr.FilterLevel;
             }
 
-            for (int i4x4 = 0; i4x4 <= 1; i4x4++)
+            for (var i4x4 = 0; i4x4 <= 1; i4x4++)
             {
-                Vp8FilterInfo info = this.FilterStrength[s, i4x4];
-                int level = baseLevel;
+                var info = this.FilterStrength[s, i4x4];
+                var level = baseLevel;
                 if (hdr.UseLfDelta)
                 {
                     level += hdr.RefLfDelta[0];
@@ -291,7 +291,7 @@ internal class Vp8Decoder : IDisposable
                 level = level < 0 ? 0 : level > 63 ? 63 : level;
                 if (level > 0)
                 {
-                    int iLevel = level;
+                    var iLevel = level;
                     if (hdr.Sharpness > 0)
                     {
                         if (hdr.Sharpness > 4)
@@ -303,7 +303,7 @@ internal class Vp8Decoder : IDisposable
                             iLevel >>= 1;
                         }
 
-                        int iLevelCap = 9 - hdr.Sharpness;
+                        var iLevelCap = 9 - hdr.Sharpness;
                         if (iLevel > iLevelCap)
                         {
                             iLevel = iLevelCap;

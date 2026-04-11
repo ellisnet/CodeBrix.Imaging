@@ -51,12 +51,12 @@ internal static class StreamExtensions
             return;
         }
 
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(count);
+        var buffer = ArrayPool<byte>.Shared.Rent(count);
         try
         {
             while (count > 0)
             {
-                int bytesRead = stream.Read(buffer, 0, count);
+                var bytesRead = stream.Read(buffer, 0, count);
                 if (bytesRead == 0)
                 {
                     break;
@@ -79,10 +79,10 @@ internal static class StreamExtensions
         // This uses ArrayPool<byte>.Shared, rather than taking a MemoryAllocator,
         // in order to match the signature of the framework method that exists in
         // .NET Core.
-        byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
+        var sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
         try
         {
-            int numRead = stream.Read(sharedBuffer, 0, buffer.Length);
+            var numRead = stream.Read(sharedBuffer, 0, buffer.Length);
             if ((uint)numRead > (uint)buffer.Length)
             {
                 throw new IOException("Stream was too long.");
@@ -104,7 +104,7 @@ internal static class StreamExtensions
         // This uses ArrayPool<byte>.Shared, rather than taking a MemoryAllocator,
         // in order to match the signature of the framework method that exists in
         // .NET Core.
-        byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
+        var sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
         try
         {
             buffer.CopyTo(sharedBuffer);

@@ -52,7 +52,7 @@ internal class HeaderReader : BaseExifReader
 
     public void ReadFileHeader()
     {
-        ushort magic = this.ReadUInt16();
+        var magic = this.ReadUInt16();
         if (magic == TiffConstants.HeaderMagicNumber)
         {
             this.IsBigTiff = false;
@@ -63,8 +63,8 @@ internal class HeaderReader : BaseExifReader
         {
             this.IsBigTiff = true;
 
-            ushort bytesize = this.ReadUInt16();
-            ushort reserve = this.ReadUInt16();
+            var bytesize = this.ReadUInt16();
+            var reserve = this.ReadUInt16();
             if (bytesize == TiffConstants.BigTiffBytesize && reserve == 0)
             {
                 this.FirstIfdOffset = this.ReadUInt64();

@@ -91,16 +91,16 @@ internal class Vp8BitReader : BitReaderBase
     [MethodImpl(InliningOptions.ShortMethod)]
     public int GetBit(int prob)
     {
-        uint range = this.range;
+        var range = this.range;
         if (this.bits < 0)
         {
             this.LoadNewBytes();
         }
 
-        int pos = this.bits;
-        uint split = (uint)((range * prob) >> 8);
-        ulong value = this.value >> pos;
-        bool bit = value > split;
+        var pos = this.bits;
+        var split = (uint)((range * prob) >> 8);
+        var value = this.value >> pos;
+        var bit = value > split;
         if (bit)
         {
             range -= split;
@@ -111,7 +111,7 @@ internal class Vp8BitReader : BitReaderBase
             range = split + 1;
         }
 
-        int shift = 7 ^ Numerics.Log2(range);
+        var shift = 7 ^ Numerics.Log2(range);
         range <<= shift;
         this.bits -= shift;
 
@@ -128,10 +128,10 @@ internal class Vp8BitReader : BitReaderBase
             this.LoadNewBytes();
         }
 
-        int pos = this.bits;
-        uint split = this.range >> 1;
-        ulong value = this.value >> pos;
-        ulong mask = (split - value) >> 31;  // -1 or 0
+        var pos = this.bits;
+        var split = this.range >> 1;
+        var value = this.value >> pos;
+        var mask = (split - value) >> 31;  // -1 or 0
         this.bits -= 1;
         this.range = (this.range + (uint)mask) | 1;
         this.value -= ((split + 1) & mask) << pos;
@@ -163,13 +163,13 @@ internal class Vp8BitReader : BitReaderBase
         DebugGuard.MustBeGreaterThan(nBits, 0, nameof(nBits));
         DebugGuard.MustBeLessThanOrEqualTo(nBits, 32, nameof(nBits));
 
-        int value = (int)this.ReadValue(nBits);
+        var value = (int)this.ReadValue(nBits);
         return this.ReadValue(1) != 0 ? -value : value;
     }
 
     private void InitBitreader(uint size, int pos = 0)
     {
-        long posPlusSize = pos + size;
+        var posPlusSize = pos + size;
         this.range = 255 - 1;
         this.value = 0;
         this.bits = -8; // to load the very first 8 bits.
@@ -186,9 +186,9 @@ internal class Vp8BitReader : BitReaderBase
     {
         if (this.pos < this.bufferMax)
         {
-            ulong inBits = BinaryPrimitives.ReadUInt64LittleEndian(this.Data.Memory.Span.Slice((int)this.pos, 8));
+            var inBits = BinaryPrimitives.ReadUInt64LittleEndian(this.Data.Memory.Span.Slice((int)this.pos, 8));
             this.pos += BitsCount >> 3;
-            ulong bits = this.ByteSwap64(inBits);
+            var bits = this.ByteSwap64(inBits);
             bits >>= 64 - BitsCount;
             this.value = bits | (this.value << BitsCount);
             this.bits += BitsCount;

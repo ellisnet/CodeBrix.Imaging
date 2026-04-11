@@ -10,7 +10,7 @@ internal static class MemoryGroupExtensions
     internal static void Fill<T>(this IMemoryGroup<T> group, T value)
         where T : struct
     {
-        foreach (Memory<T> memory in group)
+        foreach (var memory in group)
         {
             memory.Span.Fill(value);
         }
@@ -19,7 +19,7 @@ internal static class MemoryGroupExtensions
     internal static void Clear<T>(this IMemoryGroup<T> group)
         where T : struct
     {
-        foreach (Memory<T> memory in group)
+        foreach (var memory in group)
         {
             memory.Span.Clear();
         }
@@ -37,8 +37,8 @@ internal static class MemoryGroupExtensions
         Guard.MustBeGreaterThanOrEqualTo(length, 0, nameof(length));
         Guard.MustBeLessThan(start, group.TotalLength, nameof(start));
 
-        int bufferIdx = (int)Math.DivRem(start, group.BufferLength, out long bufferStartLong);
-        int bufferStart = (int)bufferStartLong;
+        var bufferIdx = (int)Math.DivRem(start, group.BufferLength, out var bufferStartLong);
+        var bufferStart = (int)bufferStartLong;
 
         // if (bufferIdx < 0 || bufferIdx >= group.Count)
         if ((uint)bufferIdx >= group.Count)
@@ -46,8 +46,8 @@ internal static class MemoryGroupExtensions
             throw new ArgumentOutOfRangeException(nameof(start));
         }
 
-        int bufferEnd = bufferStart + length;
-        Memory<T> memory = group[bufferIdx];
+        var bufferEnd = bufferStart + length;
+        var memory = group[bufferIdx];
 
         if (bufferEnd > memory.Length)
         {
@@ -67,7 +67,7 @@ internal static class MemoryGroupExtensions
         long position = 0;
         while (position < source.TotalLength)
         {
-            int fwd = Math.Min(cur.LookAhead(), target.Length);
+            var fwd = Math.Min(cur.LookAhead(), target.Length);
             cur.GetSpan(fwd).CopyTo(target);
 
             cur.Forward(fwd);
@@ -90,7 +90,7 @@ internal static class MemoryGroupExtensions
 
         while (!source.IsEmpty)
         {
-            int fwd = Math.Min(cur.LookAhead(), source.Length);
+            var fwd = Math.Min(cur.LookAhead(), source.Length);
             source.Slice(0, fwd).CopyTo(cur.GetSpan(fwd));
             cur.Forward(fwd);
             source = source.Slice(fwd);
@@ -117,9 +117,9 @@ internal static class MemoryGroupExtensions
 
         while (position < source.TotalLength)
         {
-            int fwd = Math.Min(srcCur.LookAhead(), trgCur.LookAhead());
-            Span<T> srcSpan = srcCur.GetSpan(fwd);
-            Span<T> trgSpan = trgCur.GetSpan(fwd);
+            var fwd = Math.Min(srcCur.LookAhead(), trgCur.LookAhead());
+            var srcSpan = srcCur.GetSpan(fwd);
+            var trgSpan = trgCur.GetSpan(fwd);
             srcSpan.CopyTo(trgSpan);
 
             srcCur.Forward(fwd);
@@ -153,9 +153,9 @@ internal static class MemoryGroupExtensions
 
         while (position < source.TotalLength)
         {
-            int fwd = Math.Min(srcCur.LookAhead(), trgCur.LookAhead());
-            Span<TSource> srcSpan = srcCur.GetSpan(fwd);
-            Span<TTarget> trgSpan = trgCur.GetSpan(fwd);
+            var fwd = Math.Min(srcCur.LookAhead(), trgCur.LookAhead());
+            var srcSpan = srcCur.GetSpan(fwd);
+            var trgSpan = trgCur.GetSpan(fwd);
             transform(srcSpan, trgSpan);
 
             srcCur.Forward(fwd);
@@ -169,7 +169,7 @@ internal static class MemoryGroupExtensions
         TransformItemsInplaceDelegate<T> transform)
         where T : struct
     {
-        foreach (Memory<T> memory in memoryGroup)
+        foreach (var memory in memoryGroup)
         {
             transform(memory.Span);
         }
@@ -211,8 +211,8 @@ internal static class MemoryGroupExtensions
 
         public void Forward(int steps)
         {
-            int nextIdx = this.elementIndex + steps;
-            int currentBufferLength = this.CurrentBufferLength;
+            var nextIdx = this.elementIndex + steps;
+            var currentBufferLength = this.CurrentBufferLength;
 
             if (nextIdx < currentBufferLength)
             {

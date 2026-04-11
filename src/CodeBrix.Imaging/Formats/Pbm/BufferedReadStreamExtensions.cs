@@ -21,7 +21,7 @@ internal static class BufferedReadStreamExtensions
         bool isWhitespace;
         do
         {
-            int val = stream.ReadByte();
+            var val = stream.ReadByte();
             if (val < 0)
             {
                 return false;
@@ -67,7 +67,7 @@ internal static class BufferedReadStreamExtensions
         value = 0;
         while (true)
         {
-            int current = stream.ReadByte();
+            var current = stream.ReadByte();
             if (current < 0)
             {
                 return false;

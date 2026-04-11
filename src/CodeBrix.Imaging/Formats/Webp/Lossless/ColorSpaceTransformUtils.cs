@@ -145,10 +145,10 @@ internal static class ColorSpaceTransformUtils
 
     private static void CollectColorBlueTransformsNoneVectorized(Span<uint> bgra, int stride, int tileWidth, int tileHeight, int greenToBlue, int redToBlue, Span<int> histo)
     {
-        int pos = 0;
+        var pos = 0;
         while (tileHeight-- > 0)
         {
-            for (int x = 0; x < tileWidth; x++)
+            for (var x = 0; x < tileWidth; x++)
             {
                 int idx = LosslessUtils.TransformColorBlue((sbyte)greenToBlue, (sbyte)redToBlue, bgra[pos + x]);
                 ++histo[idx];
@@ -252,10 +252,10 @@ internal static class ColorSpaceTransformUtils
 
     private static void CollectColorRedTransformsNoneVectorized(Span<uint> bgra, int stride, int tileWidth, int tileHeight, int greenToRed, Span<int> histo)
     {
-        int pos = 0;
+        var pos = 0;
         while (tileHeight-- > 0)
         {
-            for (int x = 0; x < tileWidth; x++)
+            for (var x = 0; x < tileWidth; x++)
             {
                 int idx = LosslessUtils.TransformColorRed((sbyte)greenToRed, bgra[pos + x]);
                 ++histo[idx];

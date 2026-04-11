@@ -224,7 +224,7 @@ internal sealed class Deflater : IDisposable
     /// </returns>
     public int Deflate(Span<byte> output, int offset, int length)
     {
-        int origLength = length;
+        var origLength = length;
 
         if (this.state == ClosedState)
         {
@@ -233,7 +233,7 @@ internal sealed class Deflater : IDisposable
 
         while (true)
         {
-            int count = this.engine.Pending.Flush(output, offset, length);
+            var count = this.engine.Pending.Flush(output, offset, length);
             offset += count;
             length -= count;
 
@@ -256,7 +256,7 @@ internal sealed class Deflater : IDisposable
                             // We have to supply some lookahead.  8 bit lookahead
                             // is needed by the zlib inflater, and we must fill
                             // the next byte, so that all bits are flushed.
-                            int neededbits = 8 + ((-this.engine.Pending.BitCount) & 7);
+                            var neededbits = 8 + ((-this.engine.Pending.BitCount) & 7);
                             while (neededbits > 0)
                             {
                                 // Write a static tree block consisting solely of an EOF:

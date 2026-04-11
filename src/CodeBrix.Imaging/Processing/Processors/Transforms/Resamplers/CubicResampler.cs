@@ -79,15 +79,15 @@ public readonly struct CubicResampler : IResampler
     [MethodImpl(InliningOptions.ShortMethod)]
     public float GetValue(float x)
     {
-        float b = this.bspline;
-        float c = this.cardinal;
+        var b = this.bspline;
+        var c = this.cardinal;
 
         if (x < 0F)
         {
             x = -x;
         }
 
-        float temp = x * x;
+        var temp = x * x;
         if (x < 1F)
         {
             x = ((12 - (9 * b) - (6 * c)) * (x * temp)) + ((-18 + (12 * b) + (6 * c)) * temp) + (6 - (2 * b));

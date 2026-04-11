@@ -48,7 +48,7 @@ public sealed class Configuration
     {
         if (configurationModules != null)
         {
-            foreach (IConfigurationModule p in configurationModules)
+            foreach (var p in configurationModules)
             {
                 p.Configure(this);
             }

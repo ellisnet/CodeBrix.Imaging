@@ -170,7 +170,7 @@ public static class BmpFormatHelper
         // Get resolution from image metadata (BMP uses pixels per meter)
         int hResolution = 0;
         int vResolution = 0;
-        ImageMetadata metadata = image.Metadata;
+        var metadata = image.Metadata;
         if (metadata.ResolutionUnits != PixelResolutionUnit.AspectRatio
             && metadata.HorizontalResolution > 0
             && metadata.VerticalResolution > 0)
@@ -266,12 +266,12 @@ public static class BmpFormatHelper
 
         for (int y = height - 1; y >= 0; y--)
         {
-            Memory<Rgba32> rowMemory = rgba32Image.DangerousGetPixelRowMemory(y);
-            Span<Rgba32> pixelRow = rowMemory.Span;
+            var rowMemory = rgba32Image.DangerousGetPixelRowMemory(y);
+            var pixelRow = rowMemory.Span;
 
             for (int x = 0; x < width; x++)
             {
-                ref Rgba32 pixel = ref pixelRow[x];
+                ref var pixel = ref pixelRow[x];
                 float gray = (pixel.R * rWeight) + (pixel.G * gWeight) + (pixel.B * bWeight)
                              + (pixel.A * aWeight) + translation;
 
@@ -302,6 +302,30 @@ public static class BmpFormatHelper
         .3f, .3f, .3f, 0f,
         .59f, .59f, .59f, 0f,
         .11f, .11f, .11f, 0f,
+        0f, 0f, 0f, 1f,
+        0f, 0f, 0f, 0f);
+
+    /// <summary>
+    /// A grayscale color matrix using ITU-R BT.601 luma coefficients: R=0.299, G=0.587, B=0.114.
+    /// These are the same weights used by <see cref="Processing.GrayscaleMode.Bt601"/>.
+    /// <see href="https://en.wikipedia.org/wiki/Luma_%28video%29#Rec._601_luma_versus_Rec._709_luma_coefficients"/>
+    /// </summary>
+    public static readonly ColorMatrix Bt601GrayscaleColorMatrix = new(
+        .299f, .299f, .299f, 0f,
+        .587f, .587f, .587f, 0f,
+        .114f, .114f, .114f, 0f,
+        0f, 0f, 0f, 1f,
+        0f, 0f, 0f, 0f);
+
+    /// <summary>
+    /// A grayscale color matrix using ITU-R BT.709 luma coefficients: R=0.2126, G=0.7152, B=0.0722.
+    /// These are the same weights used by <see cref="Processing.GrayscaleMode.Bt709"/>.
+    /// <see href="https://en.wikipedia.org/wiki/Rec._709#Luma_coefficients"/>
+    /// </summary>
+    public static readonly ColorMatrix Bt709GrayscaleColorMatrix = new(
+        .2126f, .2126f, .2126f, 0f,
+        .7152f, .7152f, .7152f, 0f,
+        .0722f, .0722f, .0722f, 0f,
         0f, 0f, 0f, 1f,
         0f, 0f, 0f, 0f);
 

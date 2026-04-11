@@ -59,7 +59,7 @@ internal sealed unsafe class DeflaterPendingBuffer : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     public void WriteShort(int value)
     {
-        byte* pinned = this.pinnedBuffer;
+        var pinned = this.pinnedBuffer;
         pinned[this.end++] = unchecked((byte)value);
         pinned[this.end++] = unchecked((byte)(value >> 8));
     }
@@ -89,7 +89,7 @@ internal sealed unsafe class DeflaterPendingBuffer : IDisposable
     {
         if (this.BitCount > 0)
         {
-            byte* pinned = this.pinnedBuffer;
+            var pinned = this.pinnedBuffer;
             pinned[this.end++] = unchecked((byte)this.bits);
             if (this.BitCount > 8)
             {
@@ -113,7 +113,7 @@ internal sealed unsafe class DeflaterPendingBuffer : IDisposable
         this.BitCount += count;
         if (this.BitCount >= 16)
         {
-            byte* pinned = this.pinnedBuffer;
+            var pinned = this.pinnedBuffer;
             pinned[this.end++] = unchecked((byte)this.bits);
             pinned[this.end++] = unchecked((byte)(this.bits >> 8));
             this.bits >>= 16;
@@ -128,7 +128,7 @@ internal sealed unsafe class DeflaterPendingBuffer : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     public void WriteShortMSB(int value)
     {
-        byte* pinned = this.pinnedBuffer;
+        var pinned = this.pinnedBuffer;
         pinned[this.end++] = unchecked((byte)(value >> 8));
         pinned[this.end++] = unchecked((byte)value);
     }

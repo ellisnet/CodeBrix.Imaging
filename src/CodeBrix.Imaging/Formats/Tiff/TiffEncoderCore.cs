@@ -126,21 +126,21 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
 
         this.configuration = image.GetConfiguration();
 
-        ImageFrameMetadata rootFrameMetaData = image.Frames.RootFrame.Metadata;
-        TiffFrameMetadata rootFrameTiffMetaData = rootFrameMetaData.GetTiffMetadata();
+        var rootFrameMetaData = image.Frames.RootFrame.Metadata;
+        var rootFrameTiffMetaData = rootFrameMetaData.GetTiffMetadata();
 
         // Determine the correct values to encode with.
         // EncoderOptions > Metadata > Default.
-        TiffBitsPerPixel? bitsPerPixel = this.BitsPerPixel ?? rootFrameTiffMetaData.BitsPerPixel;
+        var bitsPerPixel = this.BitsPerPixel ?? rootFrameTiffMetaData.BitsPerPixel;
 
-        TiffPhotometricInterpretation? photometricInterpretation = this.PhotometricInterpretation ?? rootFrameTiffMetaData.PhotometricInterpretation;
+        var photometricInterpretation = this.PhotometricInterpretation ?? rootFrameTiffMetaData.PhotometricInterpretation;
 
-        TiffPredictor predictor =
+        var predictor =
             this.HorizontalPredictor
             ?? rootFrameTiffMetaData.Predictor
             ?? DefaultPredictor;
 
-        TiffCompression compression =
+        var compression =
             this.CompressionType
             ?? rootFrameTiffMetaData.Compression
             ?? DefaultCompression;
@@ -149,9 +149,9 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
         this.SanitizeAndSetEncoderOptions(bitsPerPixel, image.PixelType.BitsPerPixel, photometricInterpretation, compression, predictor);
 
         using var writer = new TiffStreamWriter(stream);
-        long ifdMarker = this.WriteHeader(writer);
+        var ifdMarker = this.WriteHeader(writer);
 
-        Image<TPixel> metadataImage = image;
+        var metadataImage = image;
         foreach (ImageFrame<TPixel> frame in image.Frames)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -162,8 +162,8 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
             metadataImage = null;
         }
 
-        long currentOffset = writer.BaseStream.Position;
-        foreach ((long, uint) marker in this.frameMarkers)
+        var currentOffset = writer.BaseStream.Position;
+        foreach (var marker in this.frameMarkers)
         {
             writer.WriteMarkerFast(marker.Item1, marker.Item2);
         }
@@ -205,7 +205,7 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
         long ifdOffset)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using TiffBaseCompressor compressor = TiffCompressorFactory.Create(
+        using var compressor = TiffCompressorFactory.Create(
             this.CompressionType ?? TiffCompression.None,
             writer.BaseStream,
             this.memoryAllocator,
@@ -215,7 +215,7 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
             this.HorizontalPredictor == TiffPredictor.Horizontal ? this.HorizontalPredictor.Value : TiffPredictor.None);
 
         var entriesCollector = new TiffEncoderEntriesCollector();
-        using TiffBaseColorWriter<TPixel> colorWriter = TiffColorWriterFactory.Create(
+        using var colorWriter = TiffColorWriterFactory.Create(
             this.PhotometricInterpretation,
             frame,
             this.quantizer,
@@ -224,7 +224,7 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
             entriesCollector,
             (int)this.BitsPerPixel);
 
-        int rowsPerStrip = this.CalcRowsPerStrip(frame.Height, colorWriter.BytesPerRow, this.CompressionType);
+        var rowsPerStrip = this.CalcRowsPerStrip(frame.Height, colorWriter.BytesPerRow, this.CompressionType);
 
         colorWriter.Write(compressor, rowsPerStrip);
 
@@ -260,8 +260,8 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
         }
 
         // If compression is used, change stripSizeInBytes heuristically to a larger value to not write to many strips.
-        int stripSizeInBytes = compression is TiffCompression.Deflate || compression is TiffCompression.Lzw ? TiffConstants.DefaultStripSize * 2 : TiffConstants.DefaultStripSize;
-        int rowsPerStrip = stripSizeInBytes / bytesPerRow;
+        var stripSizeInBytes = compression is TiffCompression.Deflate || compression is TiffCompression.Lzw ? TiffConstants.DefaultStripSize * 2 : TiffConstants.DefaultStripSize;
+        var rowsPerStrip = stripSizeInBytes / bytesPerRow;
 
         if (rowsPerStrip > 0)
         {
@@ -289,30 +289,30 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
             TiffThrowHelper.ThrowArgumentException("There must be at least one entry per IFD.");
         }
 
-        uint dataOffset = (uint)writer.Position + (uint)(6 + (entries.Count * 12));
+        var dataOffset = (uint)writer.Position + (uint)(6 + (entries.Count * 12));
         var largeDataBlocks = new List<byte[]>();
 
         entries.Sort((a, b) => (ushort)a.Tag - (ushort)b.Tag);
 
         writer.Write((ushort)entries.Count);
 
-        foreach (IExifValue entry in entries)
+        foreach (var entry in entries)
         {
             writer.Write((ushort)entry.Tag);
             writer.Write((ushort)entry.DataType);
             writer.Write(ExifWriter.GetNumberOfComponents(entry));
 
-            uint length = ExifWriter.GetLength(entry);
+            var length = ExifWriter.GetLength(entry);
             if (length <= 4)
             {
-                int sz = ExifWriter.WriteValue(entry, this.buffer, 0);
+                var sz = ExifWriter.WriteValue(entry, this.buffer, 0);
                 DebugGuard.IsTrue(sz == length, "Incorrect number of bytes written");
                 writer.WritePadded(this.buffer.AsSpan(0, sz));
             }
             else
             {
-                byte[] raw = new byte[length];
-                int sz = ExifWriter.WriteValue(entry, raw, 0);
+                var raw = new byte[length];
+                var sz = ExifWriter.WriteValue(entry, raw, 0);
                 DebugGuard.IsTrue(sz == raw.Length, "Incorrect number of bytes written");
                 largeDataBlocks.Add(raw);
                 writer.Write(dataOffset);
@@ -320,9 +320,9 @@ internal sealed class TiffEncoderCore : IImageEncoderInternals
             }
         }
 
-        long nextIfdMarker = writer.PlaceMarker();
+        var nextIfdMarker = writer.PlaceMarker();
 
-        foreach (byte[] dataBlock in largeDataBlocks)
+        foreach (var dataBlock in largeDataBlocks)
         {
             writer.Write(dataBlock);
 

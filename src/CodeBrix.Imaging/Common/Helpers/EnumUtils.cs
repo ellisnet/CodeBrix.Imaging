@@ -23,7 +23,7 @@ internal static class EnumUtils
     {
         foreach (TEnum enumValue in Enum.GetValues(typeof(TEnum)))
         {
-            TEnum current = enumValue;
+            var current = enumValue;
             if (value == Unsafe.As<TEnum, int>(ref current))
             {
                 return enumValue;
@@ -43,7 +43,7 @@ internal static class EnumUtils
     public static bool HasFlag<TEnum>(TEnum value, TEnum flag)
         where TEnum : Enum
     {
-        uint flagValue = Unsafe.As<TEnum, uint>(ref flag);
+        var flagValue = Unsafe.As<TEnum, uint>(ref flag);
         return (Unsafe.As<TEnum, uint>(ref value) & flagValue) == flagValue;
     }
 }

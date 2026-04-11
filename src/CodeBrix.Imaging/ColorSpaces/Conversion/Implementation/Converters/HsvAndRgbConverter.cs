@@ -20,21 +20,21 @@ internal sealed class HsvAndRgbConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public Rgb Convert(in Hsv input)
     {
-        float s = input.S;
-        float v = input.V;
+        var s = input.S;
+        var v = input.V;
 
         if (MathF.Abs(s) < Constants.Epsilon)
         {
             return new Rgb(v, v, v);
         }
 
-        float h = (MathF.Abs(input.H - 360) < Constants.Epsilon) ? 0 : input.H / 60;
-        int i = (int)Math.Truncate(h);
-        float f = h - i;
+        var h = (MathF.Abs(input.H - 360) < Constants.Epsilon) ? 0 : input.H / 60;
+        var i = (int)Math.Truncate(h);
+        var f = h - i;
 
-        float p = v * (1F - s);
-        float q = v * (1F - (s * f));
-        float t = v * (1F - (s * (1F - f)));
+        var p = v * (1F - s);
+        var q = v * (1F - (s * f));
+        var t = v * (1F - (s * (1F - f)));
 
         float r, g, b;
         switch (i)
@@ -87,16 +87,16 @@ internal sealed class HsvAndRgbConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public Hsv Convert(in Rgb input)
     {
-        float r = input.R;
-        float g = input.G;
-        float b = input.B;
+        var r = input.R;
+        var g = input.G;
+        var b = input.B;
 
-        float max = MathF.Max(r, MathF.Max(g, b));
-        float min = MathF.Min(r, MathF.Min(g, b));
-        float chroma = max - min;
+        var max = MathF.Max(r, MathF.Max(g, b));
+        var min = MathF.Min(r, MathF.Min(g, b));
+        var chroma = max - min;
         float h = 0;
         float s = 0;
-        float v = max;
+        var v = max;
 
         if (MathF.Abs(chroma) < Constants.Epsilon)
         {

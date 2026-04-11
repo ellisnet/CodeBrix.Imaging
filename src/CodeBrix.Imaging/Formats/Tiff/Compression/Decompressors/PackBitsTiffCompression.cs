@@ -39,20 +39,20 @@ internal sealed class PackBitsTiffCompression : TiffBaseDecompressor
             this.compressedDataMemory = this.Allocator.Allocate<byte>(byteCount);
         }
 
-        Span<byte> compressedData = this.compressedDataMemory.GetSpan();
+        var compressedData = this.compressedDataMemory.GetSpan();
 
         stream.Read(compressedData, 0, byteCount);
-        int compressedOffset = 0;
-        int decompressedOffset = 0;
+        var compressedOffset = 0;
+        var decompressedOffset = 0;
 
         while (compressedOffset < byteCount)
         {
-            byte headerByte = compressedData[compressedOffset];
+            var headerByte = compressedData[compressedOffset];
 
             if (headerByte <= 127)
             {
-                int literalOffset = compressedOffset + 1;
-                int literalLength = compressedData[compressedOffset] + 1;
+                var literalOffset = compressedOffset + 1;
+                var literalLength = compressedData[compressedOffset] + 1;
 
                 if ((literalOffset + literalLength) > compressedData.Length)
                 {
@@ -70,8 +70,8 @@ internal sealed class PackBitsTiffCompression : TiffBaseDecompressor
             }
             else
             {
-                byte repeatData = compressedData[compressedOffset + 1];
-                int repeatLength = 257 - headerByte;
+                var repeatData = compressedData[compressedOffset + 1];
+                var repeatLength = 257 - headerByte;
 
                 ArrayCopyRepeat(repeatData, buffer, decompressedOffset, repeatLength);
 
@@ -83,7 +83,7 @@ internal sealed class PackBitsTiffCompression : TiffBaseDecompressor
 
     private static void ArrayCopyRepeat(byte value, Span<byte> destinationArray, int destinationIndex, int length)
     {
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
             destinationArray[i + destinationIndex] = value;
         }

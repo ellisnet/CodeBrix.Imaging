@@ -256,7 +256,7 @@ internal class Vp8EncIterator
             this.I4Boundary[i] = this.YLeft[15 - i + 1];
         }
 
-        Span<byte> yTop = this.YTop.AsSpan(this.yTopIdx);
+        var yTop = this.YTop.AsSpan(this.yTopIdx);
         for (i = 0; i < 16; i++)
         {
             // top
@@ -286,19 +286,19 @@ internal class Vp8EncIterator
     // Import uncompressed samples from source.
     public void Import(Span<byte> y, Span<byte> u, Span<byte> v, int yStride, int uvStride, int width, int height, bool importBoundarySamples)
     {
-        int yStartIdx = ((this.Y * yStride) + this.X) * 16;
-        int uvStartIdx = ((this.Y * uvStride) + this.X) * 8;
-        Span<byte> ySrc = y.Slice(yStartIdx);
-        Span<byte> uSrc = u.Slice(uvStartIdx);
-        Span<byte> vSrc = v.Slice(uvStartIdx);
-        int w = Math.Min(width - (this.X * 16), 16);
-        int h = Math.Min(height - (this.Y * 16), 16);
-        int uvw = (w + 1) >> 1;
-        int uvh = (h + 1) >> 1;
+        var yStartIdx = ((this.Y * yStride) + this.X) * 16;
+        var uvStartIdx = ((this.Y * uvStride) + this.X) * 8;
+        var ySrc = y.Slice(yStartIdx);
+        var uSrc = u.Slice(uvStartIdx);
+        var vSrc = v.Slice(uvStartIdx);
+        var w = Math.Min(width - (this.X * 16), 16);
+        var h = Math.Min(height - (this.Y * 16), 16);
+        var uvw = (w + 1) >> 1;
+        var uvh = (h + 1) >> 1;
 
-        Span<byte> yuvIn = this.YuvIn.AsSpan(YOffEnc);
-        Span<byte> uIn = this.YuvIn.AsSpan(UOffEnc);
-        Span<byte> vIn = this.YuvIn.AsSpan(VOffEnc);
+        var yuvIn = this.YuvIn.AsSpan(YOffEnc);
+        var uIn = this.YuvIn.AsSpan(UOffEnc);
+        var vIn = this.YuvIn.AsSpan(VOffEnc);
         this.ImportBlock(ySrc, yStride, yuvIn, w, h, 16);
         this.ImportBlock(uSrc, uvStride, uIn, uvw, uvh, 8);
         this.ImportBlock(vSrc, uvStride, vIn, uvw, uvh, 8);
@@ -315,9 +315,9 @@ internal class Vp8EncIterator
         }
         else
         {
-            Span<byte> yLeft = this.YLeft.AsSpan();
-            Span<byte> uLeft = this.UvLeft.AsSpan(0, 16);
-            Span<byte> vLeft = this.UvLeft.AsSpan(16, 16);
+            var yLeft = this.YLeft.AsSpan();
+            var uLeft = this.UvLeft.AsSpan(0, 16);
+            var vLeft = this.UvLeft.AsSpan(16, 16);
             if (this.Y == 0)
             {
                 yLeft[0] = 127;
@@ -336,7 +336,7 @@ internal class Vp8EncIterator
             this.ImportLine(v.Slice(uvStartIdx - 1), uvStride, vLeft.Slice(1), uvh, 8);
         }
 
-        Span<byte> yTop = this.YTop.AsSpan(this.yTopIdx, 16);
+        var yTop = this.YTop.AsSpan(this.yTopIdx, 16);
         if (this.Y == 0)
         {
             yTop.Fill(127);
@@ -354,8 +354,8 @@ internal class Vp8EncIterator
     {
         // Empirical cut-off value, should be around 16 (~=block size). We use the
         // [8-17] range and favor intra4 at high quality, intra16 for low quality.
-        int q = quality;
-        int kThreshold = 8 + ((17 - 8) * q / 100);
+        var q = quality;
+        var kThreshold = 8 + ((17 - 8) * q / 100);
         int k;
         Span<uint> dc = stackalloc uint[16];
         uint m;
@@ -377,7 +377,7 @@ internal class Vp8EncIterator
         }
         else
         {
-            byte[] modes = new byte[16];  // DC4
+            var modes = new byte[16];  // DC4
             this.SetIntra4Mode(modes);
         }
 
@@ -386,17 +386,17 @@ internal class Vp8EncIterator
 
     public int MbAnalyzeBestIntra16Mode()
     {
-        int maxMode = MaxIntra16Mode;
+        var maxMode = MaxIntra16Mode;
         int mode;
-        int bestAlpha = DefaultAlpha;
-        int bestMode = 0;
+        var bestAlpha = DefaultAlpha;
+        var bestMode = 0;
 
         this.MakeLuma16Preds();
         for (mode = 0; mode < maxMode; mode++)
         {
             var histo = new Vp8Histogram();
             histo.CollectHistogram(this.YuvIn.AsSpan(YOffEnc), this.YuvP.AsSpan(Vp8Encoding.Vp8I16ModeOffsets[mode]), 0, 16);
-            int alpha = histo.GetAlpha();
+            var alpha = histo.GetAlpha();
             if (alpha > bestAlpha)
             {
                 bestAlpha = alpha;
@@ -410,17 +410,17 @@ internal class Vp8EncIterator
 
     public int MbAnalyzeBestIntra4Mode(int bestAlpha)
     {
-        byte[] modes = new byte[16];
-        int maxMode = MaxIntra4Mode;
+        var modes = new byte[16];
+        var maxMode = MaxIntra4Mode;
         var totalHisto = new Vp8Histogram();
-        int curHisto = 0;
+        var curHisto = 0;
         this.StartI4();
         do
         {
             int mode;
-            int bestModeAlpha = DefaultAlpha;
+            var bestModeAlpha = DefaultAlpha;
             var histos = new Vp8Histogram[2];
-            Span<byte> src = this.YuvIn.AsSpan(YOffEnc + WebpLookupTables.Vp8Scan[this.I4]);
+            var src = this.YuvIn.AsSpan(YOffEnc + WebpLookupTables.Vp8Scan[this.I4]);
 
             this.MakeIntra4Preds();
             for (mode = 0; mode < maxMode; ++mode)
@@ -428,7 +428,7 @@ internal class Vp8EncIterator
                 histos[curHisto] = new Vp8Histogram();
                 histos[curHisto].CollectHistogram(src, this.YuvP.AsSpan(Vp8Encoding.Vp8I4ModeOffsets[mode]), 0, 1);
 
-                int alpha = histos[curHisto].GetAlpha();
+                var alpha = histos[curHisto].GetAlpha();
                 if (alpha > bestModeAlpha)
                 {
                     bestModeAlpha = alpha;
@@ -444,7 +444,7 @@ internal class Vp8EncIterator
         }
         while (this.RotateI4(this.YuvIn.AsSpan(YOffEnc))); // Note: we reuse the original samples for predictors.
 
-        int i4Alpha = totalHisto.GetAlpha();
+        var i4Alpha = totalHisto.GetAlpha();
         if (i4Alpha > bestAlpha)
         {
             this.SetIntra4Mode(modes);
@@ -456,10 +456,10 @@ internal class Vp8EncIterator
 
     public int MbAnalyzeBestUvMode()
     {
-        int bestAlpha = DefaultAlpha;
-        int smallestAlpha = 0;
-        int bestMode = 0;
-        int maxMode = MaxUvMode;
+        var bestAlpha = DefaultAlpha;
+        var smallestAlpha = 0;
+        var bestMode = 0;
+        var maxMode = MaxUvMode;
         int mode;
 
         this.MakeChroma8Preds();
@@ -467,7 +467,7 @@ internal class Vp8EncIterator
         {
             var histo = new Vp8Histogram();
             histo.CollectHistogram(this.YuvIn.AsSpan(UOffEnc), this.YuvP.AsSpan(Vp8Encoding.Vp8UvModeOffsets[mode]), 16, 16 + 4 + 4);
-            int alpha = histo.GetAlpha();
+            var alpha = histo.GetAlpha();
             if (alpha > bestAlpha)
             {
                 bestAlpha = alpha;
@@ -487,8 +487,8 @@ internal class Vp8EncIterator
 
     public void SetIntra16Mode(int mode)
     {
-        Span<byte> preds = this.Preds.AsSpan(this.predIdx);
-        for (int y = 0; y < 4; y++)
+        var preds = this.Preds.AsSpan(this.predIdx);
+        for (var y = 0; y < 4; y++)
         {
             preds.Slice(0, 4).Fill((byte)mode);
             preds = preds.Slice(this.predsWidth);
@@ -499,9 +499,9 @@ internal class Vp8EncIterator
 
     public void SetIntra4Mode(byte[] modes)
     {
-        int modesIdx = 0;
-        int predIdx = this.predIdx;
-        for (int y = 4; y > 0; y--)
+        var modesIdx = 0;
+        var predIdx = this.predIdx;
+        for (var y = 4; y > 0; y--)
         {
             modes.AsSpan(modesIdx, 4).CopyTo(this.Preds.AsSpan(predIdx));
             predIdx += this.predsWidth;
@@ -513,7 +513,7 @@ internal class Vp8EncIterator
 
     public int GetCostLuma16(Vp8ModeScore rd, Vp8EncProba proba, Vp8Residual res)
     {
-        int r = 0;
+        var r = 0;
 
         // re-import the non-zero context.
         this.NzToBytes();
@@ -525,11 +525,11 @@ internal class Vp8EncIterator
 
         // AC
         res.Init(1, 0, proba);
-        for (int y = 0; y < 4; y++)
+        for (var y = 0; y < 4; y++)
         {
-            for (int x = 0; x < 4; x++)
+            for (var x = 0; x < 4; x++)
             {
-                int ctx = this.TopNz[x] + this.LeftNz[y];
+                var ctx = this.TopNz[x] + this.LeftNz[y];
                 res.SetCoeffs(rd.YAcLevels.AsSpan((x + (y * 4)) * 16, 16));
                 r += res.GetResidualCost(ctx);
                 this.TopNz[x] = this.LeftNz[y] = res.Last >= 0 ? 1 : 0;
@@ -541,10 +541,10 @@ internal class Vp8EncIterator
 
     public short[] GetCostModeI4(byte[] modes)
     {
-        int predsWidth = this.predsWidth;
-        int predIdx = this.predIdx;
-        int x = this.I4 & 3;
-        int y = this.I4 >> 2;
+        var predsWidth = this.predsWidth;
+        var predIdx = this.predIdx;
+        var x = this.I4 & 3;
+        var y = this.I4 >> 2;
         int left = x == 0 ? this.Preds[predIdx + (y * predsWidth) - 1] : modes[this.I4 - 1];
         int top = y == 0 ? this.Preds[predIdx - predsWidth + x] : modes[this.I4 - 4];
         return WebpLookupTables.Vp8FixedCostsI4[top, left];
@@ -552,12 +552,12 @@ internal class Vp8EncIterator
 
     public int GetCostLuma4(Span<short> levels, Vp8EncProba proba, Vp8Residual res)
     {
-        int x = this.I4 & 3;
-        int y = this.I4 >> 2;
-        int r = 0;
+        var x = this.I4 & 3;
+        var y = this.I4 >> 2;
+        var r = 0;
 
         res.Init(0, 3, proba);
-        int ctx = this.TopNz[x] + this.LeftNz[y];
+        var ctx = this.TopNz[x] + this.LeftNz[y];
         res.SetCoeffs(levels);
         r += res.GetResidualCost(ctx);
         return r;
@@ -565,19 +565,19 @@ internal class Vp8EncIterator
 
     public int GetCostUv(Vp8ModeScore rd, Vp8EncProba proba, Vp8Residual res)
     {
-        int r = 0;
+        var r = 0;
 
         // re-import the non-zero context.
         this.NzToBytes();
 
         res.Init(0, 2, proba);
-        for (int ch = 0; ch <= 2; ch += 2)
+        for (var ch = 0; ch <= 2; ch += 2)
         {
-            for (int y = 0; y < 2; y++)
+            for (var y = 0; y < 2; y++)
             {
-                for (int x = 0; x < 2; x++)
+                for (var x = 0; x < 2; x++)
                 {
-                    int ctx = this.TopNz[4 + ch + x] + this.LeftNz[4 + ch + y];
+                    var ctx = this.TopNz[4 + ch + x] + this.LeftNz[4 + ch + y];
                     res.SetCoeffs(rd.UvLevels.AsSpan(((ch * 2) + x + (y * 2)) * 16, 16));
                     r += res.GetResidualCost(ctx);
                     this.TopNz[4 + ch + x] = this.LeftNz[4 + ch + y] = res.Last >= 0 ? 1 : 0;
@@ -596,10 +596,10 @@ internal class Vp8EncIterator
 
     public void StoreDiffusionErrors(Vp8ModeScore rd)
     {
-        for (int ch = 0; ch <= 1; ++ch)
+        for (var ch = 0; ch <= 1; ++ch)
         {
-            Span<sbyte> top = this.TopDerr.AsSpan((this.X * 4) + ch, 2);
-            Span<sbyte> left = this.LeftDerr.AsSpan(ch, 2);
+            var top = this.TopDerr.AsSpan((this.X * 4) + ch, 2);
+            var left = this.LeftDerr.AsSpan(ch, 2);
 
             // restore err1
             left[0] = (sbyte)rd.Derr[ch, 0];
@@ -645,19 +645,19 @@ internal class Vp8EncIterator
 
     public void SaveBoundary()
     {
-        int x = this.X;
-        int y = this.Y;
-        Span<byte> ySrc = this.YuvOut.AsSpan(YOffEnc);
-        Span<byte> uvSrc = this.YuvOut.AsSpan(UOffEnc);
+        var x = this.X;
+        var y = this.Y;
+        var ySrc = this.YuvOut.AsSpan(YOffEnc);
+        var uvSrc = this.YuvOut.AsSpan(UOffEnc);
         if (x < this.mbw - 1)
         {
             // left
-            for (int i = 0; i < 16; i++)
+            for (var i = 0; i < 16; i++)
             {
                 this.YLeft[i + 1] = ySrc[15 + (i * WebpConstants.Bps)];
             }
 
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 this.UvLeft[i + 1] = uvSrc[7 + (i * WebpConstants.Bps)];
                 this.UvLeft[i + 16 + 1] = uvSrc[15 + (i * WebpConstants.Bps)];
@@ -679,9 +679,9 @@ internal class Vp8EncIterator
 
     public bool RotateI4(Span<byte> yuvOut)
     {
-        Span<byte> blk = yuvOut.Slice(WebpLookupTables.Vp8Scan[this.I4]);
-        Span<byte> top = this.I4Boundary.AsSpan();
-        int topOffset = this.I4BoundaryIdx;
+        var blk = yuvOut.Slice(WebpLookupTables.Vp8Scan[this.I4]);
+        var top = this.I4Boundary.AsSpan();
+        var topOffset = this.I4BoundaryIdx;
         int i;
 
         // Update the cache with 7 fresh samples.
@@ -738,15 +738,15 @@ internal class Vp8EncIterator
 
     public void MakeLuma16Preds()
     {
-        Span<byte> left = this.X != 0 ? this.YLeft.AsSpan() : null;
-        Span<byte> top = this.Y != 0 ? this.YTop.AsSpan(this.yTopIdx) : null;
+        var left = this.X != 0 ? this.YLeft.AsSpan() : null;
+        var top = this.Y != 0 ? this.YTop.AsSpan(this.yTopIdx) : null;
         Vp8Encoding.EncPredLuma16(this.YuvP, left, top);
     }
 
     public void MakeChroma8Preds()
     {
-        Span<byte> left = this.X != 0 ? this.UvLeft.AsSpan() : null;
-        Span<byte> top = this.Y != 0 ? this.UvTop.AsSpan(this.uvTopIdx) : null;
+        var left = this.X != 0 ? this.UvLeft.AsSpan() : null;
+        var top = this.Y != 0 ? this.UvTop.AsSpan(this.uvTopIdx) : null;
         Vp8Encoding.EncPredChroma8(this.YuvP, left, top);
     }
 
@@ -754,17 +754,17 @@ internal class Vp8EncIterator
 
     public void SwapOut()
     {
-        byte[] tmp = this.YuvOut;
+        var tmp = this.YuvOut;
         this.YuvOut = this.YuvOut2;
         this.YuvOut2 = tmp;
     }
 
     public void NzToBytes()
     {
-        Span<uint> nz = this.Nz.AsSpan();
+        var nz = this.Nz.AsSpan();
 
-        uint lnz = nz[this.nzIdx - 1];
-        uint tnz = nz[this.nzIdx];
+        var lnz = nz[this.nzIdx - 1];
+        var tnz = nz[this.nzIdx];
         Span<int> topNz = this.TopNz;
         Span<int> leftNz = this.LeftNz;
 
@@ -805,8 +805,8 @@ internal class Vp8EncIterator
     public void BytesToNz()
     {
         uint nz = 0;
-        int[] topNz = this.TopNz;
-        int[] leftNz = this.LeftNz;
+        var topNz = this.TopNz;
+        var leftNz = this.LeftNz;
 
         // top
         nz |= (uint)((topNz[0] << 12) | (topNz[1] << 13));
@@ -825,9 +825,9 @@ internal class Vp8EncIterator
 
     private void ImportBlock(Span<byte> src, int srcStride, Span<byte> dst, int w, int h, int size)
     {
-        int dstIdx = 0;
-        int srcIdx = 0;
-        for (int i = 0; i < h; i++)
+        var dstIdx = 0;
+        var srcIdx = 0;
+        for (var i = 0; i < h; i++)
         {
             // memcpy(dst, src, w);
             src.Slice(srcIdx, w).CopyTo(dst.Slice(dstIdx));
@@ -841,7 +841,7 @@ internal class Vp8EncIterator
             srcIdx += srcStride;
         }
 
-        for (int i = h; i < size; i++)
+        for (var i = h; i < size; i++)
         {
             // memcpy(dst, dst - BPS, size);
             dst.Slice(dstIdx - WebpConstants.Bps, size).CopyTo(dst.Slice(dstIdx));
@@ -852,7 +852,7 @@ internal class Vp8EncIterator
     private void ImportLine(Span<byte> src, int srcStride, Span<byte> dst, int len, int totalLen)
     {
         int i;
-        int srcIdx = 0;
+        var srcIdx = 0;
         for (i = 0; i < len; i++)
         {
             dst[i] = src[srcIdx];
@@ -896,10 +896,10 @@ internal class Vp8EncIterator
 
     private void InitLeft()
     {
-        Span<byte> yLeft = this.YLeft.AsSpan();
-        Span<byte> uLeft = this.UvLeft.AsSpan(0, 16);
-        Span<byte> vLeft = this.UvLeft.AsSpan(16, 16);
-        byte val = (byte)(this.Y > 0 ? 129 : 127);
+        var yLeft = this.YLeft.AsSpan();
+        var uLeft = this.UvLeft.AsSpan(0, 16);
+        var vLeft = this.UvLeft.AsSpan(16, 16);
+        var val = (byte)(this.Y > 0 ? 129 : 127);
         yLeft[0] = val;
         uLeft[0] = val;
         vLeft[0] = val;
@@ -915,14 +915,14 @@ internal class Vp8EncIterator
 
     private void InitTop()
     {
-        int topSize = this.mbw * 16;
+        var topSize = this.mbw * 16;
         this.YTop.AsSpan(0, topSize).Fill(127);
         this.UvTop.AsSpan().Fill(127);
         this.Nz.AsSpan().Clear();
 
-        int predsW = (4 * this.mbw) + 1;
-        int predsH = (4 * this.mbh) + 1;
-        int predsSize = predsW * predsH;
+        var predsW = (4 * this.mbw) + 1;
+        var predsH = (4 * this.mbh) + 1;
+        var predsSize = predsW * predsH;
         this.Preds.AsSpan(predsSize + this.predsWidth, this.mbw).Clear();
 
         this.TopDerr.AsSpan().Clear();

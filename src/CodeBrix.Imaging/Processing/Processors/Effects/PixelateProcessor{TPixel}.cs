@@ -37,7 +37,7 @@ internal class PixelateProcessor<TPixel> : ImageProcessor<TPixel>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
         var interest = Rectangle.Intersect(this.SourceRectangle, source.Bounds());
-        int size = this.Size;
+        var size = this.Size;
 
         Guard.MustBeBetweenOrEqualTo(size, 0, interest.Width, nameof(size));
         Guard.MustBeBetweenOrEqualTo(size, 0, interest.Height, nameof(size));
@@ -45,7 +45,7 @@ internal class PixelateProcessor<TPixel> : ImageProcessor<TPixel>
         // Get the range on the y-plane to choose from.
         // TODO: It would be nice to be able to pool this somehow but neither Memory<T> nor Span<T>
         // implement IEnumerable<T>.
-        IEnumerable<int> range = EnumerableExtensions.SteppedRange(interest.Y, i => i < interest.Bottom, size);
+        var range = EnumerableExtensions.SteppedRange(interest.Y, i => i < interest.Bottom, size);
         Parallel.ForEach(
             range,
             this.Configuration.GetParallelOptions(),
@@ -82,17 +82,17 @@ internal class PixelateProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixel> rowSpan = this.source.DangerousGetRowSpan(Math.Min(y + this.radius, this.maxYIndex));
+            var rowSpan = this.source.DangerousGetRowSpan(Math.Min(y + this.radius, this.maxYIndex));
 
-            for (int x = this.minX; x < this.maxX; x += this.size)
+            for (var x = this.minX; x < this.maxX; x += this.size)
             {
                 // Get the pixel color in the centre of the soon to be pixelated area.
-                TPixel pixel = rowSpan[Math.Min(x + this.radius, this.maxXIndex)];
+                var pixel = rowSpan[Math.Min(x + this.radius, this.maxXIndex)];
 
                 // For each pixel in the pixelate size, set it to the centre color.
-                for (int oY = y; oY < y + this.size && oY < this.maxY; oY++)
+                for (var oY = y; oY < y + this.size && oY < this.maxY; oY++)
                 {
-                    for (int oX = x; oX < x + this.size && oX < this.maxX; oX++)
+                    for (var oX = x; oX < x + this.size && oX < this.maxX; oX++)
                     {
                         this.source[oX, oY] = pixel;
                     }

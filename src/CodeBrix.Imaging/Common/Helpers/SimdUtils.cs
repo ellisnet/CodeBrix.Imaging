@@ -40,7 +40,7 @@ internal static partial class SimdUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Vector4 PseudoRound(this Vector4 v)
     {
-        Vector4 sign = Numerics.Clamp(v, new Vector4(-1), new Vector4(1));
+        var sign = Numerics.Clamp(v, new Vector4(-1), new Vector4(1));
 
         return v + (sign * 0.5f);
     }
@@ -139,8 +139,8 @@ internal static partial class SimdUtils
     [MethodImpl(InliningOptions.ColdPath)]
     private static void ConvertByteToNormalizedFloatRemainder(ReadOnlySpan<byte> source, Span<float> dest)
     {
-        ref byte sBase = ref MemoryMarshal.GetReference(source);
-        ref float dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
         // There are at most 3 elements at this point, having a for loop is overkill.
         // Let's minimize the no. of instructions!
@@ -161,8 +161,8 @@ internal static partial class SimdUtils
     [MethodImpl(InliningOptions.ColdPath)]
     private static void ConvertNormalizedFloatToByteRemainder(ReadOnlySpan<float> source, Span<byte> dest)
     {
-        ref float sBase = ref MemoryMarshal.GetReference(source);
-        ref byte dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
         switch (source.Length)
         {

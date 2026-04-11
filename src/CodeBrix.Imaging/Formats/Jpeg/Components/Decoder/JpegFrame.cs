@@ -113,7 +113,7 @@ internal sealed class JpegFrame : IDisposable
     {
         if (this.Components != null)
         {
-            for (int i = 0; i < this.Components.Length; i++)
+            for (var i = 0; i < this.Components.Length; i++)
             {
                 this.Components[i]?.Dispose();
             }
@@ -132,18 +132,18 @@ internal sealed class JpegFrame : IDisposable
         this.McusPerLine = (int)Numerics.DivideCeil((uint)this.PixelWidth, (uint)maxSubFactorH * 8);
         this.McusPerColumn = (int)Numerics.DivideCeil((uint)this.PixelHeight, (uint)maxSubFactorV * 8);
 
-        for (int i = 0; i < this.ComponentCount; i++)
+        for (var i = 0; i < this.ComponentCount; i++)
         {
-            JpegComponent component = this.Components[i];
+            var component = this.Components[i];
             component.Init(maxSubFactorH, maxSubFactorV);
         }
     }
 
     public void AllocateComponents(bool fullScan)
     {
-        for (int i = 0; i < this.ComponentCount; i++)
+        for (var i = 0; i < this.ComponentCount; i++)
         {
-            JpegComponent component = this.Components[i];
+            var component = this.Components[i];
             component.AllocateSpectral(fullScan);
         }
     }

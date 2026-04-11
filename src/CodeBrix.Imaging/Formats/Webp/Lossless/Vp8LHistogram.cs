@@ -57,7 +57,7 @@ internal sealed class Vp8LHistogram : IDeepCloneable
         this.Alpha = new uint[WebpConstants.NumLiteralCodes + 1];
         this.Distance = new uint[WebpConstants.NumDistanceCodes];
 
-        int literalSize = WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes + (1 << WebpConstants.MaxColorCacheBits);
+        var literalSize = WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes + (1 << WebpConstants.MaxColorCacheBits);
         this.Literal = new uint[literalSize + 1];
 
         // 5 for literal, red, blue, alpha, distance.
@@ -112,7 +112,7 @@ internal sealed class Vp8LHistogram : IDeepCloneable
     /// <param name="refs">The backward references.</param>
     public void StoreRefs(Vp8LBackwardRefs refs)
     {
-        using List<PixOrCopy>.Enumerator c = refs.Refs.GetEnumerator();
+        using var c = refs.Refs.GetEnumerator();
         while (c.MoveNext())
         {
             this.AddSinglePixOrCopy(c.Current, false);
@@ -136,13 +136,13 @@ internal sealed class Vp8LHistogram : IDeepCloneable
         }
         else if (v.IsCacheIdx())
         {
-            int literalIx = (int)(WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes + v.CacheIdx());
+            var literalIx = (int)(WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes + v.CacheIdx());
             this.Literal[literalIx]++;
         }
         else
         {
-            int extraBits = 0;
-            int code = LosslessUtils.PrefixEncodeBits(v.Length(), ref extraBits);
+            var extraBits = 0;
+            var code = LosslessUtils.PrefixEncodeBits(v.Length(), ref extraBits);
             this.Literal[WebpConstants.NumLiteralCodes + code]++;
             if (!useDistanceModifier)
             {
@@ -181,9 +181,9 @@ internal sealed class Vp8LHistogram : IDeepCloneable
         uint alphaSym = 0, redSym = 0, blueSym = 0;
         uint notUsed = 0;
 
-        double alphaCost = PopulationCost(this.Alpha, WebpConstants.NumLiteralCodes, ref alphaSym, ref this.IsUsed[3], stats, bitsEntropy);
-        double distanceCost = PopulationCost(this.Distance, WebpConstants.NumDistanceCodes, ref notUsed, ref this.IsUsed[4], stats, bitsEntropy) + ExtraCost(this.Distance, WebpConstants.NumDistanceCodes);
-        int numCodes = this.NumCodes();
+        var alphaCost = PopulationCost(this.Alpha, WebpConstants.NumLiteralCodes, ref alphaSym, ref this.IsUsed[3], stats, bitsEntropy);
+        var distanceCost = PopulationCost(this.Distance, WebpConstants.NumDistanceCodes, ref notUsed, ref this.IsUsed[4], stats, bitsEntropy) + ExtraCost(this.Distance, WebpConstants.NumDistanceCodes);
+        var numCodes = this.NumCodes();
         this.LiteralCost = PopulationCost(this.Literal, numCodes, ref notUsed, ref this.IsUsed[0], stats, bitsEntropy) + ExtraCost(this.Literal.AsSpan(WebpConstants.NumLiteralCodes), WebpConstants.NumLengthCodes);
         this.RedCost = PopulationCost(this.Red, WebpConstants.NumLiteralCodes, ref redSym, ref this.IsUsed[1], stats, bitsEntropy);
         this.BlueCost = PopulationCost(this.Blue, WebpConstants.NumLiteralCodes, ref blueSym, ref this.IsUsed[2], stats, bitsEntropy);
@@ -207,9 +207,9 @@ internal sealed class Vp8LHistogram : IDeepCloneable
     /// </summary>
     public double AddEval(Vp8LHistogram b, Vp8LStreaks stats, Vp8LBitEntropy bitsEntropy, double costThreshold, Vp8LHistogram output)
     {
-        double sumCost = this.BitCost + b.BitCost;
+        var sumCost = this.BitCost + b.BitCost;
         costThreshold += sumCost;
-        if (this.GetCombinedHistogramEntropy(b, stats, bitsEntropy, costThreshold, costInitial: 0, out double cost))
+        if (this.GetCombinedHistogramEntropy(b, stats, bitsEntropy, costThreshold, costInitial: 0, out var cost))
         {
             this.Add(b, output);
             output.BitCost = cost;
@@ -221,14 +221,14 @@ internal sealed class Vp8LHistogram : IDeepCloneable
 
     public double AddThresh(Vp8LHistogram b, Vp8LStreaks stats, Vp8LBitEntropy bitsEntropy, double costThreshold)
     {
-        double costInitial = -this.BitCost;
-        this.GetCombinedHistogramEntropy(b, stats, bitsEntropy, costThreshold, costInitial, out double cost);
+        var costInitial = -this.BitCost;
+        this.GetCombinedHistogramEntropy(b, stats, bitsEntropy, costThreshold, costInitial, out var cost);
         return cost;
     }
 
     public void Add(Vp8LHistogram b, Vp8LHistogram output)
     {
-        int literalSize = this.NumCodes();
+        var literalSize = this.NumCodes();
 
         this.AddLiteral(b, output, literalSize);
         this.AddRed(b, output, WebpConstants.NumLiteralCodes);
@@ -236,7 +236,7 @@ internal sealed class Vp8LHistogram : IDeepCloneable
         this.AddAlpha(b, output, WebpConstants.NumLiteralCodes);
         this.AddDistance(b, output, WebpConstants.NumDistanceCodes);
 
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             output.IsUsed[i] = this.IsUsed[i] | b.IsUsed[i];
         }
@@ -248,7 +248,7 @@ internal sealed class Vp8LHistogram : IDeepCloneable
 
     public bool GetCombinedHistogramEntropy(Vp8LHistogram b, Vp8LStreaks stats, Vp8LBitEntropy bitEntropy, double costThreshold, double costInitial, out double cost)
     {
-        bool trivialAtEnd = false;
+        var trivialAtEnd = false;
         cost = costInitial;
 
         cost += GetCombinedEntropy(this.Literal, b.Literal, this.NumCodes(), this.IsUsed[0], b.IsUsed[0], false, stats, bitEntropy);
@@ -263,9 +263,9 @@ internal sealed class Vp8LHistogram : IDeepCloneable
         if (this.TrivialSymbol != NonTrivialSym && this.TrivialSymbol == b.TrivialSymbol)
         {
             // A, R and B are all 0 or 0xff.
-            uint colorA = (this.TrivialSymbol >> 24) & 0xff;
-            uint colorR = (this.TrivialSymbol >> 16) & 0xff;
-            uint colorB = (this.TrivialSymbol >> 0) & 0xff;
+            var colorA = (this.TrivialSymbol >> 24) & 0xff;
+            var colorR = (this.TrivialSymbol >> 16) & 0xff;
+            var colorB = (this.TrivialSymbol >> 0) & 0xff;
             if ((colorA == 0 || colorA == 0xff) &&
                 (colorR == 0 || colorR == 0xff) &&
                 (colorB == 0 || colorB == 0xff))
@@ -473,10 +473,10 @@ internal sealed class Vp8LHistogram : IDeepCloneable
 
     private static double ExtraCostCombined(Span<uint> x, Span<uint> y, int length)
     {
-        double cost = 0.0d;
-        for (int i = 2; i < length - 2; i++)
+        var cost = 0.0d;
+        for (var i = 2; i < length - 2; i++)
         {
-            int xy = (int)(x[i + 2] + y[i + 2]);
+            var xy = (int)(x[i + 2] + y[i + 2]);
             cost += (i >> 1) * xy;
         }
 
@@ -502,8 +502,8 @@ internal sealed class Vp8LHistogram : IDeepCloneable
 
     private static double ExtraCost(Span<uint> population, int length)
     {
-        double cost = 0.0d;
-        for (int i = 2; i < length - 2; i++)
+        var cost = 0.0d;
+        for (var i = 2; i < length - 2; i++)
         {
             cost += (i >> 1) * population[i + 2];
         }
@@ -553,7 +553,7 @@ internal sealed class Vp8LHistogram : IDeepCloneable
             else
 #endif
         {
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 output[i] = a[i] + b[i];
             }

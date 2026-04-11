@@ -31,7 +31,7 @@ public partial struct Rgb24
             Span<Rgb24> destination)
         {
             Guard.NotNull(configuration, nameof(configuration));
-            int count = redChannel.Length;
+            var count = redChannel.Length;
             GuardPackFromRgbPlanes(greenChannel, blueChannel, destination, count);
 
             SimdUtils.PackFromRgbPlanes(configuration, redChannel, greenChannel, blueChannel, destination);

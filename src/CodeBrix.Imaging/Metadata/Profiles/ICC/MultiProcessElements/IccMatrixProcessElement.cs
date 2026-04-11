@@ -21,7 +21,7 @@ internal sealed class IccMatrixProcessElement : IccMultiProcessElement, IEquatab
         Guard.NotNull(matrixIxO, nameof(matrixIxO));
         Guard.NotNull(matrixOx1, nameof(matrixOx1));
 
-        bool matrixSizeCorrect = matrixIxO.GetLength(1) == matrixOx1.Length;
+        var matrixSizeCorrect = matrixIxO.GetLength(1) == matrixOx1.Length;
         Guard.IsTrue(matrixSizeCorrect, $"{nameof(matrixIxO)},{nameof(matrixIxO)}", "Output channel length must match");
 
         this.MatrixIxO = matrixIxO;

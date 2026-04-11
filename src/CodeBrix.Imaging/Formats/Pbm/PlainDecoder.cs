@@ -60,18 +60,18 @@ internal class PlainDecoder
     private static void ProcessGrayscale<TPixel>(Configuration configuration, Buffer2D<TPixel> pixels, BufferedReadStream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L8> row = allocator.Allocate<L8>(width);
-        Span<L8> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L8>(width);
+        var rowSpan = row.GetSpan();
 
-        bool eofReached = false;
-        for (int y = 0; y < height; y++)
+        var eofReached = false;
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                stream.ReadDecimal(out int value);
+                stream.ReadDecimal(out var value);
                 rowSpan[x] = new L8((byte)value);
                 eofReached = !stream.SkipWhitespaceAndComments();
                 if (eofReached)
@@ -80,7 +80,7 @@ internal class PlainDecoder
                 }
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromL8(
                 configuration,
                 rowSpan,
@@ -96,18 +96,18 @@ internal class PlainDecoder
     private static void ProcessWideGrayscale<TPixel>(Configuration configuration, Buffer2D<TPixel> pixels, BufferedReadStream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L16> row = allocator.Allocate<L16>(width);
-        Span<L16> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L16>(width);
+        var rowSpan = row.GetSpan();
 
-        bool eofReached = false;
-        for (int y = 0; y < height; y++)
+        var eofReached = false;
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                stream.ReadDecimal(out int value);
+                stream.ReadDecimal(out var value);
                 rowSpan[x] = new L16((ushort)value);
                 eofReached = !stream.SkipWhitespaceAndComments();
                 if (eofReached)
@@ -116,7 +116,7 @@ internal class PlainDecoder
                 }
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromL16(
                 configuration,
                 rowSpan,
@@ -132,20 +132,20 @@ internal class PlainDecoder
     private static void ProcessRgb<TPixel>(Configuration configuration, Buffer2D<TPixel> pixels, BufferedReadStream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<Rgb24> row = allocator.Allocate<Rgb24>(width);
-        Span<Rgb24> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<Rgb24>(width);
+        var rowSpan = row.GetSpan();
 
-        bool eofReached = false;
-        for (int y = 0; y < height; y++)
+        var eofReached = false;
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                if (!stream.ReadDecimal(out int red) ||
+                if (!stream.ReadDecimal(out var red) ||
                     !stream.SkipWhitespaceAndComments() ||
-                    !stream.ReadDecimal(out int green) ||
+                    !stream.ReadDecimal(out var green) ||
                     !stream.SkipWhitespaceAndComments())
                 {
                     // Reached EOF before reading a full RGB value
@@ -153,7 +153,7 @@ internal class PlainDecoder
                     break;
                 }
 
-                stream.ReadDecimal(out int blue);
+                stream.ReadDecimal(out var blue);
 
                 rowSpan[x] = new Rgb24((byte)red, (byte)green, (byte)blue);
                 eofReached = !stream.SkipWhitespaceAndComments();
@@ -163,7 +163,7 @@ internal class PlainDecoder
                 }
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromRgb24(
                 configuration,
                 rowSpan,
@@ -179,20 +179,20 @@ internal class PlainDecoder
     private static void ProcessWideRgb<TPixel>(Configuration configuration, Buffer2D<TPixel> pixels, BufferedReadStream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<Rgb48> row = allocator.Allocate<Rgb48>(width);
-        Span<Rgb48> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<Rgb48>(width);
+        var rowSpan = row.GetSpan();
 
-        bool eofReached = false;
-        for (int y = 0; y < height; y++)
+        var eofReached = false;
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                if (!stream.ReadDecimal(out int red) ||
+                if (!stream.ReadDecimal(out var red) ||
                     !stream.SkipWhitespaceAndComments() ||
-                    !stream.ReadDecimal(out int green) ||
+                    !stream.ReadDecimal(out var green) ||
                     !stream.SkipWhitespaceAndComments())
                 {
                     // Reached EOF before reading a full RGB value
@@ -200,7 +200,7 @@ internal class PlainDecoder
                     break;
                 }
 
-                stream.ReadDecimal(out int blue);
+                stream.ReadDecimal(out var blue);
 
                 rowSpan[x] = new Rgb48((ushort)red, (ushort)green, (ushort)blue);
                 eofReached = !stream.SkipWhitespaceAndComments();
@@ -210,7 +210,7 @@ internal class PlainDecoder
                 }
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromRgb48(
                 configuration,
                 rowSpan,
@@ -226,18 +226,18 @@ internal class PlainDecoder
     private static void ProcessBlackAndWhite<TPixel>(Configuration configuration, Buffer2D<TPixel> pixels, BufferedReadStream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L8> row = allocator.Allocate<L8>(width);
-        Span<L8> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L8>(width);
+        var rowSpan = row.GetSpan();
 
-        bool eofReached = false;
-        for (int y = 0; y < height; y++)
+        var eofReached = false;
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                stream.ReadDecimal(out int value);
+                stream.ReadDecimal(out var value);
 
                 rowSpan[x] = value == 0 ? White : Black;
                 eofReached = !stream.SkipWhitespaceAndComments();
@@ -247,7 +247,7 @@ internal class PlainDecoder
                 }
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromL8(
                 configuration,
                 rowSpan,

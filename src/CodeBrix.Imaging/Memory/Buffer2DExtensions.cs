@@ -44,21 +44,21 @@ public static class Buffer2DExtensions
         DebugGuard.MustBeGreaterThanOrEqualTo(destIndex, 0, nameof(sourceIndex));
         CheckColumnRegionsDoNotOverlap(buffer, sourceIndex, destIndex, columnCount);
 
-        int elementSize = Unsafe.SizeOf<T>();
-        int width = buffer.Width * elementSize;
-        int sOffset = sourceIndex * elementSize;
-        int dOffset = destIndex * elementSize;
+        var elementSize = Unsafe.SizeOf<T>();
+        var width = buffer.Width * elementSize;
+        var sOffset = sourceIndex * elementSize;
+        var dOffset = destIndex * elementSize;
         long count = columnCount * elementSize;
 
-        Span<byte> span = MemoryMarshal.AsBytes(buffer.DangerousGetSingleMemory().Span);
+        var span = MemoryMarshal.AsBytes(buffer.DangerousGetSingleMemory().Span);
 
         fixed (byte* ptr = span)
         {
-            byte* basePtr = ptr;
-            for (int y = 0; y < buffer.Height; y++)
+            var basePtr = ptr;
+            for (var y = 0; y < buffer.Height; y++)
             {
-                byte* sPtr = basePtr + sOffset;
-                byte* dPtr = basePtr + dOffset;
+                var sPtr = basePtr + sOffset;
+                var dPtr = basePtr + dOffset;
 
                 Buffer.MemoryCopy(sPtr, dPtr, count, count);
 
@@ -130,8 +130,8 @@ public static class Buffer2DExtensions
         int columnCount)
         where T : struct
     {
-        int minIndex = Math.Min(sourceIndex, destIndex);
-        int maxIndex = Math.Max(sourceIndex, destIndex);
+        var minIndex = Math.Min(sourceIndex, destIndex);
+        var maxIndex = Math.Max(sourceIndex, destIndex);
         if (maxIndex < minIndex + columnCount || maxIndex > buffer.Width - columnCount)
         {
             throw new InvalidOperationException("Column regions should not overlap!");

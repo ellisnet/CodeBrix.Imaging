@@ -82,7 +82,7 @@ internal sealed class IccResponseCurve : IEquatable<IccResponseCurve>
             return false;
         }
 
-        for (int i = 0; i < this.ResponseArrays.Length; i++)
+        for (var i = 0; i < this.ResponseArrays.Length; i++)
         {
             if (!this.ResponseArrays[i].AsSpan().SequenceEqual(other.ResponseArrays[i]))
             {

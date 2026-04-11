@@ -103,7 +103,7 @@ internal static unsafe class Vp8Encoding
 
     static Vp8Encoding()
     {
-        for (int i = -255; i <= 255 + 255; i++)
+        for (var i = -255; i <= 255 + 255; i++)
         {
             Clip1[255 + i] = Clip8b(i);
         }
@@ -307,14 +307,14 @@ internal static unsafe class Vp8Encoding
 #endif
         {
             int i;
-            Span<int> tmp = scratch.Slice(0, 16);
+            var tmp = scratch.Slice(0, 16);
             for (i = 0; i < 4; i++)
             {
                 // vertical pass.
-                int a = input[0] + input[8];
-                int b = input[0] - input[8];
-                int c = Mul(input[4], KC2) - Mul(input[12], KC1);
-                int d = Mul(input[4], KC1) + Mul(input[12], KC2);
+                var a = input[0] + input[8];
+                var b = input[0] - input[8];
+                var c = Mul(input[4], KC2) - Mul(input[12], KC1);
+                var d = Mul(input[4], KC1) + Mul(input[12], KC2);
                 tmp[0] = a + d;
                 tmp[1] = b + c;
                 tmp[2] = b - c;
@@ -327,11 +327,11 @@ internal static unsafe class Vp8Encoding
             for (i = 0; i < 4; i++)
             {
                 // horizontal pass.
-                int dc = tmp[0] + 4;
-                int a = dc + tmp[8];
-                int b = dc - tmp[8];
-                int c = Mul(tmp[4], KC2) - Mul(tmp[12], KC1);
-                int d = Mul(tmp[4], KC1) + Mul(tmp[12], KC2);
+                var dc = tmp[0] + 4;
+                var a = dc + tmp[8];
+                var b = dc - tmp[8];
+                var c = Mul(tmp[4], KC2) - Mul(tmp[12], KC1);
+                var d = Mul(tmp[4], KC1) + Mul(tmp[12], KC2);
                 Store(dst, reference, 0, i, a + d);
                 Store(dst, reference, 1, i, b + c);
                 Store(dst, reference, 2, i, b - c);
@@ -515,20 +515,20 @@ internal static unsafe class Vp8Encoding
 #endif
         {
             int i;
-            Span<int> tmp = scratch.Slice(0, 16);
+            var tmp = scratch.Slice(0, 16);
 
-            int srcIdx = 0;
-            int refIdx = 0;
+            var srcIdx = 0;
+            var refIdx = 0;
             for (i = 0; i < 4; i++)
             {
-                int d3 = src[srcIdx + 3] - reference[refIdx + 3];
-                int d2 = src[srcIdx + 2] - reference[refIdx + 2];
-                int d1 = src[srcIdx + 1] - reference[refIdx + 1];
-                int d0 = src[srcIdx] - reference[refIdx]; // 9bit dynamic range ([-255,255])
-                int a0 = d0 + d3; // 10b                      [-510,510]
-                int a1 = d1 + d2;
-                int a2 = d1 - d2;
-                int a3 = d0 - d3;
+                var d3 = src[srcIdx + 3] - reference[refIdx + 3];
+                var d2 = src[srcIdx + 2] - reference[refIdx + 2];
+                var d1 = src[srcIdx + 1] - reference[refIdx + 1];
+                var d0 = src[srcIdx] - reference[refIdx]; // 9bit dynamic range ([-255,255])
+                var a0 = d0 + d3; // 10b                      [-510,510]
+                var a1 = d1 + d2;
+                var a2 = d1 - d2;
+                var a3 = d0 - d3;
                 tmp[3 + (i * 4)] = ((a3 * 2217) - (a2 * 5352) + 937) >> 9;
                 tmp[2 + (i * 4)] = (a0 - a1) * 8;
                 tmp[1 + (i * 4)] = ((a2 * 2217) + (a3 * 5352) + 1812) >> 9; // [-7536,7542]
@@ -540,13 +540,13 @@ internal static unsafe class Vp8Encoding
 
             for (i = 0; i < 4; i++)
             {
-                int t12 = tmp[12 + i]; // 15b
-                int t8 = tmp[8 + i];
+                var t12 = tmp[12 + i]; // 15b
+                var t8 = tmp[8 + i];
 
-                int a1 = tmp[4 + i] + t8;
-                int a2 = tmp[4 + i] - t8;
-                int a0 = tmp[0 + i] + t12; // 15b
-                int a3 = tmp[0 + i] - t12;
+                var a1 = tmp[4 + i] + t8;
+                var a2 = tmp[4 + i] - t8;
+                var a0 = tmp[0 + i] + t12; // 15b
+                var a3 = tmp[0 + i] - t12;
 
                 output[12 + i] = (short)(((a3 * 2217) - (a2 * 5352) + 51000) >> 16);
                 output[8 + i] = (short)((a0 - a1 + 7) >> 4);
@@ -644,16 +644,16 @@ internal static unsafe class Vp8Encoding
 
     public static void FTransformWht(Span<short> input, Span<short> output, Span<int> scratch)
     {
-        Span<int> tmp = scratch.Slice(0, 16);
+        var tmp = scratch.Slice(0, 16);
 
         int i;
-        int inputIdx = 0;
+        var inputIdx = 0;
         for (i = 0; i < 4; i++)
         {
-            int a1 = input[inputIdx + (1 * 16)] + input[inputIdx + (3 * 16)];
-            int a2 = input[inputIdx + (1 * 16)] - input[inputIdx + (3 * 16)];
-            int a0 = input[inputIdx + (0 * 16)] + input[inputIdx + (2 * 16)];  // 13b
-            int a3 = input[inputIdx + (0 * 16)] - input[inputIdx + (2 * 16)];
+            var a1 = input[inputIdx + (1 * 16)] + input[inputIdx + (3 * 16)];
+            var a2 = input[inputIdx + (1 * 16)] - input[inputIdx + (3 * 16)];
+            var a0 = input[inputIdx + (0 * 16)] + input[inputIdx + (2 * 16)];  // 13b
+            var a3 = input[inputIdx + (0 * 16)] - input[inputIdx + (2 * 16)];
             tmp[3 + (i * 4)] = a0 - a1;
             tmp[2 + (i * 4)] = a3 - a2;
             tmp[1 + (i * 4)] = a3 + a2;
@@ -664,18 +664,18 @@ internal static unsafe class Vp8Encoding
 
         for (i = 0; i < 4; i++)
         {
-            int t12 = tmp[12 + i];
-            int t8 = tmp[8 + i];
+            var t12 = tmp[12 + i];
+            var t8 = tmp[8 + i];
 
-            int a1 = tmp[4 + i] + t12;
-            int a2 = tmp[4 + i] - t12;
-            int a0 = tmp[0 + i] + t8;  // 15b
-            int a3 = tmp[0 + i] - t8;
+            var a1 = tmp[4 + i] + t12;
+            var a2 = tmp[4 + i] - t12;
+            var a0 = tmp[0 + i] + t8;  // 15b
+            var a3 = tmp[0 + i] - t8;
 
-            int b0 = a0 + a1;    // 16b
-            int b1 = a3 + a2;
-            int b2 = a3 - a2;
-            int b3 = a0 - a1;
+            var b0 = a0 + a1;    // 16b
+            var b1 = a3 + a2;
+            var b2 = a3 - a2;
+            var b3 = a0 - a1;
 
             output[12 + i] = (short)(b3 >> 1);
             output[8 + i] = (short)(b2 >> 1);
@@ -740,7 +740,7 @@ internal static unsafe class Vp8Encoding
     {
         if (!top.IsEmpty)
         {
-            for (int j = 0; j < size; j++)
+            for (var j = 0; j < size; j++)
             {
                 top.Slice(0, size).CopyTo(dst.Slice(j * WebpConstants.Bps));
             }
@@ -756,7 +756,7 @@ internal static unsafe class Vp8Encoding
         if (!left.IsEmpty)
         {
             left = left.Slice(1); // in the reference implementation, left starts at - 1.
-            for (int j = 0; j < size; j++)
+            for (var j = 0; j < size; j++)
             {
                 dst.Slice(j * WebpConstants.Bps, size).Fill(left[j]);
             }
@@ -773,11 +773,11 @@ internal static unsafe class Vp8Encoding
         {
             if (!top.IsEmpty)
             {
-                Span<byte> clip = Clip1.AsSpan(255 - left[0]); // left [0] instead of left[-1], original left starts at -1
-                for (int y = 0; y < size; y++)
+                var clip = Clip1.AsSpan(255 - left[0]); // left [0] instead of left[-1], original left starts at -1
+                for (var y = 0; y < size; y++)
                 {
-                    Span<byte> clipTable = clip.Slice(left[y + 1]); // left[y]
-                    for (int x = 0; x < size; x++)
+                    var clipTable = clip.Slice(left[y + 1]); // left[y]
+                    for (var x = 0; x < size; x++)
                     {
                         dst[x] = clipTable[top[x]];
                     }
@@ -809,7 +809,7 @@ internal static unsafe class Vp8Encoding
 
     private static void DcMode(Span<byte> dst, Span<byte> left, Span<byte> top, int size, int round, int shift)
     {
-        int dc = 0;
+        var dc = 0;
         int j;
         if (!top.IsEmpty)
         {
@@ -870,11 +870,11 @@ internal static unsafe class Vp8Encoding
 
     private static void Tm4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        Span<byte> clip = Clip1.AsSpan(255 - top[topOffset - 1]);
-        for (int y = 0; y < 4; y++)
+        var clip = Clip1.AsSpan(255 - top[topOffset - 1]);
+        for (var y = 0; y < 4; y++)
         {
-            Span<byte> clipTable = clip.Slice(top[topOffset - 2 - y]);
-            for (int x = 0; x < 4; x++)
+            var clipTable = clip.Slice(top[topOffset - 2 - y]);
+            for (var x = 0; x < 4; x++)
             {
                 dst[x] = clipTable[top[topOffset + x]];
             }
@@ -890,7 +890,7 @@ internal static unsafe class Vp8Encoding
         vals[1] = LossyUtils.Avg3(top[topOffset], top[topOffset + 1], top[topOffset + 2]);
         vals[2] = LossyUtils.Avg3(top[topOffset + 1], top[topOffset + 2], top[topOffset + 3]);
         vals[3] = LossyUtils.Avg3(top[topOffset + 2], top[topOffset + 3], top[topOffset + 4]);
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
             vals.CopyTo(dst.Slice(i * WebpConstants.Bps));
         }
@@ -899,13 +899,13 @@ internal static unsafe class Vp8Encoding
     private static void He4(Span<byte> dst, Span<byte> top, int topOffset)
     {
         // horizontal
-        byte x = top[topOffset - 1];
-        byte i = top[topOffset - 2];
-        byte j = top[topOffset - 3];
-        byte k = top[topOffset - 4];
-        byte l = top[topOffset - 5];
+        var x = top[topOffset - 1];
+        var i = top[topOffset - 2];
+        var j = top[topOffset - 3];
+        var k = top[topOffset - 4];
+        var l = top[topOffset - 5];
 
-        uint val = 0x01010101U * LossyUtils.Avg3(x, i, j);
+        var val = 0x01010101U * LossyUtils.Avg3(x, i, j);
         BinaryPrimitives.WriteUInt32BigEndian(dst, val);
         val = 0x01010101U * LossyUtils.Avg3(i, j, k);
         BinaryPrimitives.WriteUInt32BigEndian(dst.Slice(1 * WebpConstants.Bps), val);
@@ -917,34 +917,34 @@ internal static unsafe class Vp8Encoding
 
     private static void Rd4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        byte x = top[topOffset - 1];
-        byte i = top[topOffset - 2];
-        byte j = top[topOffset - 3];
-        byte k = top[topOffset - 4];
-        byte l = top[topOffset - 5];
-        byte a = top[topOffset];
-        byte b = top[topOffset + 1];
-        byte c = top[topOffset + 2];
-        byte d = top[topOffset + 3];
+        var x = top[topOffset - 1];
+        var i = top[topOffset - 2];
+        var j = top[topOffset - 3];
+        var k = top[topOffset - 4];
+        var l = top[topOffset - 5];
+        var a = top[topOffset];
+        var b = top[topOffset + 1];
+        var c = top[topOffset + 2];
+        var d = top[topOffset + 3];
 
         LossyUtils.Dst(dst, 0, 3, LossyUtils.Avg3(j, k, l));
-        byte ijk = LossyUtils.Avg3(i, j, k);
+        var ijk = LossyUtils.Avg3(i, j, k);
         LossyUtils.Dst(dst, 0, 2, ijk);
         LossyUtils.Dst(dst, 1, 3, ijk);
-        byte xij = LossyUtils.Avg3(x, i, j);
+        var xij = LossyUtils.Avg3(x, i, j);
         LossyUtils.Dst(dst, 0, 1, xij);
         LossyUtils.Dst(dst, 1, 2, xij);
         LossyUtils.Dst(dst, 2, 3, xij);
-        byte axi = LossyUtils.Avg3(a, x, i);
+        var axi = LossyUtils.Avg3(a, x, i);
         LossyUtils.Dst(dst, 0, 0, axi);
         LossyUtils.Dst(dst, 1, 1, axi);
         LossyUtils.Dst(dst, 2, 2, axi);
         LossyUtils.Dst(dst, 3, 3, axi);
-        byte bax = LossyUtils.Avg3(b, a, x);
+        var bax = LossyUtils.Avg3(b, a, x);
         LossyUtils.Dst(dst, 1, 0, bax);
         LossyUtils.Dst(dst, 2, 1, bax);
         LossyUtils.Dst(dst, 3, 2, bax);
-        byte cba = LossyUtils.Avg3(c, b, a);
+        var cba = LossyUtils.Avg3(c, b, a);
         LossyUtils.Dst(dst, 2, 0, cba);
         LossyUtils.Dst(dst, 3, 1, cba);
         LossyUtils.Dst(dst, 3, 0, LossyUtils.Avg3(d, c, b));
@@ -952,34 +952,34 @@ internal static unsafe class Vp8Encoding
 
     private static void Vr4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        byte x = top[topOffset - 1];
-        byte i = top[topOffset - 2];
-        byte j = top[topOffset - 3];
-        byte k = top[topOffset - 4];
-        byte a = top[topOffset];
-        byte b = top[topOffset + 1];
-        byte c = top[topOffset + 2];
-        byte d = top[topOffset + 3];
+        var x = top[topOffset - 1];
+        var i = top[topOffset - 2];
+        var j = top[topOffset - 3];
+        var k = top[topOffset - 4];
+        var a = top[topOffset];
+        var b = top[topOffset + 1];
+        var c = top[topOffset + 2];
+        var d = top[topOffset + 3];
 
-        byte xa = LossyUtils.Avg2(x, a);
+        var xa = LossyUtils.Avg2(x, a);
         LossyUtils.Dst(dst, 0, 0, xa);
         LossyUtils.Dst(dst, 1, 2, xa);
-        byte ab = LossyUtils.Avg2(a, b);
+        var ab = LossyUtils.Avg2(a, b);
         LossyUtils.Dst(dst, 1, 0, ab);
         LossyUtils.Dst(dst, 2, 2, ab);
-        byte bc = LossyUtils.Avg2(b, c);
+        var bc = LossyUtils.Avg2(b, c);
         LossyUtils.Dst(dst, 2, 0, bc);
         LossyUtils.Dst(dst, 3, 2, bc);
         LossyUtils.Dst(dst, 3, 0, LossyUtils.Avg2(c, d));
         LossyUtils.Dst(dst, 0, 3, LossyUtils.Avg3(k, j, i));
         LossyUtils.Dst(dst, 0, 2, LossyUtils.Avg3(j, i, x));
-        byte ixa = LossyUtils.Avg3(i, x, a);
+        var ixa = LossyUtils.Avg3(i, x, a);
         LossyUtils.Dst(dst, 0, 1, ixa);
         LossyUtils.Dst(dst, 1, 3, ixa);
-        byte xab = LossyUtils.Avg3(x, a, b);
+        var xab = LossyUtils.Avg3(x, a, b);
         LossyUtils.Dst(dst, 1, 1, xab);
         LossyUtils.Dst(dst, 2, 3, xab);
-        byte abc = LossyUtils.Avg3(a, b, c);
+        var abc = LossyUtils.Avg3(a, b, c);
         LossyUtils.Dst(dst, 2, 1, abc);
         LossyUtils.Dst(dst, 3, 3, abc);
         LossyUtils.Dst(dst, 3, 1, LossyUtils.Avg3(b, c, d));
@@ -987,33 +987,33 @@ internal static unsafe class Vp8Encoding
 
     private static void Ld4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        byte a = top[topOffset + 0];
-        byte b = top[topOffset + 1];
-        byte c = top[topOffset + 2];
-        byte d = top[topOffset + 3];
-        byte e = top[topOffset + 4];
-        byte f = top[topOffset + 5];
-        byte g = top[topOffset + 6];
-        byte h = top[topOffset + 7];
+        var a = top[topOffset + 0];
+        var b = top[topOffset + 1];
+        var c = top[topOffset + 2];
+        var d = top[topOffset + 3];
+        var e = top[topOffset + 4];
+        var f = top[topOffset + 5];
+        var g = top[topOffset + 6];
+        var h = top[topOffset + 7];
 
         LossyUtils.Dst(dst, 0, 0, LossyUtils.Avg3(a, b, c));
-        byte bcd = LossyUtils.Avg3(b, c, d);
+        var bcd = LossyUtils.Avg3(b, c, d);
         LossyUtils.Dst(dst, 1, 0, bcd);
         LossyUtils.Dst(dst, 0, 1, bcd);
-        byte cde = LossyUtils.Avg3(c, d, e);
+        var cde = LossyUtils.Avg3(c, d, e);
         LossyUtils.Dst(dst, 2, 0, cde);
         LossyUtils.Dst(dst, 1, 1, cde);
         LossyUtils.Dst(dst, 0, 2, cde);
-        byte def = LossyUtils.Avg3(d, e, f);
+        var def = LossyUtils.Avg3(d, e, f);
         LossyUtils.Dst(dst, 3, 0, def);
         LossyUtils.Dst(dst, 2, 1, def);
         LossyUtils.Dst(dst, 1, 2, def);
         LossyUtils.Dst(dst, 0, 3, def);
-        byte efg = LossyUtils.Avg3(e, f, g);
+        var efg = LossyUtils.Avg3(e, f, g);
         LossyUtils.Dst(dst, 3, 1, efg);
         LossyUtils.Dst(dst, 2, 2, efg);
         LossyUtils.Dst(dst, 1, 3, efg);
-        byte fgh = LossyUtils.Avg3(f, g, h);
+        var fgh = LossyUtils.Avg3(f, g, h);
         LossyUtils.Dst(dst, 3, 2, fgh);
         LossyUtils.Dst(dst, 2, 3, fgh);
         LossyUtils.Dst(dst, 3, 3, LossyUtils.Avg3(g, h, h));
@@ -1021,33 +1021,33 @@ internal static unsafe class Vp8Encoding
 
     private static void Vl4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        byte a = top[topOffset + 0];
-        byte b = top[topOffset + 1];
-        byte c = top[topOffset + 2];
-        byte d = top[topOffset + 3];
-        byte e = top[topOffset + 4];
-        byte f = top[topOffset + 5];
-        byte g = top[topOffset + 6];
-        byte h = top[topOffset + 7];
+        var a = top[topOffset + 0];
+        var b = top[topOffset + 1];
+        var c = top[topOffset + 2];
+        var d = top[topOffset + 3];
+        var e = top[topOffset + 4];
+        var f = top[topOffset + 5];
+        var g = top[topOffset + 6];
+        var h = top[topOffset + 7];
 
         LossyUtils.Dst(dst, 0, 0, LossyUtils.Avg2(a, b));
-        byte bc = LossyUtils.Avg2(b, c);
+        var bc = LossyUtils.Avg2(b, c);
         LossyUtils.Dst(dst, 1, 0, bc);
         LossyUtils.Dst(dst, 0, 2, bc);
-        byte cd = LossyUtils.Avg2(c, d);
+        var cd = LossyUtils.Avg2(c, d);
         LossyUtils.Dst(dst, 2, 0, cd);
         LossyUtils.Dst(dst, 1, 2, cd);
-        byte de = LossyUtils.Avg2(d, e);
+        var de = LossyUtils.Avg2(d, e);
         LossyUtils.Dst(dst, 3, 0, de);
         LossyUtils.Dst(dst, 2, 2, de);
         LossyUtils.Dst(dst, 0, 1, LossyUtils.Avg3(a, b, c));
-        byte bcd = LossyUtils.Avg3(b, c, d);
+        var bcd = LossyUtils.Avg3(b, c, d);
         LossyUtils.Dst(dst, 1, 1, bcd);
         LossyUtils.Dst(dst, 0, 3, bcd);
-        byte cde = LossyUtils.Avg3(c, d, e);
+        var cde = LossyUtils.Avg3(c, d, e);
         LossyUtils.Dst(dst, 2, 1, cde);
         LossyUtils.Dst(dst, 1, 3, cde);
-        byte def = LossyUtils.Avg3(d, e, f);
+        var def = LossyUtils.Avg3(d, e, f);
         LossyUtils.Dst(dst, 3, 1, def);
         LossyUtils.Dst(dst, 2, 3, def);
         LossyUtils.Dst(dst, 3, 2, LossyUtils.Avg3(e, f, g));
@@ -1056,34 +1056,34 @@ internal static unsafe class Vp8Encoding
 
     private static void Hd4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        byte x = top[topOffset - 1];
-        byte i = top[topOffset - 2];
-        byte j = top[topOffset - 3];
-        byte k = top[topOffset - 4];
-        byte l = top[topOffset - 5];
-        byte a = top[topOffset];
-        byte b = top[topOffset + 1];
-        byte c = top[topOffset + 2];
+        var x = top[topOffset - 1];
+        var i = top[topOffset - 2];
+        var j = top[topOffset - 3];
+        var k = top[topOffset - 4];
+        var l = top[topOffset - 5];
+        var a = top[topOffset];
+        var b = top[topOffset + 1];
+        var c = top[topOffset + 2];
 
-        byte ix = LossyUtils.Avg2(i, x);
+        var ix = LossyUtils.Avg2(i, x);
         LossyUtils.Dst(dst, 0, 0, ix);
         LossyUtils.Dst(dst, 2, 1, ix);
-        byte ji = LossyUtils.Avg2(j, i);
+        var ji = LossyUtils.Avg2(j, i);
         LossyUtils.Dst(dst, 0, 1, ji);
         LossyUtils.Dst(dst, 2, 2, ji);
-        byte kj = LossyUtils.Avg2(k, j);
+        var kj = LossyUtils.Avg2(k, j);
         LossyUtils.Dst(dst, 0, 2, kj);
         LossyUtils.Dst(dst, 2, 3, kj);
         LossyUtils.Dst(dst, 0, 3, LossyUtils.Avg2(l, k));
         LossyUtils.Dst(dst, 3, 0, LossyUtils.Avg3(a, b, c));
         LossyUtils.Dst(dst, 2, 0, LossyUtils.Avg3(x, a, b));
-        byte ixa = LossyUtils.Avg3(i, x, a);
+        var ixa = LossyUtils.Avg3(i, x, a);
         LossyUtils.Dst(dst, 1, 0, ixa);
         LossyUtils.Dst(dst, 3, 1, ixa);
-        byte jix = LossyUtils.Avg3(j, i, x);
+        var jix = LossyUtils.Avg3(j, i, x);
         LossyUtils.Dst(dst, 1, 1, jix);
         LossyUtils.Dst(dst, 3, 2, jix);
-        byte kji = LossyUtils.Avg3(k, j, i);
+        var kji = LossyUtils.Avg3(k, j, i);
         LossyUtils.Dst(dst, 1, 2, kji);
         LossyUtils.Dst(dst, 3, 3, kji);
         LossyUtils.Dst(dst, 1, 3, LossyUtils.Avg3(l, k, j));
@@ -1091,23 +1091,23 @@ internal static unsafe class Vp8Encoding
 
     private static void Hu4(Span<byte> dst, Span<byte> top, int topOffset)
     {
-        byte i = top[topOffset - 2];
-        byte j = top[topOffset - 3];
-        byte k = top[topOffset - 4];
-        byte l = top[topOffset - 5];
+        var i = top[topOffset - 2];
+        var j = top[topOffset - 3];
+        var k = top[topOffset - 4];
+        var l = top[topOffset - 5];
 
         LossyUtils.Dst(dst, 0, 0, LossyUtils.Avg2(i, j));
-        byte jk = LossyUtils.Avg2(j, k);
+        var jk = LossyUtils.Avg2(j, k);
         LossyUtils.Dst(dst, 2, 0, jk);
         LossyUtils.Dst(dst, 0, 1, jk);
-        byte kl = LossyUtils.Avg2(k, l);
+        var kl = LossyUtils.Avg2(k, l);
         LossyUtils.Dst(dst, 2, 1, kl);
         LossyUtils.Dst(dst, 0, 2, kl);
         LossyUtils.Dst(dst, 1, 0, LossyUtils.Avg3(i, j, k));
-        byte jkl = LossyUtils.Avg3(j, k, l);
+        var jkl = LossyUtils.Avg3(j, k, l);
         LossyUtils.Dst(dst, 3, 0, jkl);
         LossyUtils.Dst(dst, 1, 1, jkl);
-        byte kll = LossyUtils.Avg3(k, l, l);
+        var kll = LossyUtils.Avg3(k, l, l);
         LossyUtils.Dst(dst, 3, 1, kll);
         LossyUtils.Dst(dst, 1, 2, kll);
         LossyUtils.Dst(dst, 3, 2, l);
@@ -1121,7 +1121,7 @@ internal static unsafe class Vp8Encoding
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void Fill(Span<byte> dst, int value, int size)
     {
-        for (int j = 0; j < size; j++)
+        for (var j = 0; j < size; j++)
         {
             dst.Slice(j * WebpConstants.Bps, size).Fill((byte)value);
         }

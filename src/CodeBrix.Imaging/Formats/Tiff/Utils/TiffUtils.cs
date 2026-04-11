@@ -85,7 +85,7 @@ internal static class TiffUtils
     public static TPixel ColorScaleTo24Bit<TPixel>(ulong r, ulong g, ulong b, ulong a, TPixel color)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Vector4 colorVector = new Vector4(r, g, b, a) * Scale24Bit;
+        var colorVector = new Vector4(r, g, b, a) * Scale24Bit;
         color.FromScaledVector4(colorVector);
         return color;
     }
@@ -94,7 +94,7 @@ internal static class TiffUtils
     public static TPixel ColorScaleTo24BitPremultiplied<TPixel>(ulong r, ulong g, ulong b, ulong a, TPixel color)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Vector4 colorVector = new Vector4(r, g, b, a) * Scale24Bit;
+        var colorVector = new Vector4(r, g, b, a) * Scale24Bit;
         return UnPremultiply(ref colorVector, color);
     }
 
@@ -111,7 +111,7 @@ internal static class TiffUtils
     public static TPixel ColorScaleTo32Bit<TPixel>(ulong r, ulong g, ulong b, ulong a, TPixel color)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Vector4 colorVector = new Vector4(r, g, b, a) * Scale32Bit;
+        var colorVector = new Vector4(r, g, b, a) * Scale32Bit;
         color.FromScaledVector4(colorVector);
         return color;
     }
@@ -120,7 +120,7 @@ internal static class TiffUtils
     public static TPixel ColorScaleTo32BitPremultiplied<TPixel>(ulong r, ulong g, ulong b, ulong a, TPixel color)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Vector4 colorVector = new Vector4(r, g, b, a) * Scale32Bit;
+        var colorVector = new Vector4(r, g, b, a) * Scale32Bit;
         return UnPremultiply(ref colorVector, color);
     }
 

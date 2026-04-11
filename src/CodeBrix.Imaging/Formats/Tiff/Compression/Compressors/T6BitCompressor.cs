@@ -54,19 +54,19 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
     protected override void CompressStrip(Span<byte> pixelsAsGray, int height, Span<byte> compressedData)
     {
         // Initial reference line is all white.
-        Span<byte> referenceLine = this.referenceLineBuffer.GetSpan();
+        var referenceLine = this.referenceLineBuffer.GetSpan();
         referenceLine.Fill(0xff);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> row = pixelsAsGray.Slice(y * this.Width, this.Width);
+            var row = pixelsAsGray.Slice(y * this.Width, this.Width);
             uint a0 = 0;
-            uint a1 = row[0] == 0 ? 0 : this.FindRunEnd(row, 0);
-            uint b1 = referenceLine[0] == 0 ? 0 : this.FindRunEnd(referenceLine, 0);
+            var a1 = row[0] == 0 ? 0 : this.FindRunEnd(row, 0);
+            var b1 = referenceLine[0] == 0 ? 0 : this.FindRunEnd(referenceLine, 0);
 
             while (true)
             {
-                uint b2 = this.FindRunEnd(referenceLine, b1);
+                var b2 = this.FindRunEnd(referenceLine, b1);
                 if (b2 < a1)
                 {
                     // Pass mode.
@@ -75,7 +75,7 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
                 }
                 else
                 {
-                    int d = int.MaxValue;
+                    var d = int.MaxValue;
                     if ((b1 >= a1) && (b1 - a1 <= 3))
                     {
                         d = (int)(b1 - a1);
@@ -88,7 +88,7 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
                     if ((d >= -3) && (d <= 3))
                     {
                         // Vertical mode.
-                        (uint length, uint code) = VerticalCodes[d + 3];
+                        (var length, var code) = VerticalCodes[d + 3];
                         this.WriteCode(length, code, compressedData);
                         a0 = a1;
                     }
@@ -97,7 +97,7 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
                         // Horizontal mode.
                         this.WriteCode(3, 1, compressedData);
 
-                        uint a2 = this.FindRunEnd(row, a1);
+                        var a2 = this.FindRunEnd(row, a1);
                         if ((a0 + a1 == 0) || (row[(int)a0] != 0))
                         {
                             this.WriteRun(a1 - a0, true, compressedData);
@@ -118,7 +118,7 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
                     break;
                 }
 
-                byte thisPixel = row[(int)a0];
+                var thisPixel = row[(int)a0];
                 a1 = this.FindRunEnd(row, a0, thisPixel);
                 b1 = this.FindRunEnd(referenceLine, a0, (byte)~thisPixel);
                 b1 = this.FindRunEnd(referenceLine, b1, thisPixel);
@@ -156,8 +156,8 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
             return (uint)row.Length;
         }
 
-        byte colorValue = color.GetValueOrDefault(row[(int)startIndex]);
-        for (int i = (int)startIndex; i < row.Length; i++)
+        var colorValue = color.GetValueOrDefault(row[(int)startIndex]);
+        for (var i = (int)startIndex; i < row.Length; i++)
         {
             if (row[i] != colorValue)
             {
@@ -188,7 +188,7 @@ internal sealed class T6BitCompressor : TiffCcittCompressor
         uint codeLength;
         while (runLength > 63)
         {
-            uint makeupLength = this.GetBestFittingMakeupRunLength(runLength);
+            var makeupLength = this.GetBestFittingMakeupRunLength(runLength);
             code = this.GetMakeupCode(makeupLength, out codeLength, isWhiteRun);
             this.WriteCode(codeLength, code, compressedData);
             runLength -= makeupLength;

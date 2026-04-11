@@ -54,15 +54,15 @@ internal class FlipProcessor<TPixel> : ImageProcessor<TPixel>
     /// <param name="configuration">The configuration.</param>
     private void FlipX(Buffer2D<TPixel> source, Configuration configuration)
     {
-        int height = source.Height;
-        using IMemoryOwner<TPixel> tempBuffer = configuration.MemoryAllocator.Allocate<TPixel>(source.Width);
-        Span<TPixel> temp = tempBuffer.Memory.Span;
+        var height = source.Height;
+        using var tempBuffer = configuration.MemoryAllocator.Allocate<TPixel>(source.Width);
+        var temp = tempBuffer.Memory.Span;
 
-        for (int yTop = 0; yTop < height / 2; yTop++)
+        for (var yTop = 0; yTop < height / 2; yTop++)
         {
-            int yBottom = height - yTop - 1;
-            Span<TPixel> topRow = source.DangerousGetRowSpan(yBottom);
-            Span<TPixel> bottomRow = source.DangerousGetRowSpan(yTop);
+            var yBottom = height - yTop - 1;
+            var topRow = source.DangerousGetRowSpan(yBottom);
+            var bottomRow = source.DangerousGetRowSpan(yTop);
             topRow.CopyTo(temp);
             bottomRow.CopyTo(topRow);
             temp.CopyTo(bottomRow);

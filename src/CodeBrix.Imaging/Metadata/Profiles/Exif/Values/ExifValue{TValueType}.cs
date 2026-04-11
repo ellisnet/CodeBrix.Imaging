@@ -55,7 +55,7 @@ internal abstract class ExifValue<TValueType> : ExifValue, IExifValue<TValueType
             return null;
         }
 
-        string description = ExifTagDescriptionAttribute.GetDescription(this.Tag, this.Value);
+        var description = ExifTagDescriptionAttribute.GetDescription(this.Tag, this.Value);
         return description ?? this.StringValue;
     }
 }

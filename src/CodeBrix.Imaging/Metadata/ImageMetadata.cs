@@ -62,7 +62,7 @@ public sealed class ImageMetadata : IDeepCloneable<ImageMetadata>
         this.VerticalResolution = other.VerticalResolution;
         this.ResolutionUnits = other.ResolutionUnits;
 
-        foreach (KeyValuePair<IImageFormat, IDeepCloneable> meta in other.formatMetadata)
+        foreach (var meta in other.formatMetadata)
         {
             this.formatMetadata.Add(meta.Key, meta.Value.DeepClone());
         }
@@ -173,12 +173,12 @@ public sealed class ImageMetadata : IDeepCloneable<ImageMetadata>
     public TFormatMetadata GetFormatMetadata<TFormatMetadata>(IImageFormat<TFormatMetadata> key)
         where TFormatMetadata : class, IDeepCloneable
     {
-        if (this.formatMetadata.TryGetValue(key, out IDeepCloneable meta))
+        if (this.formatMetadata.TryGetValue(key, out var meta))
         {
             return (TFormatMetadata)meta;
         }
 
-        TFormatMetadata newMeta = key.CreateDefaultFormatMetadata();
+        var newMeta = key.CreateDefaultFormatMetadata();
         this.formatMetadata[key] = newMeta;
         return newMeta;
     }

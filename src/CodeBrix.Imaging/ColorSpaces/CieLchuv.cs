@@ -147,7 +147,7 @@ public readonly struct CieLchuv : IEquatable<CieLchuv>
     [MethodImpl(InliningOptions.ShortMethod)]
     public float Saturation()
     {
-        float result = 100 * (this.C / this.L);
+        var result = 100 * (this.C / this.L);
 
         if (float.IsNaN(result))
         {

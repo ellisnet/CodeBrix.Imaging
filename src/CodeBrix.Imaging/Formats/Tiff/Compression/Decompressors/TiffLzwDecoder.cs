@@ -103,7 +103,7 @@ internal sealed class TiffLzwDecoder
 
         // TODO: Investigate a manner by which we can avoid this allocation.
         this.table = new LzwString[TableSize];
-        for (int i = 0; i < 256; i++)
+        for (var i = 0; i < 256; i++)
         {
             this.table[i] = new LzwString((byte)i);
         }
@@ -130,7 +130,7 @@ internal sealed class TiffLzwDecoder
         // Adapted from the pseudo-code example found in the TIFF 6.0 Specification, 1992.
         // See Section 13: "LZW Compression"/"LZW Decoding", page 61+
         int code;
-        int offset = 0;
+        var offset = 0;
 
         while ((code = this.GetNextCode()) != EoiCode)
         {
@@ -166,7 +166,7 @@ internal sealed class TiffLzwDecoder
                 }
                 else
                 {
-                    LzwString outString = this.table[this.oldCode].Concatenate(this.table[this.oldCode].FirstChar);
+                    var outString = this.table[this.oldCode].Concatenate(this.table[this.oldCode].FirstChar);
 
                     offset += outString.WriteTo(pixels, offset);
                     this.AddStringToTable(outString);
@@ -218,7 +218,7 @@ internal sealed class TiffLzwDecoder
             return EoiCode;
         }
 
-        int read = this.stream.ReadByte();
+        var read = this.stream.ReadByte();
         if (read < 0)
         {
             this.eofReached = true;
@@ -241,7 +241,7 @@ internal sealed class TiffLzwDecoder
             this.nextBits += 8;
         }
 
-        int code = (this.nextData >> (this.nextBits - this.bitsPerCode)) & this.bitMask;
+        var code = (this.nextData >> (this.nextBits - this.bitsPerCode)) & this.bitMask;
         this.nextBits -= this.bitsPerCode;
 
         return code;

@@ -51,15 +51,15 @@ public sealed class XmpProfile : IDeepCloneable<XmpProfile>
     /// <returns>The <see cref="XDocument"/></returns>
     public XDocument GetDocument()
     {
-        byte[] byteArray = this.Data;
+        var byteArray = this.Data;
         if (byteArray is null)
         {
             return null;
         }
 
         // Strip leading whitespace, as the XmlReader doesn't like them.
-        int count = byteArray.Length;
-        for (int i = count - 1; i > 0; i--)
+        var count = byteArray.Length;
+        for (var i = count - 1; i > 0; i--)
         {
             if (byteArray[i] is 0 or 0x0f)
             {
@@ -78,7 +78,7 @@ public sealed class XmpProfile : IDeepCloneable<XmpProfile>
     /// <returns>The <see cref="T:byte[]"/></returns>
     public byte[] ToByteArray()
     {
-        byte[] result = new byte[this.Data.Length];
+        var result = new byte[this.Data.Length];
         this.Data.AsSpan().CopyTo(result);
         return result;
     }

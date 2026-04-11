@@ -322,7 +322,7 @@ internal class T4BitReader : IDisposable
                 TiffThrowHelper.ThrowImageFormatException("ccitt compression parsing error: invalid code length read");
             }
 
-            bool isMakeupCode = this.IsMakeupCode();
+            var isMakeupCode = this.IsMakeupCode();
             if (isMakeupCode)
             {
                 if (this.IsWhiteRun)
@@ -339,7 +339,7 @@ internal class T4BitReader : IDisposable
                 continue;
             }
 
-            bool isTerminatingCode = this.IsTerminatingCode();
+            var isTerminatingCode = this.IsTerminatingCode();
             if (isTerminatingCode)
             {
                 // Each line starts with a white run. If the image starts with black, a white run with length zero is written.
@@ -366,7 +366,7 @@ internal class T4BitReader : IDisposable
                 break;
             }
 
-            uint currBit = this.ReadValue(1);
+            var currBit = this.ReadValue(1);
             this.Value = (this.Value << 1) | currBit;
 
             if (this.IsEndOfScanLine)
@@ -441,10 +441,10 @@ internal class T4BitReader : IDisposable
         DebugGuard.MustBeGreaterThan(nBits, 0, nameof(nBits));
 
         uint v = 0;
-        int shift = nBits;
+        var shift = nBits;
         while (shift-- > 0)
         {
-            uint bit = this.GetBit();
+            var bit = this.GetBit();
             v |= bit << shift;
             this.CurValueBitsRead++;
         }
@@ -813,9 +813,9 @@ internal class T4BitReader : IDisposable
             this.LoadNewByte();
         }
 
-        Span<byte> dataSpan = this.Data.GetSpan();
-        int shift = 8 - this.BitsRead - 1;
-        uint bit = (uint)((dataSpan[(int)this.Position] & (1 << shift)) != 0 ? 1 : 0);
+        var dataSpan = this.Data.GetSpan();
+        var shift = 8 - this.BitsRead - 1;
+        var bit = (uint)((dataSpan[(int)this.Position] & (1 << shift)) != 0 ? 1 : 0);
         this.BitsRead++;
 
         return bit;
@@ -834,12 +834,12 @@ internal class T4BitReader : IDisposable
 
     private void ReadImageDataFromStream(Stream input, int bytesToRead)
     {
-        Span<byte> dataSpan = this.Data.GetSpan();
+        var dataSpan = this.Data.GetSpan();
         input.Read(dataSpan, 0, bytesToRead);
 
         if (this.fillOrder == TiffFillOrder.LeastSignificantBitFirst)
         {
-            for (int i = 0; i < dataSpan.Length; i++)
+            for (var i = 0; i < dataSpan.Length; i++)
             {
                 dataSpan[i] = ReverseBits(dataSpan[i]);
             }

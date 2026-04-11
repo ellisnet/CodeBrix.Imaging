@@ -29,17 +29,17 @@ internal class BlackIsZero24TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
         // we define our own defaults as a workaround. See: https://github.com/dotnet/runtime/issues/55623
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
-        byte[] buffer = new byte[4];
-        int bufferStartIdx = this.isBigEndian ? 1 : 0;
+        var buffer = new byte[4];
+        var bufferStartIdx = this.isBigEndian ? 1 : 0;
 
-        Span<byte> bufferSpan = buffer.AsSpan(bufferStartIdx);
-        int offset = 0;
-        for (int y = top; y < top + height; y++)
+        var bufferSpan = buffer.AsSpan(bufferStartIdx);
+        var offset = 0;
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     data.Slice(offset, 3).CopyTo(bufferSpan);
                     ulong intensity = TiffUtils.ConvertToUIntBigEndian(buffer);
@@ -50,7 +50,7 @@ internal class BlackIsZero24TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
             }
             else
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     data.Slice(offset, 3).CopyTo(bufferSpan);
                     ulong intensity = TiffUtils.ConvertToUIntLittleEndian(buffer);

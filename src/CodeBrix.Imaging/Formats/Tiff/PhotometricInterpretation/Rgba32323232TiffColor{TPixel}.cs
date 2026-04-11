@@ -37,16 +37,16 @@ internal class Rgba32323232TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
 
-        bool hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
-        int offset = 0;
+        var hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
+        var offset = 0;
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
 
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     ulong r = TiffUtils.ConvertToUIntBigEndian(data.Slice(offset, 4));
                     offset += 4;
@@ -67,7 +67,7 @@ internal class Rgba32323232TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
             }
             else
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     ulong r = TiffUtils.ConvertToUIntLittleEndian(data.Slice(offset, 4));
                     offset += 4;

@@ -53,7 +53,7 @@ internal sealed class ModifiedHuffmanBitReader : T4BitReader
     {
         base.StartNewRow();
 
-        int remainder = this.BitsRead & 7;    // bit-hack for % 8
+        var remainder = this.BitsRead & 7;    // bit-hack for % 8
         if (remainder != 0)
         {
             // Skip padding bits, move to next byte.

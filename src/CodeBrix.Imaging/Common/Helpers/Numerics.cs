@@ -41,7 +41,7 @@ internal static class Numerics
     {
         while (b != 0)
         {
-            int temp = b;
+            var temp = b;
             b = a % b;
             a = temp;
         }
@@ -94,7 +94,7 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Abs(int x)
     {
-        int y = x >> 31;
+        var y = x >> 31;
         return (x ^ y) - y;
     }
 
@@ -124,13 +124,13 @@ internal static class Numerics
     public static float Gaussian(float x, float sigma)
     {
         const float Numerator = 1.0f;
-        float denominator = MathF.Sqrt(2 * MathF.PI) * sigma;
+        var denominator = MathF.Sqrt(2 * MathF.PI) * sigma;
 
-        float exponentNumerator = -x * x;
-        float exponentDenominator = 2 * Pow2(sigma);
+        var exponentNumerator = -x * x;
+        var exponentDenominator = 2 * Pow2(sigma);
 
-        float left = Numerator / denominator;
-        float right = MathF.Exp(exponentNumerator / exponentDenominator);
+        var left = Numerator / denominator;
+        var right = MathF.Exp(exponentNumerator / exponentDenominator);
 
         return left * right;
     }
@@ -149,7 +149,7 @@ internal static class Numerics
         if (MathF.Abs(f) > Constants.Epsilon)
         {
             f *= MathF.PI;
-            float result = MathF.Sin(f) / f;
+            var result = MathF.Sin(f) / f;
             return MathF.Abs(result) < Constants.Epsilon ? 0F : result;
         }
 
@@ -294,12 +294,12 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Clamp(Span<byte> span, byte min, byte max)
     {
-        Span<byte> remainder = span.Slice(ClampReduce(span, min, max));
+        var remainder = span.Slice(ClampReduce(span, min, max));
 
         if (remainder.Length > 0)
         {
-            ref byte remainderStart = ref MemoryMarshal.GetReference(remainder);
-            ref byte remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
+            ref var remainderStart = ref MemoryMarshal.GetReference(remainder);
+            ref var remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
 
             while (Unsafe.IsAddressLessThan(ref remainderStart, ref remainderEnd))
             {
@@ -319,12 +319,12 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Clamp(Span<uint> span, uint min, uint max)
     {
-        Span<uint> remainder = span.Slice(ClampReduce(span, min, max));
+        var remainder = span.Slice(ClampReduce(span, min, max));
 
         if (remainder.Length > 0)
         {
-            ref uint remainderStart = ref MemoryMarshal.GetReference(remainder);
-            ref uint remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
+            ref var remainderStart = ref MemoryMarshal.GetReference(remainder);
+            ref var remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
 
             while (Unsafe.IsAddressLessThan(ref remainderStart, ref remainderEnd))
             {
@@ -344,12 +344,12 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Clamp(Span<int> span, int min, int max)
     {
-        Span<int> remainder = span.Slice(ClampReduce(span, min, max));
+        var remainder = span.Slice(ClampReduce(span, min, max));
 
         if (remainder.Length > 0)
         {
-            ref int remainderStart = ref MemoryMarshal.GetReference(remainder);
-            ref int remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
+            ref var remainderStart = ref MemoryMarshal.GetReference(remainder);
+            ref var remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
 
             while (Unsafe.IsAddressLessThan(ref remainderStart, ref remainderEnd))
             {
@@ -369,12 +369,12 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Clamp(Span<float> span, float min, float max)
     {
-        Span<float> remainder = span.Slice(ClampReduce(span, min, max));
+        var remainder = span.Slice(ClampReduce(span, min, max));
 
         if (remainder.Length > 0)
         {
-            ref float remainderStart = ref MemoryMarshal.GetReference(remainder);
-            ref float remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
+            ref var remainderStart = ref MemoryMarshal.GetReference(remainder);
+            ref var remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
 
             while (Unsafe.IsAddressLessThan(ref remainderStart, ref remainderEnd))
             {
@@ -394,12 +394,12 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Clamp(Span<double> span, double min, double max)
     {
-        Span<double> remainder = span.Slice(ClampReduce(span, min, max));
+        var remainder = span.Slice(ClampReduce(span, min, max));
 
         if (remainder.Length > 0)
         {
-            ref double remainderStart = ref MemoryMarshal.GetReference(remainder);
-            ref double remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
+            ref var remainderStart = ref MemoryMarshal.GetReference(remainder);
+            ref var remainderEnd = ref Unsafe.Add(ref remainderStart, remainder.Length);
 
             while (Unsafe.IsAddressLessThan(ref remainderStart, ref remainderEnd))
             {
@@ -416,8 +416,8 @@ internal static class Numerics
     {
         if (Vector.IsHardwareAccelerated && span.Length >= Vector<T>.Count)
         {
-            int remainder = ModuloP2(span.Length, Vector<T>.Count);
-            int adjustedCount = span.Length - remainder;
+            var remainder = ModuloP2(span.Length, Vector<T>.Count);
+            var adjustedCount = span.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -434,19 +434,19 @@ internal static class Numerics
     private static void ClampImpl<T>(Span<T> span, T min, T max)
         where T : unmanaged
     {
-        ref T sRef = ref MemoryMarshal.GetReference(span);
+        ref var sRef = ref MemoryMarshal.GetReference(span);
         var vmin = new Vector<T>(min);
         var vmax = new Vector<T>(max);
 
-        int n = span.Length / Vector<T>.Count;
-        int m = Modulo4(n);
-        int u = n - m;
+        var n = span.Length / Vector<T>.Count;
+        var m = Modulo4(n);
+        var u = n - m;
 
-        ref Vector<T> vs0 = ref Unsafe.As<T, Vector<T>>(ref MemoryMarshal.GetReference(span));
-        ref Vector<T> vs1 = ref Unsafe.Add(ref vs0, 1);
-        ref Vector<T> vs2 = ref Unsafe.Add(ref vs0, 2);
-        ref Vector<T> vs3 = ref Unsafe.Add(ref vs0, 3);
-        ref Vector<T> vsEnd = ref Unsafe.Add(ref vs0, u);
+        ref var vs0 = ref Unsafe.As<T, Vector<T>>(ref MemoryMarshal.GetReference(span));
+        ref var vs1 = ref Unsafe.Add(ref vs0, 1);
+        ref var vs2 = ref Unsafe.Add(ref vs0, 2);
+        ref var vs3 = ref Unsafe.Add(ref vs0, 3);
+        ref var vsEnd = ref Unsafe.Add(ref vs0, u);
 
         while (Unsafe.IsAddressLessThan(ref vs0, ref vsEnd))
         {
@@ -482,7 +482,7 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Premultiply(ref Vector4 source)
     {
-        float w = source.W;
+        var w = source.W;
         source *= w;
         source.W = w;
     }
@@ -494,7 +494,7 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void UnPremultiply(ref Vector4 source)
     {
-        float w = source.W;
+        var w = source.W;
         source /= w;
         source.W = w;
     }
@@ -530,8 +530,8 @@ internal static class Numerics
             else
 #endif
         {
-            ref Vector4 vectorsStart = ref MemoryMarshal.GetReference(vectors);
-            ref Vector4 vectorsEnd = ref Unsafe.Add(ref vectorsStart, vectors.Length);
+            ref var vectorsStart = ref MemoryMarshal.GetReference(vectors);
+            ref var vectorsEnd = ref Unsafe.Add(ref vectorsStart, vectors.Length);
 
             while (Unsafe.IsAddressLessThan(ref vectorsStart, ref vectorsEnd))
             {
@@ -573,8 +573,8 @@ internal static class Numerics
             else
 #endif
         {
-            ref Vector4 vectorsStart = ref MemoryMarshal.GetReference(vectors);
-            ref Vector4 vectorsEnd = ref Unsafe.Add(ref vectorsStart, vectors.Length);
+            ref var vectorsStart = ref MemoryMarshal.GetReference(vectors);
+            ref var vectorsEnd = ref Unsafe.Add(ref vectorsStart, vectors.Length);
 
             while (Unsafe.IsAddressLessThan(ref vectorsStart, ref vectorsEnd))
             {
@@ -592,13 +592,13 @@ internal static class Numerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void CubePowOnXYZ(Span<Vector4> vectors)
     {
-        ref Vector4 baseRef = ref MemoryMarshal.GetReference(vectors);
-        ref Vector4 endRef = ref Unsafe.Add(ref baseRef, vectors.Length);
+        ref var baseRef = ref MemoryMarshal.GetReference(vectors);
+        ref var endRef = ref Unsafe.Add(ref baseRef, vectors.Length);
 
         while (Unsafe.IsAddressLessThan(ref baseRef, ref endRef))
         {
-            Vector4 v = baseRef;
-            float a = v.W;
+            var v = baseRef;
+            var a = v.W;
 
             // Fast path for the default gamma exposure, which is 3. In this case we can skip
             // calling Math.Pow 3 times (one per component), as the method is an internal call and
@@ -674,19 +674,19 @@ internal static class Numerics
             else
 #endif
         {
-            ref Vector4 vectorsRef = ref MemoryMarshal.GetReference(vectors);
-            ref Vector4 vectorsEnd = ref Unsafe.Add(ref vectorsRef, vectors.Length);
+            ref var vectorsRef = ref MemoryMarshal.GetReference(vectors);
+            ref var vectorsEnd = ref Unsafe.Add(ref vectorsRef, vectors.Length);
 
             // Fallback with scalar preprocessing and vectorized approximation steps
             while (Unsafe.IsAddressLessThan(ref vectorsRef, ref vectorsEnd))
             {
-                Vector4 v = vectorsRef;
+                var v = vectorsRef;
 
                 double
                     x64 = v.X,
                     y64 = v.Y,
                     z64 = v.Z;
-                float a = v.W;
+                var a = v.W;
 
                 ulong
                     xl = *(ulong*)&x64,

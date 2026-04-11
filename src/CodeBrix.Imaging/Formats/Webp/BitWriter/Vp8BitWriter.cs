@@ -82,8 +82,8 @@ internal class Vp8BitWriter : BitWriterBase
 
     public int PutCoeffs(int ctx, Vp8Residual residual)
     {
-        int n = residual.First;
-        Vp8ProbaArray p = residual.Prob[n].Probabilities[ctx];
+        var n = residual.First;
+        var p = residual.Prob[n].Probabilities[ctx];
         if (!this.PutBit(residual.Last >= 0, p.Probabilities[0]))
         {
             return 0;
@@ -92,8 +92,8 @@ internal class Vp8BitWriter : BitWriterBase
         while (n < 16)
         {
             int c = residual.Coeffs[n++];
-            bool sign = c < 0;
-            int v = sign ? -c : c;
+            var sign = c < 0;
+            var v = sign ? -c : c;
             if (!this.PutBit(v != 0, p.Probabilities[1]))
             {
                 p = residual.Prob[WebpConstants.Vp8EncBands[n]].Probabilities[0];
@@ -166,7 +166,7 @@ internal class Vp8BitWriter : BitWriterBase
                         tab = WebpConstants.Cat6;
                     }
 
-                    int tabIdx = 0;
+                    var tabIdx = 0;
                     while (mask != 0)
                     {
                         this.PutBit(v & mask, tab[tabIdx++]);
@@ -193,7 +193,7 @@ internal class Vp8BitWriter : BitWriterBase
     /// <param name="extraSize">The extra size in bytes needed.</param>
     public override void BitWriterResize(int extraSize)
     {
-        long neededSize = this.pos + extraSize;
+        var neededSize = this.pos + extraSize;
         if (neededSize <= this.maxPos)
         {
             return;
@@ -280,7 +280,7 @@ internal class Vp8BitWriter : BitWriterBase
 
     private void PutBits(uint value, int nbBits)
     {
-        for (uint mask = 1u << (nbBits - 1); mask != 0; mask >>= 1)
+        for (var mask = 1u << (nbBits - 1); mask != 0; mask >>= 1)
         {
             this.PutBitUniform((int)(value & mask));
         }
@@ -290,7 +290,7 @@ internal class Vp8BitWriter : BitWriterBase
 
     private bool PutBit(int bit, int prob)
     {
-        int split = (this.range * prob) >> 8;
+        var split = (this.range * prob) >> 8;
         if (bit != 0)
         {
             this.value += split + 1;
@@ -319,7 +319,7 @@ internal class Vp8BitWriter : BitWriterBase
 
     private int PutBitUniform(int bit)
     {
-        int split = this.range >> 1;
+        var split = this.range >> 1;
         if (bit != 0)
         {
             this.value += split + 1;
@@ -353,7 +353,7 @@ internal class Vp8BitWriter : BitWriterBase
 
         if (value < 0)
         {
-            int valueToWrite = (-value << 1) | 1;
+            var valueToWrite = (-value << 1) | 1;
             this.PutBits((uint)valueToWrite, nbBits + 1);
         }
         else
@@ -364,13 +364,13 @@ internal class Vp8BitWriter : BitWriterBase
 
     private void Flush()
     {
-        int s = 8 + this.nbBits;
-        int bits = this.value >> s;
+        var s = 8 + this.nbBits;
+        var bits = this.value >> s;
         this.value -= bits << s;
         this.nbBits -= 8;
         if ((bits & 0xff) != 0xff)
         {
-            uint pos = this.pos;
+            var pos = this.pos;
             this.BitWriterResize(this.run + 1);
 
             if ((bits & 0x100) != 0)
@@ -384,7 +384,7 @@ internal class Vp8BitWriter : BitWriterBase
 
             if (this.run > 0)
             {
-                int value = (bits & 0x100) != 0 ? 0x00 : 0xff;
+                var value = (bits & 0x100) != 0 ? 0x00 : 0xff;
                 for (; this.run > 0; --this.run)
                 {
                     this.Buffer[pos++] = (byte)value;
@@ -421,7 +421,7 @@ internal class Vp8BitWriter : BitWriterBase
         Span<byte> alphaData,
         bool alphaDataIsCompressed)
     {
-        bool isVp8X = false;
+        var isVp8X = false;
         byte[] exifBytes = null;
         byte[] xmpBytes = null;
         uint riffSize = 0;
@@ -451,18 +451,18 @@ internal class Vp8BitWriter : BitWriterBase
         }
 
         this.Finish();
-        uint numBytes = (uint)this.NumBytes();
-        int mbSize = this.enc.Mbw * this.enc.Mbh;
-        int expectedSize = mbSize * 7 / 8;
+        var numBytes = (uint)this.NumBytes();
+        var mbSize = this.enc.Mbw * this.enc.Mbh;
+        var expectedSize = mbSize * 7 / 8;
 
         var bitWriterPartZero = new Vp8BitWriter(expectedSize);
 
         // Partition #0 with header and partition sizes
-        uint size0 = this.GeneratePartition0(bitWriterPartZero);
+        var size0 = this.GeneratePartition0(bitWriterPartZero);
 
-        uint vp8Size = WebpConstants.Vp8FrameHeaderSize + size0;
+        var vp8Size = WebpConstants.Vp8FrameHeaderSize + size0;
         vp8Size += numBytes;
-        uint pad = vp8Size & 1;
+        var pad = vp8Size & 1;
         vp8Size += pad;
 
         // Compute RIFF size
@@ -513,23 +513,23 @@ internal class Vp8BitWriter : BitWriterBase
 
     private void WriteSegmentHeader(Vp8BitWriter bitWriter)
     {
-        Vp8EncSegmentHeader hdr = this.enc.SegmentHeader;
-        Vp8EncProba proba = this.enc.Proba;
+        var hdr = this.enc.SegmentHeader;
+        var proba = this.enc.Proba;
         if (bitWriter.PutBitUniform(hdr.NumSegments > 1 ? 1 : 0) != 0)
         {
             // We always 'update' the quant and filter strength values.
-            int updateData = 1;
+            var updateData = 1;
             bitWriter.PutBitUniform(hdr.UpdateMap ? 1 : 0);
             if (bitWriter.PutBitUniform(updateData) != 0)
             {
                 // We always use absolute values, not relative ones.
                 bitWriter.PutBitUniform(1); // (segment_feature_mode = 1. Paragraph 9.3.)
-                for (int s = 0; s < WebpConstants.NumMbSegments; ++s)
+                for (var s = 0; s < WebpConstants.NumMbSegments; ++s)
                 {
                     bitWriter.PutSignedBits(this.enc.SegmentInfos[s].Quant, 7);
                 }
 
-                for (int s = 0; s < WebpConstants.NumMbSegments; ++s)
+                for (var s = 0; s < WebpConstants.NumMbSegments; ++s)
                 {
                     bitWriter.PutSignedBits(this.enc.SegmentInfos[s].FStrength, 6);
                 }
@@ -537,7 +537,7 @@ internal class Vp8BitWriter : BitWriterBase
 
             if (hdr.UpdateMap)
             {
-                for (int s = 0; s < 3; ++s)
+                for (var s = 0; s < 3; ++s)
                 {
                     if (bitWriter.PutBitUniform(proba.Segments[s] != 255 ? 1 : 0) != 0)
                     {
@@ -550,15 +550,15 @@ internal class Vp8BitWriter : BitWriterBase
 
     private void WriteFilterHeader(Vp8BitWriter bitWriter)
     {
-        Vp8FilterHeader hdr = this.enc.FilterHeader;
-        bool useLfDelta = hdr.I4x4LfDelta != 0;
+        var hdr = this.enc.FilterHeader;
+        var useLfDelta = hdr.I4x4LfDelta != 0;
         bitWriter.PutBitUniform(hdr.Simple ? 1 : 0);
         bitWriter.PutBits((uint)hdr.FilterLevel, 6);
         bitWriter.PutBits((uint)hdr.Sharpness, 3);
         if (bitWriter.PutBitUniform(useLfDelta ? 1 : 0) != 0)
         {
             // '0' is the default value for i4x4LfDelta at frame #0.
-            bool needUpdate = hdr.I4x4LfDelta != 0;
+            var needUpdate = hdr.I4x4LfDelta != 0;
             if (bitWriter.PutBitUniform(needUpdate ? 1 : 0) != 0)
             {
                 // we don't use refLfDelta => emit four 0 bits.
@@ -584,17 +584,17 @@ internal class Vp8BitWriter : BitWriterBase
 
     private void WriteProbas(Vp8BitWriter bitWriter)
     {
-        Vp8EncProba probas = this.enc.Proba;
-        for (int t = 0; t < WebpConstants.NumTypes; ++t)
+        var probas = this.enc.Proba;
+        for (var t = 0; t < WebpConstants.NumTypes; ++t)
         {
-            for (int b = 0; b < WebpConstants.NumBands; ++b)
+            for (var b = 0; b < WebpConstants.NumBands; ++b)
             {
-                for (int c = 0; c < WebpConstants.NumCtx; ++c)
+                for (var c = 0; c < WebpConstants.NumCtx; ++c)
                 {
-                    for (int p = 0; p < WebpConstants.NumProbas; ++p)
+                    for (var p = 0; p < WebpConstants.NumProbas; ++p)
                     {
-                        byte p0 = probas.Coeffs[t][b].Probabilities[c].Probabilities[p];
-                        bool update = p0 != WebpLookupTables.DefaultCoeffsProba[t, b, c, p];
+                        var p0 = probas.Coeffs[t][b].Probabilities[c].Probabilities[p];
+                        var update = p0 != WebpLookupTables.DefaultCoeffsProba[t, b, c, p];
                         if (bitWriter.PutBit(update, WebpLookupTables.CoeffsUpdateProba[t, b, c, p]))
                         {
                             bitWriter.PutBits(p0, 8);
@@ -614,13 +614,13 @@ internal class Vp8BitWriter : BitWriterBase
     private void CodeIntraModes(Vp8BitWriter bitWriter)
     {
         var it = new Vp8EncIterator(this.enc.YTop, this.enc.UvTop, this.enc.Nz, this.enc.MbInfo, this.enc.Preds, this.enc.TopDerr, this.enc.Mbw, this.enc.Mbh);
-        int predsWidth = this.enc.PredsWidth;
+        var predsWidth = this.enc.PredsWidth;
 
         do
         {
-            Vp8MacroBlockInfo mb = it.CurrentMacroBlockInfo;
-            int predIdx = it.PredIdx;
-            Span<byte> preds = it.Preds.AsSpan(predIdx);
+            var mb = it.CurrentMacroBlockInfo;
+            var predIdx = it.PredIdx;
+            var preds = it.Preds.AsSpan(predIdx);
             if (this.enc.SegmentHeader.UpdateMap)
             {
                 bitWriter.PutSegment(mb.Segment, this.enc.Proba.Segments);
@@ -638,13 +638,13 @@ internal class Vp8BitWriter : BitWriterBase
             }
             else
             {
-                Span<byte> topPred = it.Preds.AsSpan(predIdx - predsWidth);
-                for (int y = 0; y < 4; y++)
+                var topPred = it.Preds.AsSpan(predIdx - predsWidth);
+                for (var y = 0; y < 4; y++)
                 {
                     int left = it.Preds[predIdx - 1];
-                    for (int x = 0; x < 4; x++)
+                    for (var x = 0; x < 4; x++)
                     {
-                        byte[] probas = WebpLookupTables.ModesProba[topPred[x], left];
+                        var probas = WebpLookupTables.ModesProba[topPred[x], left];
                         left = bitWriter.PutI4Mode(it.Preds[predIdx + x], probas);
                     }
 
@@ -701,15 +701,15 @@ internal class Vp8BitWriter : BitWriterBase
     private void WriteFrameHeader(Stream stream, uint size0)
     {
         uint profile = 0;
-        int width = this.enc.Width;
-        int height = this.enc.Height;
-        byte[] vp8FrameHeader = new byte[WebpConstants.Vp8FrameHeaderSize];
+        var width = this.enc.Width;
+        var height = this.enc.Height;
+        var vp8FrameHeader = new byte[WebpConstants.Vp8FrameHeaderSize];
 
         // Paragraph 9.1.
-        uint bits = 0 // keyframe (1b)
-                    | (profile << 1) // profile (3b)
-                    | (1 << 4) // visible (1b)
-                    | (size0 << 5); // partition length (19b)
+        var bits = 0 // keyframe (1b)
+                   | (profile << 1) // profile (3b)
+                   | (1 << 4) // visible (1b)
+                   | (size0 << 5); // partition length (19b)
 
         vp8FrameHeader[0] = (byte)((bits >> 0) & 0xff);
         vp8FrameHeader[1] = (byte)((bits >> 8) & 0xff);

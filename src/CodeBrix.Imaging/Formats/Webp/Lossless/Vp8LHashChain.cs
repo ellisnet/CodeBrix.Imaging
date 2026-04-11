@@ -59,9 +59,9 @@ internal sealed class Vp8LHashChain : IDisposable
 
     public void Fill(ReadOnlySpan<uint> bgra, int quality, int xSize, int ySize, bool lowEffort)
     {
-        int size = xSize * ySize;
-        int iterMax = GetMaxItersForQuality(quality);
-        int windowSize = GetWindowSizeForHashChain(quality, xSize);
+        var size = xSize * ySize;
+        var iterMax = GetMaxItersForQuality(quality);
+        var windowSize = GetWindowSizeForHashChain(quality, xSize);
         int pos;
 
         if (size <= 2)
@@ -70,21 +70,21 @@ internal sealed class Vp8LHashChain : IDisposable
             return;
         }
 
-        using IMemoryOwner<int> hashToFirstIndexBuffer = this.memoryAllocator.Allocate<int>(HashSize);
-        using IMemoryOwner<int> chainBuffer = this.memoryAllocator.Allocate<int>(size, AllocationOptions.Clean);
-        Span<int> hashToFirstIndex = hashToFirstIndexBuffer.GetSpan();
-        Span<int> chain = chainBuffer.GetSpan();
+        using var hashToFirstIndexBuffer = this.memoryAllocator.Allocate<int>(HashSize);
+        using var chainBuffer = this.memoryAllocator.Allocate<int>(size, AllocationOptions.Clean);
+        var hashToFirstIndex = hashToFirstIndexBuffer.GetSpan();
+        var chain = chainBuffer.GetSpan();
 
         // Initialize hashToFirstIndex array to -1.
         hashToFirstIndex.Fill(-1);
 
         // Fill the chain linking pixels with the same hash.
-        bool bgraComp = bgra.Length > 1 && bgra[0] == bgra[1];
+        var bgraComp = bgra.Length > 1 && bgra[0] == bgra[1];
         Span<uint> tmp = stackalloc uint[2];
         for (pos = 0; pos < size - 2;)
         {
             uint hashCode;
-            bool bgraCompNext = bgra[pos + 1] == bgra[pos + 2];
+            var bgraCompNext = bgra[pos + 1] == bgra[pos + 2];
             if (bgraComp && bgraCompNext)
             {
                 // Consecutive pixels with the same color will share the same hash.
@@ -138,17 +138,17 @@ internal sealed class Vp8LHashChain : IDisposable
         // Find the best match interval at each pixel, defined by an offset to the
         // pixel and a length. The right-most pixel cannot match anything to the right
         // (hence a best length of 0) and the left-most pixel nothing to the left (hence an offset of 0).
-        Span<uint> offsetLength = this.OffsetLength.GetSpan();
+        var offsetLength = this.OffsetLength.GetSpan();
         offsetLength[0] = offsetLength[size - 1] = 0;
-        for (int basePosition = size - 2; basePosition > 0;)
+        for (var basePosition = size - 2; basePosition > 0;)
         {
-            int maxLen = LosslessUtils.MaxFindCopyLength(size - 1 - basePosition);
-            int bgraStart = basePosition;
-            int iter = iterMax;
-            int bestLength = 0;
+            var maxLen = LosslessUtils.MaxFindCopyLength(size - 1 - basePosition);
+            var bgraStart = basePosition;
+            var iter = iterMax;
+            var bestLength = 0;
             uint bestDistance = 0;
-            int minPos = basePosition > windowSize ? basePosition - windowSize : 0;
-            int lengthMax = maxLen < 256 ? maxLen : 256;
+            var minPos = basePosition > windowSize ? basePosition - windowSize : 0;
+            var lengthMax = maxLen < 256 ? maxLen : 256;
             pos = chain[basePosition];
             int currLength;
 
@@ -184,7 +184,7 @@ internal sealed class Vp8LHashChain : IDisposable
                 }
             }
 
-            uint bestBgra = bgra.Slice(bgraStart)[bestLength];
+            var bestBgra = bgra.Slice(bgraStart)[bestLength];
 
             for (; pos >= minPos && (--iter > 0); pos = chain[pos])
             {
@@ -210,7 +210,7 @@ internal sealed class Vp8LHashChain : IDisposable
 
             // We have the best match but in case the two intervals continue matching
             // to the left, we have the best matches for the left-extended pixels.
-            uint maxBasePosition = (uint)basePosition;
+            var maxBasePosition = (uint)basePosition;
             while (true)
             {
                 offsetLength[basePosition] = (bestDistance << BackwardReferenceEncoder.MaxLengthBits) | (uint)bestLength;
@@ -260,7 +260,7 @@ internal sealed class Vp8LHashChain : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static uint GetPixPairHash64(ReadOnlySpan<uint> bgra)
     {
-        uint key = bgra[1] * HashMultiplierHi;
+        var key = bgra[1] * HashMultiplierHi;
         key += bgra[0] * HashMultiplierLo;
         key >>= 32 - HashBits;
         return key;
@@ -278,7 +278,7 @@ internal sealed class Vp8LHashChain : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int GetWindowSizeForHashChain(int quality, int xSize)
     {
-        int maxWindowSize = quality > 75 ? WindowSize
+        var maxWindowSize = quality > 75 ? WindowSize
             : quality > 50 ? xSize << 8
             : quality > 25 ? xSize << 6
             : xSize << 4;

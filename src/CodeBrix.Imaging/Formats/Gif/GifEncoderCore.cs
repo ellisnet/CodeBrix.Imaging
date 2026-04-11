@@ -83,15 +83,15 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         Guard.NotNull(image, nameof(image));
         Guard.NotNull(stream, nameof(stream));
 
-        ImageMetadata metadata = image.Metadata;
-        GifMetadata gifMetadata = metadata.GetGifMetadata();
+        var metadata = image.Metadata;
+        var gifMetadata = metadata.GetGifMetadata();
         this.colorTableMode ??= gifMetadata.ColorTableMode;
-        bool useGlobalTable = this.colorTableMode == GifColorTableMode.Global;
+        var useGlobalTable = this.colorTableMode == GifColorTableMode.Global;
 
         // Quantize the image returning a palette.
         IndexedImageFrame<TPixel> quantized;
 
-        using (IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration))
+        using (var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration))
         {
             if (useGlobalTable)
             {
@@ -111,7 +111,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         this.WriteHeader(stream);
 
         // Write the LSD.
-        int index = this.GetTransparentIndex(quantized);
+        var index = this.GetTransparentIndex(quantized);
         this.WriteLogicalScreenDescriptor(metadata, image.Width, image.Height, index, useGlobalTable, stream);
 
         if (useGlobalTable)
@@ -123,7 +123,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         this.WriteComments(gifMetadata, stream);
 
         // Write application extensions.
-        XmpProfile xmpProfile = image.Metadata.XmpProfile ?? image.Frames.RootFrame.Metadata.XmpProfile;
+        var xmpProfile = image.Metadata.XmpProfile ?? image.Frames.RootFrame.Metadata.XmpProfile;
         this.WriteApplicationExtensions(stream, image.Frames.Count, gifMetadata.RepeatCount, xmpProfile);
 
         if (useGlobalTable)
@@ -148,12 +148,12 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         // since the palette is unchanging. This allows a reduction of memory usage across
         // multi frame gifs using a global palette.
         PaletteQuantizer<TPixel> paletteFrameQuantizer = default;
-        bool quantizerInitialized = false;
-        for (int i = 0; i < image.Frames.Count; i++)
+        var quantizerInitialized = false;
+        for (var i = 0; i < image.Frames.Count; i++)
         {
-            ImageFrame<TPixel> frame = image.Frames[i];
-            ImageFrameMetadata metadata = frame.Metadata;
-            GifFrameMetadata frameMetadata = metadata.GetGifMetadata();
+            var frame = image.Frames[i];
+            var metadata = frame.Metadata;
+            var frameMetadata = metadata.GetGifMetadata();
             this.WriteGraphicalControlExtension(frameMetadata, transparencyIndex, stream);
             this.WriteImageDescriptor(frame, false, stream);
 
@@ -169,7 +169,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
                     paletteFrameQuantizer = new PaletteQuantizer<TPixel>(this.configuration, this.quantizer.Options, quantized.Palette);
                 }
 
-                using IndexedImageFrame<TPixel> paletteQuantized = paletteFrameQuantizer.QuantizeFrame(frame, frame.Bounds());
+                using var paletteQuantized = paletteFrameQuantizer.QuantizeFrame(frame, frame.Bounds());
                 this.WriteImageData(paletteQuantized, stream);
             }
         }
@@ -182,11 +182,11 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
     {
         ImageFrame<TPixel> previousFrame = null;
         GifFrameMetadata previousMeta = null;
-        for (int i = 0; i < image.Frames.Count; i++)
+        for (var i = 0; i < image.Frames.Count; i++)
         {
-            ImageFrame<TPixel> frame = image.Frames[i];
-            ImageFrameMetadata metadata = frame.Metadata;
-            GifFrameMetadata frameMetadata = metadata.GetGifMetadata();
+            var frame = image.Frames[i];
+            var metadata = frame.Metadata;
+            var frameMetadata = metadata.GetGifMetadata();
             if (quantized is null)
             {
                 // Allow each frame to be encoded at whatever color depth the frame designates if set.
@@ -200,12 +200,12 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
                         MaxColors = frameMetadata.ColorTableLength
                     };
 
-                    using IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration, options);
+                    using var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration, options);
                     quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(frame, frame.Bounds());
                 }
                 else
                 {
-                    using IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration);
+                    using var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration);
                     quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(frame, frame.Bounds());
                 }
             }
@@ -235,15 +235,15 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // Transparent pixels are much more likely to be found at the end of a palette.
-        int index = -1;
-        ReadOnlySpan<TPixel> paletteSpan = quantized.Palette.Span;
+        var index = -1;
+        var paletteSpan = quantized.Palette.Span;
 
-        using IMemoryOwner<Rgba32> rgbaOwner = quantized.Configuration.MemoryAllocator.Allocate<Rgba32>(paletteSpan.Length);
-        Span<Rgba32> rgbaSpan = rgbaOwner.GetSpan();
+        using var rgbaOwner = quantized.Configuration.MemoryAllocator.Allocate<Rgba32>(paletteSpan.Length);
+        var rgbaSpan = rgbaOwner.GetSpan();
         PixelOperations<TPixel>.Instance.ToRgba32(quantized.Configuration, paletteSpan, rgbaSpan);
-        ref Rgba32 rgbaSpanRef = ref MemoryMarshal.GetReference(rgbaSpan);
+        ref var rgbaSpanRef = ref MemoryMarshal.GetReference(rgbaSpan);
 
-        for (int i = rgbaSpan.Length - 1; i >= 0; i--)
+        for (var i = rgbaSpan.Length - 1; i >= 0; i--)
         {
             if (Unsafe.Add(ref rgbaSpanRef, i).Equals(default))
             {
@@ -278,7 +278,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         bool useGlobalTable,
         Stream stream)
     {
-        byte packedValue = GifLogicalScreenDescriptor.GetPackedValue(useGlobalTable, this.bitDepth - 1, false, this.bitDepth - 1);
+        var packedValue = GifLogicalScreenDescriptor.GetPackedValue(useGlobalTable, this.bitDepth - 1, false, this.bitDepth - 1);
 
         // The Pixel Aspect Ratio is defined to be the quotient of the pixel's
         // width over its height.  The value range in this field allows
@@ -293,8 +293,8 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
 
         if (metadata.ResolutionUnits == PixelResolutionUnit.AspectRatio)
         {
-            double hr = metadata.HorizontalResolution;
-            double vr = metadata.VerticalResolution;
+            var hr = metadata.HorizontalResolution;
+            var vr = metadata.VerticalResolution;
             if (hr != vr)
             {
                 if (hr > vr)
@@ -356,16 +356,16 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
             return;
         }
 
-        for (int i = 0; i < metadata.Comments.Count; i++)
+        for (var i = 0; i < metadata.Comments.Count; i++)
         {
-            string comment = metadata.Comments[i];
+            var comment = metadata.Comments[i];
             this.buffer[0] = GifConstants.ExtensionIntroducer;
             this.buffer[1] = GifConstants.CommentLabel;
             stream.Write(this.buffer, 0, 2);
 
             // Comment will be stored in chunks of 255 bytes, if it exceeds this size.
-            ReadOnlySpan<char> commentSpan = comment.AsSpan();
-            int idx = 0;
+            var commentSpan = comment.AsSpan();
+            var idx = 0;
             for (;
                  idx <= comment.Length - GifConstants.MaxCommentSubBlockLength;
                  idx += GifConstants.MaxCommentSubBlockLength)
@@ -376,7 +376,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
             // Write the length bytes, if any, to another sub block.
             if (idx < comment.Length)
             {
-                int remaining = comment.Length - idx;
+                var remaining = comment.Length - idx;
                 WriteCommentSubBlock(stream, commentSpan, idx, remaining);
             }
 
@@ -393,8 +393,8 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
     /// <param name="length">The length of the string to write. Should not exceed 255 bytes.</param>
     private static void WriteCommentSubBlock(Stream stream, ReadOnlySpan<char> commentSpan, int idx, int length)
     {
-        string subComment = commentSpan.Slice(idx, length).ToString();
-        byte[] subCommentBytes = GifConstants.Encoding.GetBytes(subComment);
+        var subComment = commentSpan.Slice(idx, length).ToString();
+        var subCommentBytes = GifConstants.Encoding.GetBytes(subComment);
         stream.WriteByte((byte)length);
         stream.Write(subCommentBytes, 0, length);
     }
@@ -407,7 +407,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
     /// <param name="stream">The stream to write to.</param>
     private void WriteGraphicalControlExtension(GifFrameMetadata metadata, int transparencyIndex, Stream stream)
     {
-        byte packedValue = GifGraphicControlExtension.GetPackedValue(
+        var packedValue = GifGraphicControlExtension.GetPackedValue(
             disposalMethod: metadata.DisposalMethod,
             transparencyFlag: transparencyIndex > -1);
 
@@ -429,7 +429,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
     {
         IMemoryOwner<byte> owner = null;
         Span<byte> extensionBuffer;
-        int extensionSize = extension.ContentLength;
+        var extensionSize = extension.ContentLength;
 
         if (extensionSize == 0)
         {
@@ -466,7 +466,7 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
     private void WriteImageDescriptor<TPixel>(ImageFrame<TPixel> image, bool hasColorTable, Stream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        byte packedValue = GifImageDescriptor.GetPackedValue(
+        var packedValue = GifImageDescriptor.GetPackedValue(
             localColorTableFlag: hasColorTable,
             interfaceFlag: false,
             sortFlag: false,
@@ -494,10 +494,10 @@ internal sealed class GifEncoderCore : IImageEncoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // The maximum number of colors for the bit depth
-        int colorTableLength = ColorNumerics.GetColorCountForBitDepth(this.bitDepth) * Unsafe.SizeOf<Rgb24>();
+        var colorTableLength = ColorNumerics.GetColorCountForBitDepth(this.bitDepth) * Unsafe.SizeOf<Rgb24>();
 
-        using IMemoryOwner<byte> colorTable = this.memoryAllocator.Allocate<byte>(colorTableLength, AllocationOptions.Clean);
-        Span<byte> colorTableSpan = colorTable.GetSpan();
+        using var colorTable = this.memoryAllocator.Allocate<byte>(colorTableLength, AllocationOptions.Clean);
+        var colorTableSpan = colorTable.GetSpan();
 
         PixelOperations<TPixel>.Instance.ToRgb24Bytes(
             this.configuration,

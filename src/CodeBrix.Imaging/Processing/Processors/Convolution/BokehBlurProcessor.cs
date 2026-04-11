@@ -125,29 +125,29 @@ public sealed class BokehBlurProcessor : IImageProcessor
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            int boundsX = this.bounds.X;
-            int boundsWidth = this.bounds.Width;
-            int kernelSize = this.kernel.Length;
+            var boundsX = this.bounds.X;
+            var boundsWidth = this.bounds.Width;
+            var kernelSize = this.kernel.Length;
 
-            ref int sampleRowBase = ref Unsafe.Add(ref MemoryMarshal.GetReference(this.map.GetRowOffsetSpan()), (y - this.bounds.Y) * kernelSize);
+            ref var sampleRowBase = ref Unsafe.Add(ref MemoryMarshal.GetReference(this.map.GetRowOffsetSpan()), (y - this.bounds.Y) * kernelSize);
 
             // The target buffer is zeroed initially and then it accumulates the results
             // of each partial convolution, so we don't have to clear it here as well
-            ref Vector4 targetBase = ref this.targetValues.GetElementUnsafe(boundsX, y);
-            ref Complex64 kernelStart = ref this.kernel[0];
-            ref Complex64 kernelEnd = ref Unsafe.Add(ref kernelStart, kernelSize);
+            ref var targetBase = ref this.targetValues.GetElementUnsafe(boundsX, y);
+            ref var kernelStart = ref this.kernel[0];
+            ref var kernelEnd = ref Unsafe.Add(ref kernelStart, kernelSize);
 
             while (Unsafe.IsAddressLessThan(ref kernelStart, ref kernelEnd))
             {
                 // Get the precalculated source sample row for this kernel row and copy to our buffer
-                ref ComplexVector4 sourceBase = ref this.sourceValues.GetElementUnsafe(0, sampleRowBase);
-                ref ComplexVector4 sourceEnd = ref Unsafe.Add(ref sourceBase, boundsWidth);
-                ref Vector4 targetStart = ref targetBase;
-                Complex64 factor = kernelStart;
+                ref var sourceBase = ref this.sourceValues.GetElementUnsafe(0, sampleRowBase);
+                ref var sourceEnd = ref Unsafe.Add(ref sourceBase, boundsWidth);
+                ref var targetStart = ref targetBase;
+                var factor = kernelStart;
 
                 while (Unsafe.IsAddressLessThan(ref sourceBase, ref sourceEnd))
                 {
-                    ComplexVector4 partial = factor * sourceBase;
+                    var partial = factor * sourceBase;
 
                     targetStart += partial.WeightedSum(this.z, this.w);
 

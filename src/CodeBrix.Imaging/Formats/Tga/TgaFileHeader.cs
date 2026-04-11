@@ -139,7 +139,7 @@ internal readonly struct TgaFileHeader
 
     public void WriteTo(Span<byte> buffer)
     {
-        ref TgaFileHeader dest = ref Unsafe.As<byte, TgaFileHeader>(ref MemoryMarshal.GetReference(buffer));
+        ref var dest = ref Unsafe.As<byte, TgaFileHeader>(ref MemoryMarshal.GetReference(buffer));
 
         dest = this;
     }

@@ -42,7 +42,7 @@ internal sealed class T4TiffCompression : TiffBaseDecompressor
         this.faxCompressionOptions = faxOptions;
         this.FillOrder = fillOrder;
         this.width = width;
-        bool isWhiteZero = photometricInterpretation == TiffPhotometricInterpretation.WhiteIsZero;
+        var isWhiteZero = photometricInterpretation == TiffPhotometricInterpretation.WhiteIsZero;
         this.whiteValue = (byte)(isWhiteZero ? 0 : 1);
         this.blackValue = (byte)(isWhiteZero ? 1 : 0);
     }
@@ -60,7 +60,7 @@ internal sealed class T4TiffCompression : TiffBaseDecompressor
             TiffThrowHelper.ThrowNotSupported("TIFF CCITT 2D compression is not yet supported");
         }
 
-        bool eolPadding = this.faxCompressionOptions.HasFlag(FaxCompressionOptions.EolPadding);
+        var eolPadding = this.faxCompressionOptions.HasFlag(FaxCompressionOptions.EolPadding);
         using var bitReader = new T4BitReader(stream, this.FillOrder, byteCount, this.Allocator, eolPadding);
 
         buffer.Clear();
@@ -81,7 +81,7 @@ internal sealed class T4TiffCompression : TiffBaseDecompressor
             if (bitReader.IsEndOfScanLine)
             {
                 // Write padding bytes, if necessary.
-                uint pad = 8 - (bitsWritten % 8);
+                var pad = 8 - (bitsWritten % 8);
                 if (pad != 8)
                 {
                     BitWriterUtils.WriteBits(buffer, (int)bitsWritten, pad, 0);

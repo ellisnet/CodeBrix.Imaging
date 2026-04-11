@@ -45,7 +45,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
         this.parent = parent;
 
         // Frames are already cloned by the caller
-        foreach (ImageFrame<TPixel> f in frames)
+        foreach (var f in frames)
         {
             this.ValidateFrame(f);
             this.frames.Add(f);
@@ -140,7 +140,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
         this.EnsureNotDisposed();
 
         this.ValidateFrame(source);
-        ImageFrame<TPixel> clonedFrame = source.Clone(this.parent.GetConfiguration());
+        var clonedFrame = source.Clone(this.parent.GetConfiguration());
         this.frames.Insert(index, clonedFrame);
         return clonedFrame;
     }
@@ -155,7 +155,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
         this.EnsureNotDisposed();
 
         this.ValidateFrame(source);
-        ImageFrame<TPixel> clonedFrame = source.Clone(this.parent.GetConfiguration());
+        var clonedFrame = source.Clone(this.parent.GetConfiguration());
         this.frames.Add(clonedFrame);
         return clonedFrame;
     }
@@ -206,7 +206,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
             throw new InvalidOperationException("Cannot remove last frame.");
         }
 
-        ImageFrame<TPixel> frame = this.frames[index];
+        var frame = this.frames[index];
         this.frames.RemoveAt(index);
         frame.Dispose();
     }
@@ -247,7 +247,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
             return;
         }
 
-        ImageFrame<TPixel> frameAtIndex = this.frames[sourceIndex];
+        var frameAtIndex = this.frames[sourceIndex];
         this.frames.RemoveAt(sourceIndex);
         this.frames.Insert(destinationIndex, frameAtIndex);
     }
@@ -263,7 +263,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
     {
         this.EnsureNotDisposed();
 
-        ImageFrame<TPixel> frame = this[index];
+        var frame = this[index];
 
         if (this.Count == 1 && this.frames.Contains(frame))
         {
@@ -285,8 +285,8 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
     {
         this.EnsureNotDisposed();
 
-        ImageFrame<TPixel> frame = this[index];
-        ImageFrame<TPixel> clonedFrame = frame.Clone();
+        var frame = this[index];
+        var clonedFrame = frame.Clone();
         return new Image<TPixel>(this.parent.GetConfiguration(), this.parent.Metadata.DeepClone(), new[] { clonedFrame });
     }
 
@@ -324,7 +324,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
             return this.InsertFrame(index, compatibleSource);
         }
 
-        ImageFrame<TPixel> result = this.CopyNonCompatibleFrame(source);
+        var result = this.CopyNonCompatibleFrame(source);
         this.frames.Insert(index, result);
         return result;
     }
@@ -339,7 +339,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
             return this.AddFrame(compatibleSource);
         }
 
-        ImageFrame<TPixel> result = this.CopyNonCompatibleFrame(source);
+        var result = this.CopyNonCompatibleFrame(source);
         this.frames.Add(result);
         return result;
     }
@@ -399,7 +399,7 @@ public sealed class ImageFrameCollection<TPixel> : ImageFrameCollection, IEnumer
     {
         if (disposing)
         {
-            foreach (ImageFrame<TPixel> f in this.frames)
+            foreach (var f in this.frames)
             {
                 f.Dispose();
             }

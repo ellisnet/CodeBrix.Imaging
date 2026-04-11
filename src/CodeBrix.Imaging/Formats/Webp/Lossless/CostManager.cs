@@ -23,7 +23,7 @@ internal sealed class CostManager : IDisposable
 
     public CostManager(MemoryAllocator memoryAllocator, IMemoryOwner<ushort> distArray, int pixCount, CostModel costModel)
     {
-        int costCacheSize = pixCount > BackwardReferenceEncoder.MaxLength ? BackwardReferenceEncoder.MaxLength : pixCount;
+        var costCacheSize = pixCount > BackwardReferenceEncoder.MaxLength ? BackwardReferenceEncoder.MaxLength : pixCount;
 
         this.CacheIntervals = new List<CostCacheInterval>();
         this.CostCache = new List<double>();
@@ -31,7 +31,7 @@ internal sealed class CostManager : IDisposable
         this.DistArray = distArray;
         this.Count = 0;
 
-        for (int i = 0; i < FreeIntervalsStartCount; i++)
+        for (var i = 0; i < FreeIntervalsStartCount; i++)
         {
             this.freeIntervals.Push(new CostInterval());
         }
@@ -39,7 +39,7 @@ internal sealed class CostManager : IDisposable
         // Fill in the cost cache.
         this.CacheIntervalsSize++;
         this.CostCache.Add(costModel.GetLengthCost(0));
-        for (int i = 1; i < costCacheSize; i++)
+        for (var i = 1; i < costCacheSize; i++)
         {
             this.CostCache.Add(costModel.GetLengthCost(i));
 
@@ -59,9 +59,9 @@ internal sealed class CostManager : IDisposable
         };
         this.CacheIntervals.Add(cur);
 
-        for (int i = 1; i < costCacheSize; i++)
+        for (var i = 1; i < costCacheSize; i++)
         {
-            double costVal = this.CostCache[i];
+            var costVal = this.CostCache[i];
             if (costVal != cur.Cost)
             {
                 cur = new CostCacheInterval()
@@ -104,10 +104,10 @@ internal sealed class CostManager : IDisposable
     /// <param name="doCleanIntervals">If 'doCleanIntervals' is true, intervals that end before 'i' will be popped.</param>
     public void UpdateCostAtIndex(int i, bool doCleanIntervals)
     {
-        CostInterval current = this.head;
+        var current = this.head;
         while (current != null && current.Start <= i)
         {
-            CostInterval next = current.Next;
+            var next = current.Next;
             if (current.End <= i)
             {
                 if (doCleanIntervals)
@@ -135,16 +135,16 @@ internal sealed class CostManager : IDisposable
     {
         // If the interval is small enough, no need to deal with the heavy
         // interval logic, just serialize it right away. This constant is empirical.
-        int skipDistance = 10;
+        var skipDistance = 10;
 
-        Span<float> costs = this.Costs.GetSpan();
-        Span<ushort> distArray = this.DistArray.GetSpan();
+        var costs = this.Costs.GetSpan();
+        var distArray = this.DistArray.GetSpan();
         if (len < skipDistance)
         {
-            for (int j = position; j < position + len; j++)
+            for (var j = position; j < position + len; j++)
             {
-                int k = j - position;
-                float costTmp = (float)(distanceCost + this.CostCache[k]);
+                var k = j - position;
+                var costTmp = (float)(distanceCost + this.CostCache[k]);
 
                 if (costs[j] > costTmp)
                 {
@@ -156,13 +156,13 @@ internal sealed class CostManager : IDisposable
             return;
         }
 
-        CostInterval interval = this.head;
-        for (int i = 0; i < this.CacheIntervalsSize && this.CacheIntervals[i].Start < len; i++)
+        var interval = this.head;
+        for (var i = 0; i < this.CacheIntervalsSize && this.CacheIntervals[i].Start < len; i++)
         {
             // Define the intersection of the ith interval with the new one.
-            int start = position + this.CacheIntervals[i].Start;
-            int end = position + (this.CacheIntervals[i].End > len ? len : this.CacheIntervals[i].End);
-            float cost = (float)(distanceCost + this.CacheIntervals[i].Cost);
+            var start = position + this.CacheIntervals[i].Start;
+            var end = position + (this.CacheIntervals[i].End > len ? len : this.CacheIntervals[i].End);
+            var cost = (float)(distanceCost + this.CacheIntervals[i].Cost);
 
             CostInterval intervalNext;
             for (; interval != null && interval.Start < end; interval = intervalNext)
@@ -178,7 +178,7 @@ internal sealed class CostManager : IDisposable
                 if (cost >= interval.Cost)
                 {
                     // If we are worse than what we already have, add whatever we have so far up to interval.
-                    int startNew = interval.End;
+                    var startNew = interval.End;
                     this.InsertInterval(interval, cost, position, start, interval.Start);
                     start = startNew;
                     if (start >= end)
@@ -207,7 +207,7 @@ internal sealed class CostManager : IDisposable
                     if (end < interval.End)
                     {
                         // We have to split the old interval as it fully contains the new one.
-                        int endOriginal = interval.End;
+                        var endOriginal = interval.End;
                         interval.End = start;
                         this.InsertInterval(interval, interval.Cost, interval.Index, end, endOriginal);
                         break;
@@ -316,9 +316,9 @@ internal sealed class CostManager : IDisposable
     /// </summary>
     private void UpdateCost(int i, int position, float cost)
     {
-        Span<float> costs = this.Costs.GetSpan();
-        Span<ushort> distArray = this.DistArray.GetSpan();
-        int k = i - position;
+        var costs = this.Costs.GetSpan();
+        var distArray = this.DistArray.GetSpan();
+        var k = i - position;
         if (costs[i] > cost)
         {
             costs[i] = cost;

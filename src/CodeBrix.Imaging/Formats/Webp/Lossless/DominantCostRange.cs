@@ -68,7 +68,7 @@ internal class DominantCostRange
 
     public int GetHistoBinIndex(Vp8LHistogram h, int numPartitions)
     {
-        int binId = GetBinIdForEntropy(this.LiteralMin, this.LiteralMax, h.LiteralCost, numPartitions);
+        var binId = GetBinIdForEntropy(this.LiteralMin, this.LiteralMax, h.LiteralCost, numPartitions);
         binId = (binId * numPartitions) + GetBinIdForEntropy(this.RedMin, this.RedMax, h.RedCost, numPartitions);
         binId = (binId * numPartitions) + GetBinIdForEntropy(this.BlueMin, this.BlueMax, h.BlueCost, numPartitions);
 
@@ -77,10 +77,10 @@ internal class DominantCostRange
 
     private static int GetBinIdForEntropy(double min, double max, double val, int numPartitions)
     {
-        double range = max - min;
+        var range = max - min;
         if (range > 0.0d)
         {
-            double delta = val - min;
+            var delta = val - min;
             return (int)((numPartitions - 1e-6) * delta / range);
         }
         else

@@ -76,14 +76,14 @@ public class LzwString
             return 1;
         }
 
-        LzwString e = this;
-        int endIdx = this.Length - 1;
+        var e = this;
+        var endIdx = this.Length - 1;
         if (endIdx >= buffer.Length)
         {
             TiffThrowHelper.ThrowImageFormatException("Error reading lzw compressed stream. Either pixel buffer to write to is to small or code length is invalid!");
         }
 
-        for (int i = endIdx; i >= 0; i--)
+        for (var i = endIdx; i >= 0; i--)
         {
             buffer[offset + i] = e.value;
             e = e.previous;

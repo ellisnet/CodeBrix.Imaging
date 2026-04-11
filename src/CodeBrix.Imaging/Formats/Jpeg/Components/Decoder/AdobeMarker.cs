@@ -69,10 +69,10 @@ internal readonly struct AdobeMarker : IEquatable<AdobeMarker>
     {
         if (ProfileResolver.IsProfile(bytes, ProfileResolver.AdobeMarker))
         {
-            short dctEncodeVersion = (short)((bytes[5] << 8) | bytes[6]);
-            short app14Flags0 = (short)((bytes[7] << 8) | bytes[8]);
-            short app14Flags1 = (short)((bytes[9] << 8) | bytes[10]);
-            byte colorTransform = bytes[11];
+            var dctEncodeVersion = (short)((bytes[5] << 8) | bytes[6]);
+            var app14Flags0 = (short)((bytes[7] << 8) | bytes[8]);
+            var app14Flags1 = (short)((bytes[9] << 8) | bytes[10]);
+            var colorTransform = bytes[11];
 
             marker = new AdobeMarker(dctEncodeVersion, app14Flags0, app14Flags1, colorTransform);
             return true;

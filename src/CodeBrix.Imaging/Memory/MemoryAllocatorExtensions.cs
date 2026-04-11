@@ -31,11 +31,11 @@ public static class MemoryAllocatorExtensions
         AllocationOptions options = AllocationOptions.None)
         where T : struct
     {
-        long groupLength = (long)width * height;
+        var groupLength = (long)width * height;
         MemoryGroup<T> memoryGroup;
         if (preferContiguosImageBuffers && groupLength < int.MaxValue)
         {
-            IMemoryOwner<T> buffer = memoryAllocator.Allocate<T>((int)groupLength, options);
+            var buffer = memoryAllocator.Allocate<T>((int)groupLength, options);
             memoryGroup = MemoryGroup<T>.CreateContiguous(buffer, false);
         }
         else
@@ -106,8 +106,8 @@ public static class MemoryAllocatorExtensions
         AllocationOptions options = AllocationOptions.None)
         where T : struct
     {
-        long groupLength = (long)width * height;
-        MemoryGroup<T> memoryGroup = memoryAllocator.AllocateGroup<T>(
+        var groupLength = (long)width * height;
+        var memoryGroup = memoryAllocator.AllocateGroup<T>(
             groupLength,
             width * alignmentMultiplier,
             options);
@@ -128,7 +128,7 @@ public static class MemoryAllocatorExtensions
         int pixelSizeInBytes,
         int paddingInBytes)
     {
-        int length = (width * pixelSizeInBytes) + paddingInBytes;
+        var length = (width * pixelSizeInBytes) + paddingInBytes;
         return memoryAllocator.Allocate<byte>(length);
     }
 }

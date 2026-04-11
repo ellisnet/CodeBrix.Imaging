@@ -18,23 +18,23 @@ internal class BlackIsZero4TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         var color = default(TPixel);
 
-        int offset = 0;
-        bool isOddWidth = (width & 1) == 1;
+        var offset = 0;
+        var isOddWidth = (width & 1) == 1;
 
         var l8 = default(L8);
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            for (int x = left; x < left + width - 1;)
+            for (var x = left; x < left + width - 1;)
             {
-                byte byteData = data[offset++];
+                var byteData = data[offset++];
 
-                byte intensity1 = (byte)(((byteData & 0xF0) >> 4) * 17);
+                var intensity1 = (byte)(((byteData & 0xF0) >> 4) * 17);
                 l8.PackedValue = intensity1;
                 color.FromL8(l8);
 
                 pixels[x++, y] = color;
 
-                byte intensity2 = (byte)((byteData & 0x0F) * 17);
+                var intensity2 = (byte)((byteData & 0x0F) * 17);
                 l8.PackedValue = intensity2;
                 color.FromL8(l8);
 
@@ -43,9 +43,9 @@ internal class BlackIsZero4TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
 
             if (isOddWidth)
             {
-                byte byteData = data[offset++];
+                var byteData = data[offset++];
 
-                byte intensity1 = (byte)(((byteData & 0xF0) >> 4) * 17);
+                var intensity1 = (byte)(((byteData & 0xF0) >> 4) * 17);
                 l8.PackedValue = intensity1;
                 color.FromL8(l8);
 

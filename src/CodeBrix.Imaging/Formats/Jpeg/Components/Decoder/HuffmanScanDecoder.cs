@@ -121,7 +121,7 @@ internal class HuffmanScanDecoder
 
         this.scanBuffer = new HuffmanScanBuffer(this.stream);
 
-        bool fullScan = this.frame.Progressive || this.frame.MultiScan;
+        var fullScan = this.frame.Progressive || this.frame.MultiScan;
         this.frame.AllocateComponents(fullScan);
 
         if (!this.frame.Progressive)
@@ -167,39 +167,39 @@ internal class HuffmanScanDecoder
 
     private void ParseBaselineDataInterleaved()
     {
-        int mcu = 0;
-        int mcusPerColumn = this.frame.McusPerColumn;
-        int mcusPerLine = this.frame.McusPerLine;
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        var mcu = 0;
+        var mcusPerColumn = this.frame.McusPerColumn;
+        var mcusPerLine = this.frame.McusPerLine;
+        ref var buffer = ref this.scanBuffer;
 
-        for (int j = 0; j < mcusPerColumn; j++)
+        for (var j = 0; j < mcusPerColumn; j++)
         {
             this.cancellationToken.ThrowIfCancellationRequested();
 
             // decode from binary to spectral
-            for (int i = 0; i < mcusPerLine; i++)
+            for (var i = 0; i < mcusPerLine; i++)
             {
                 // Scan an interleaved mcu... process components in order
-                int mcuCol = mcu % mcusPerLine;
-                for (int k = 0; k < this.scanComponentCount; k++)
+                var mcuCol = mcu % mcusPerLine;
+                for (var k = 0; k < this.scanComponentCount; k++)
                 {
                     int order = this.frame.ComponentOrder[k];
-                    JpegComponent component = this.components[order];
+                    var component = this.components[order];
 
-                    ref HuffmanTable dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
-                    ref HuffmanTable acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
+                    ref var dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
+                    ref var acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
 
-                    int h = component.HorizontalSamplingFactor;
-                    int v = component.VerticalSamplingFactor;
+                    var h = component.HorizontalSamplingFactor;
+                    var v = component.VerticalSamplingFactor;
 
                     // Scan out an mcu's worth of this component; that's just determined
                     // by the basic H and V specified for the component
-                    for (int y = 0; y < v; y++)
+                    for (var y = 0; y < v; y++)
                     {
-                        Span<Block8x8> blockSpan = component.SpectralBlocks.DangerousGetRowSpan(y);
-                        ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
+                        var blockSpan = component.SpectralBlocks.DangerousGetRowSpan(y);
+                        ref var blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
-                        for (int x = 0; x < h; x++)
+                        for (var x = 0; x < h; x++)
                         {
                             if (buffer.NoData)
                             {
@@ -209,7 +209,7 @@ internal class HuffmanScanDecoder
                                 return;
                             }
 
-                            int blockCol = (mcuCol * h) + x;
+                            var blockCol = (mcuCol * h) + x;
 
                             this.DecodeBlockBaseline(
                                 component,
@@ -233,22 +233,22 @@ internal class HuffmanScanDecoder
 
     private void ParseBaselineDataNonInterleaved()
     {
-        JpegComponent component = this.components[this.frame.ComponentOrder[0]];
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        var component = this.components[this.frame.ComponentOrder[0]];
+        ref var buffer = ref this.scanBuffer;
 
-        int w = component.WidthInBlocks;
-        int h = component.HeightInBlocks;
+        var w = component.WidthInBlocks;
+        var h = component.HeightInBlocks;
 
-        ref HuffmanTable dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
-        ref HuffmanTable acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
+        ref var dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
+        ref var acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
 
-        for (int j = 0; j < h; j++)
+        for (var j = 0; j < h; j++)
         {
             this.cancellationToken.ThrowIfCancellationRequested();
-            Span<Block8x8> blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
-            ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
+            var blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
+            ref var blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
-            for (int i = 0; i < w; i++)
+            for (var i = 0; i < w; i++)
             {
                 if (buffer.NoData)
                 {
@@ -268,26 +268,26 @@ internal class HuffmanScanDecoder
 
     private void ParseBaselineDataSingleComponent()
     {
-        JpegComponent component = this.frame.Components[0];
-        int mcuLines = this.frame.McusPerColumn;
-        int w = component.WidthInBlocks;
-        int h = component.SamplingFactors.Height;
-        ref HuffmanTable dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
-        ref HuffmanTable acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
+        var component = this.frame.Components[0];
+        var mcuLines = this.frame.McusPerColumn;
+        var w = component.WidthInBlocks;
+        var h = component.SamplingFactors.Height;
+        ref var dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
+        ref var acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
 
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        ref var buffer = ref this.scanBuffer;
 
-        for (int i = 0; i < mcuLines; i++)
+        for (var i = 0; i < mcuLines; i++)
         {
             this.cancellationToken.ThrowIfCancellationRequested();
 
             // decode from binary to spectral
-            for (int j = 0; j < h; j++)
+            for (var j = 0; j < h; j++)
             {
-                Span<Block8x8> blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
-                ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
+                var blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
+                ref var blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
-                for (int k = 0; k < w; k++)
+                for (var k = 0; k < w; k++)
                 {
                     if (buffer.NoData)
                     {
@@ -317,7 +317,7 @@ internal class HuffmanScanDecoder
         // Validate successive scan parameters.
         // Logic has been adapted from libjpeg.
         // See Table B.3 – Scan header parameter size and values. itu-t81.pdf
-        bool invalid = false;
+        var invalid = false;
         if (this.SpectralStart == 0)
         {
             if (this.SpectralEnd != 0)
@@ -379,43 +379,43 @@ internal class HuffmanScanDecoder
     private void ParseProgressiveDataInterleaved()
     {
         // Interleaved
-        int mcu = 0;
-        int mcusPerColumn = this.frame.McusPerColumn;
-        int mcusPerLine = this.frame.McusPerLine;
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        var mcu = 0;
+        var mcusPerColumn = this.frame.McusPerColumn;
+        var mcusPerLine = this.frame.McusPerLine;
+        ref var buffer = ref this.scanBuffer;
 
-        for (int j = 0; j < mcusPerColumn; j++)
+        for (var j = 0; j < mcusPerColumn; j++)
         {
-            for (int i = 0; i < mcusPerLine; i++)
+            for (var i = 0; i < mcusPerLine; i++)
             {
                 // Scan an interleaved mcu... process components in order
-                int mcuRow = mcu / mcusPerLine;
-                int mcuCol = mcu % mcusPerLine;
-                for (int k = 0; k < this.scanComponentCount; k++)
+                var mcuRow = mcu / mcusPerLine;
+                var mcuCol = mcu % mcusPerLine;
+                for (var k = 0; k < this.scanComponentCount; k++)
                 {
                     int order = this.frame.ComponentOrder[k];
-                    JpegComponent component = this.components[order];
-                    ref HuffmanTable dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
+                    var component = this.components[order];
+                    ref var dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
 
-                    int h = component.HorizontalSamplingFactor;
-                    int v = component.VerticalSamplingFactor;
+                    var h = component.HorizontalSamplingFactor;
+                    var v = component.VerticalSamplingFactor;
 
                     // Scan out an mcu's worth of this component; that's just determined
                     // by the basic H and V specified for the component
-                    for (int y = 0; y < v; y++)
+                    for (var y = 0; y < v; y++)
                     {
-                        int blockRow = (mcuRow * v) + y;
-                        Span<Block8x8> blockSpan = component.SpectralBlocks.DangerousGetRowSpan(blockRow);
-                        ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
+                        var blockRow = (mcuRow * v) + y;
+                        var blockSpan = component.SpectralBlocks.DangerousGetRowSpan(blockRow);
+                        ref var blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
-                        for (int x = 0; x < h; x++)
+                        for (var x = 0; x < h; x++)
                         {
                             if (buffer.NoData)
                             {
                                 return;
                             }
 
-                            int blockCol = (mcuCol * h) + x;
+                            var blockCol = (mcuCol * h) + x;
 
                             this.DecodeBlockProgressiveDC(
                                 component,
@@ -435,24 +435,24 @@ internal class HuffmanScanDecoder
 
     private void ParseProgressiveDataNonInterleaved()
     {
-        JpegComponent component = this.components[this.frame.ComponentOrder[0]];
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        var component = this.components[this.frame.ComponentOrder[0]];
+        ref var buffer = ref this.scanBuffer;
 
-        int w = component.WidthInBlocks;
-        int h = component.HeightInBlocks;
+        var w = component.WidthInBlocks;
+        var h = component.HeightInBlocks;
 
         if (this.SpectralStart == 0)
         {
-            ref HuffmanTable dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
+            ref var dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
 
-            for (int j = 0; j < h; j++)
+            for (var j = 0; j < h; j++)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
 
-                Span<Block8x8> blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
-                ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
+                var blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
+                ref var blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
-                for (int i = 0; i < w; i++)
+                for (var i = 0; i < w; i++)
                 {
                     if (buffer.NoData)
                     {
@@ -470,16 +470,16 @@ internal class HuffmanScanDecoder
         }
         else
         {
-            ref HuffmanTable acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
+            ref var acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];
 
-            for (int j = 0; j < h; j++)
+            for (var j = 0; j < h; j++)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
 
-                Span<Block8x8> blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
-                ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
+                var blockSpan = component.SpectralBlocks.DangerousGetRowSpan(j);
+                ref var blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
-                for (int i = 0; i < w; i++)
+                for (var i = 0; i < w; i++)
                 {
                     if (buffer.NoData)
                     {
@@ -502,11 +502,11 @@ internal class HuffmanScanDecoder
         ref HuffmanTable dcTable,
         ref HuffmanTable acTable)
     {
-        ref short blockDataRef = ref Unsafe.As<Block8x8, short>(ref block);
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        ref var blockDataRef = ref Unsafe.As<Block8x8, short>(ref block);
+        ref var buffer = ref this.scanBuffer;
 
         // DC
-        int t = buffer.DecodeHuffman(ref dcTable);
+        var t = buffer.DecodeHuffman(ref dcTable);
         if (t != 0)
         {
             t = buffer.Receive(t);
@@ -517,11 +517,11 @@ internal class HuffmanScanDecoder
         blockDataRef = (short)t;
 
         // AC
-        for (int i = 1; i < 64;)
+        for (var i = 1; i < 64;)
         {
-            int s = buffer.DecodeHuffman(ref acTable);
+            var s = buffer.DecodeHuffman(ref acTable);
 
-            int r = s >> 4;
+            var r = s >> 4;
             s &= 15;
 
             if (s != 0)
@@ -544,13 +544,13 @@ internal class HuffmanScanDecoder
 
     private void DecodeBlockProgressiveDC(JpegComponent component, ref Block8x8 block, ref HuffmanTable dcTable)
     {
-        ref short blockDataRef = ref Unsafe.As<Block8x8, short>(ref block);
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
+        ref var blockDataRef = ref Unsafe.As<Block8x8, short>(ref block);
+        ref var buffer = ref this.scanBuffer;
 
         if (this.SuccessiveHigh == 0)
         {
             // First scan for DC coefficient, must be first
-            int s = buffer.DecodeHuffman(ref dcTable);
+            var s = buffer.DecodeHuffman(ref dcTable);
             if (s != 0)
             {
                 s = buffer.Receive(s);
@@ -570,7 +570,7 @@ internal class HuffmanScanDecoder
 
     private void DecodeBlockProgressiveAC(ref Block8x8 block, ref HuffmanTable acTable)
     {
-        ref short blockDataRef = ref Unsafe.As<Block8x8, short>(ref block);
+        ref var blockDataRef = ref Unsafe.As<Block8x8, short>(ref block);
         if (this.SuccessiveHigh == 0)
         {
             // MCU decoding for AC initial scan (either spectral selection,
@@ -581,15 +581,15 @@ internal class HuffmanScanDecoder
                 return;
             }
 
-            ref HuffmanScanBuffer buffer = ref this.scanBuffer;
-            int start = this.SpectralStart;
-            int end = this.SpectralEnd;
-            int low = this.SuccessiveLow;
+            ref var buffer = ref this.scanBuffer;
+            var start = this.SpectralStart;
+            var end = this.SpectralEnd;
+            var low = this.SuccessiveLow;
 
-            for (int i = start; i <= end; ++i)
+            for (var i = start; i <= end; ++i)
             {
-                int s = buffer.DecodeHuffman(ref acTable);
-                int r = s >> 4;
+                var s = buffer.DecodeHuffman(ref acTable);
+                var r = s >> 4;
                 s &= 15;
 
                 i += r;
@@ -626,21 +626,21 @@ internal class HuffmanScanDecoder
     private void DecodeBlockProgressiveACRefined(ref short blockDataRef, ref HuffmanTable acTable)
     {
         // Refinement scan for these AC coefficients
-        ref HuffmanScanBuffer buffer = ref this.scanBuffer;
-        int start = this.SpectralStart;
-        int end = this.SpectralEnd;
+        ref var buffer = ref this.scanBuffer;
+        var start = this.SpectralStart;
+        var end = this.SpectralEnd;
 
-        int p1 = 1 << this.SuccessiveLow;
-        int m1 = (-1) << this.SuccessiveLow;
+        var p1 = 1 << this.SuccessiveLow;
+        var m1 = (-1) << this.SuccessiveLow;
 
-        int k = start;
+        var k = start;
 
         if (this.eobrun == 0)
         {
             for (; k <= end; k++)
             {
-                int s = buffer.DecodeHuffman(ref acTable);
-                int r = s >> 4;
+                var s = buffer.DecodeHuffman(ref acTable);
+                var r = s >> 4;
                 s &= 15;
 
                 if (s != 0)
@@ -673,7 +673,7 @@ internal class HuffmanScanDecoder
 
                 do
                 {
-                    ref short coef = ref Unsafe.Add(ref blockDataRef, ZigZag.TransposingOrder[k]);
+                    ref var coef = ref Unsafe.Add(ref blockDataRef, ZigZag.TransposingOrder[k]);
                     if (coef != 0)
                     {
                         buffer.CheckBits();
@@ -708,7 +708,7 @@ internal class HuffmanScanDecoder
         {
             for (; k <= end; k++)
             {
-                ref short coef = ref Unsafe.Add(ref blockDataRef, ZigZag.TransposingOrder[k]);
+                ref var coef = ref Unsafe.Add(ref blockDataRef, ZigZag.TransposingOrder[k]);
 
                 if (coef != 0)
                 {
@@ -730,7 +730,7 @@ internal class HuffmanScanDecoder
     [MethodImpl(InliningOptions.ShortMethod)]
     private void Reset()
     {
-        for (int i = 0; i < this.components.Length; i++)
+        for (var i = 0; i < this.components.Length; i++)
         {
             this.components[i].DcPredictor = 0;
         }
@@ -782,7 +782,7 @@ internal class HuffmanScanDecoder
     [MethodImpl(InliningOptions.ShortMethod)]
     public void BuildHuffmanTable(int type, int index, ReadOnlySpan<byte> codeLengths, ReadOnlySpan<byte> values, Span<uint> workspace)
     {
-        HuffmanTable[] tables = type == 0 ? this.dcHuffmanTables : this.acHuffmanTables;
+        var tables = type == 0 ? this.dcHuffmanTables : this.acHuffmanTables;
         tables[index] = new HuffmanTable(codeLengths, values, workspace);
     }
 }

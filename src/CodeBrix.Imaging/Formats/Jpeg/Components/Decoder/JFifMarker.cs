@@ -84,11 +84,11 @@ internal readonly struct JFifMarker : IEquatable<JFifMarker>
     {
         if (ProfileResolver.IsProfile(bytes, ProfileResolver.JFifMarker))
         {
-            byte majorVersion = bytes[5];
-            byte minorVersion = bytes[6];
-            byte densityUnits = bytes[7];
-            short xDensity = (short)((bytes[8] << 8) | bytes[9]);
-            short yDensity = (short)((bytes[10] << 8) | bytes[11]);
+            var majorVersion = bytes[5];
+            var minorVersion = bytes[6];
+            var densityUnits = bytes[7];
+            var xDensity = (short)((bytes[8] << 8) | bytes[9]);
+            var yDensity = (short)((bytes[10] << 8) | bytes[11]);
 
             if (xDensity > 0 && yDensity > 0)
             {

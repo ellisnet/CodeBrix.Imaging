@@ -116,19 +116,19 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
         this.width = image.Width;
         this.height = image.Height;
 
-        ImageMetadata metadata = image.Metadata;
+        var metadata = image.Metadata;
 
-        PngMetadata pngMetadata = metadata.GetFormatMetadata(PngFormat.Instance);
+        var pngMetadata = metadata.GetFormatMetadata(PngFormat.Instance);
         PngEncoderOptionsHelpers.AdjustOptions<TPixel>(this.options, pngMetadata, out this.use16Bit, out this.bytesPerPixel);
         Image<TPixel> clonedImage = null;
-        bool clearTransparency = this.options.TransparentColorMode == PngTransparentColorMode.Clear;
+        var clearTransparency = this.options.TransparentColorMode == PngTransparentColorMode.Clear;
         if (clearTransparency)
         {
             clonedImage = image.Clone();
             ClearTransparentPixels(clonedImage);
         }
 
-        IndexedImageFrame<TPixel> quantized = this.CreateQuantizedImage(image, clonedImage);
+        var quantized = this.CreateQuantizedImage(image, clonedImage);
 
         stream.Write(PngConstants.HeaderBytes);
 
@@ -169,10 +169,10 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
         {
             Rgba32 rgba32 = default;
             Rgba32 transparent = Color.Transparent;
-            for (int y = 0; y < accessor.Height; y++)
+            for (var y = 0; y < accessor.Height; y++)
             {
-                Span<TPixel> span = accessor.GetRowSpan(y);
-                for (int x = 0; x < accessor.Width; x++)
+                var span = accessor.GetRowSpan(y);
+                for (var x = 0; x < accessor.Width; x++)
                 {
                     span[x].ToRgba32(ref rgba32);
 
@@ -215,25 +215,25 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
     private void CollectGrayscaleBytes<TPixel>(ReadOnlySpan<TPixel> rowSpan)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        ref TPixel rowSpanRef = ref MemoryMarshal.GetReference(rowSpan);
-        Span<byte> rawScanlineSpan = this.currentScanline.GetSpan();
-        ref byte rawScanlineSpanRef = ref MemoryMarshal.GetReference(rawScanlineSpan);
+        ref var rowSpanRef = ref MemoryMarshal.GetReference(rowSpan);
+        var rawScanlineSpan = this.currentScanline.GetSpan();
+        ref var rawScanlineSpanRef = ref MemoryMarshal.GetReference(rawScanlineSpan);
 
         if (this.options.ColorType == PngColorType.Grayscale)
         {
             if (this.use16Bit)
             {
                 // 16 bit grayscale
-                using (IMemoryOwner<L16> luminanceBuffer = this.memoryAllocator.Allocate<L16>(rowSpan.Length))
+                using (var luminanceBuffer = this.memoryAllocator.Allocate<L16>(rowSpan.Length))
                 {
-                    Span<L16> luminanceSpan = luminanceBuffer.GetSpan();
-                    ref L16 luminanceRef = ref MemoryMarshal.GetReference(luminanceSpan);
+                    var luminanceSpan = luminanceBuffer.GetSpan();
+                    ref var luminanceRef = ref MemoryMarshal.GetReference(luminanceSpan);
                     PixelOperations<TPixel>.Instance.ToL16(this.configuration, rowSpan, luminanceSpan);
 
                     // Can't map directly to byte array as it's big-endian.
                     for (int x = 0, o = 0; x < luminanceSpan.Length; x++, o += 2)
                     {
-                        L16 luminance = Unsafe.Add(ref luminanceRef, x);
+                        var luminance = Unsafe.Add(ref luminanceRef, x);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o, 2), luminance.PackedValue);
                     }
                 }
@@ -252,9 +252,9 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
                 else
                 {
                     // 1, 2, and 4 bit grayscale
-                    using IMemoryOwner<byte> temp = this.memoryAllocator.Allocate<byte>(rowSpan.Length, AllocationOptions.Clean);
-                    int scaleFactor = 255 / (ColorNumerics.GetColorCountForBitDepth(this.bitDepth) - 1);
-                    Span<byte> tempSpan = temp.GetSpan();
+                    using var temp = this.memoryAllocator.Allocate<byte>(rowSpan.Length, AllocationOptions.Clean);
+                    var scaleFactor = 255 / (ColorNumerics.GetColorCountForBitDepth(this.bitDepth) - 1);
+                    var tempSpan = temp.GetSpan();
 
                     // We need to first create an array of luminance bytes then scale them down to the correct bit depth.
                     PixelOperations<TPixel>.Instance.ToL8Bytes(
@@ -271,15 +271,15 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             if (this.use16Bit)
             {
                 // 16 bit grayscale + alpha
-                using IMemoryOwner<La32> laBuffer = this.memoryAllocator.Allocate<La32>(rowSpan.Length);
-                Span<La32> laSpan = laBuffer.GetSpan();
-                ref La32 laRef = ref MemoryMarshal.GetReference(laSpan);
+                using var laBuffer = this.memoryAllocator.Allocate<La32>(rowSpan.Length);
+                var laSpan = laBuffer.GetSpan();
+                ref var laRef = ref MemoryMarshal.GetReference(laSpan);
                 PixelOperations<TPixel>.Instance.ToLa32(this.configuration, rowSpan, laSpan);
 
                 // Can't map directly to byte array as it's big endian.
                 for (int x = 0, o = 0; x < laSpan.Length; x++, o += 4)
                 {
-                    La32 la = Unsafe.Add(ref laRef, x);
+                    var la = Unsafe.Add(ref laRef, x);
                     BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o, 2), la.L);
                     BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o + 2, 2), la.A);
                 }
@@ -304,7 +304,7 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
     private void CollectTPixelBytes<TPixel>(ReadOnlySpan<TPixel> rowSpan)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Span<byte> rawScanlineSpan = this.currentScanline.GetSpan();
+        var rawScanlineSpan = this.currentScanline.GetSpan();
 
         switch (this.bytesPerPixel)
         {
@@ -333,16 +333,16 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             case 8:
             {
                 // 16 bit Rgba
-                using (IMemoryOwner<Rgba64> rgbaBuffer = this.memoryAllocator.Allocate<Rgba64>(rowSpan.Length))
+                using (var rgbaBuffer = this.memoryAllocator.Allocate<Rgba64>(rowSpan.Length))
                 {
-                    Span<Rgba64> rgbaSpan = rgbaBuffer.GetSpan();
-                    ref Rgba64 rgbaRef = ref MemoryMarshal.GetReference(rgbaSpan);
+                    var rgbaSpan = rgbaBuffer.GetSpan();
+                    ref var rgbaRef = ref MemoryMarshal.GetReference(rgbaSpan);
                     PixelOperations<TPixel>.Instance.ToRgba64(this.configuration, rowSpan, rgbaSpan);
 
                     // Can't map directly to byte array as it's big endian.
                     for (int x = 0, o = 0; x < rowSpan.Length; x++, o += 8)
                     {
-                        Rgba64 rgba = Unsafe.Add(ref rgbaRef, x);
+                        var rgba = Unsafe.Add(ref rgbaRef, x);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o, 2), rgba.R);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o + 2, 2), rgba.G);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o + 4, 2), rgba.B);
@@ -356,16 +356,16 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             default:
             {
                 // 16 bit Rgb
-                using (IMemoryOwner<Rgb48> rgbBuffer = this.memoryAllocator.Allocate<Rgb48>(rowSpan.Length))
+                using (var rgbBuffer = this.memoryAllocator.Allocate<Rgb48>(rowSpan.Length))
                 {
-                    Span<Rgb48> rgbSpan = rgbBuffer.GetSpan();
-                    ref Rgb48 rgbRef = ref MemoryMarshal.GetReference(rgbSpan);
+                    var rgbSpan = rgbBuffer.GetSpan();
+                    ref var rgbRef = ref MemoryMarshal.GetReference(rgbSpan);
                     PixelOperations<TPixel>.Instance.ToRgb48(this.configuration, rowSpan, rgbSpan);
 
                     // Can't map directly to byte array as it's big endian.
                     for (int x = 0, o = 0; x < rowSpan.Length; x++, o += 6)
                     {
-                        Rgb48 rgb = Unsafe.Add(ref rgbRef, x);
+                        var rgb = Unsafe.Add(ref rgbRef, x);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o, 2), rgb.R);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o + 2, 2), rgb.G);
                         BinaryPrimitives.WriteUInt16BigEndian(rawScanlineSpan.Slice(o + 4, 2), rgb.B);
@@ -425,19 +425,19 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
                 NoneFilter.Encode(this.currentScanline.GetSpan(), filter);
                 break;
             case PngFilterMethod.Sub:
-                SubFilter.Encode(this.currentScanline.GetSpan(), filter, this.bytesPerPixel, out int _);
+                SubFilter.Encode(this.currentScanline.GetSpan(), filter, this.bytesPerPixel, out var _);
                 break;
 
             case PngFilterMethod.Up:
-                UpFilter.Encode(this.currentScanline.GetSpan(), this.previousScanline.GetSpan(), filter, out int _);
+                UpFilter.Encode(this.currentScanline.GetSpan(), this.previousScanline.GetSpan(), filter, out var _);
                 break;
 
             case PngFilterMethod.Average:
-                AverageFilter.Encode(this.currentScanline.GetSpan(), this.previousScanline.GetSpan(), filter, this.bytesPerPixel, out int _);
+                AverageFilter.Encode(this.currentScanline.GetSpan(), this.previousScanline.GetSpan(), filter, this.bytesPerPixel, out var _);
                 break;
 
             case PngFilterMethod.Paeth:
-                PaethFilter.Encode(this.currentScanline.GetSpan(), this.previousScanline.GetSpan(), filter, this.bytesPerPixel, out int _);
+                PaethFilter.Encode(this.currentScanline.GetSpan(), this.previousScanline.GetSpan(), filter, this.bytesPerPixel, out var _);
                 break;
             case PngFilterMethod.Adaptive:
             default:
@@ -506,11 +506,11 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             return;
         }
 
-        Span<byte> current = this.currentScanline.GetSpan();
-        Span<byte> previous = this.previousScanline.GetSpan();
+        var current = this.currentScanline.GetSpan();
+        var previous = this.previousScanline.GetSpan();
 
-        int min = int.MaxValue;
-        SubFilter.Encode(current, attempt, this.bytesPerPixel, out int sum);
+        var min = int.MaxValue;
+        SubFilter.Encode(current, attempt, this.bytesPerPixel, out var sum);
         if (sum < min)
         {
             min = sum;
@@ -574,28 +574,28 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
         }
 
         // Grab the palette and write it to the stream.
-        ReadOnlySpan<TPixel> palette = quantized.Palette.Span;
-        int paletteLength = palette.Length;
-        int colorTableLength = paletteLength * Unsafe.SizeOf<Rgb24>();
-        bool hasAlpha = false;
+        var palette = quantized.Palette.Span;
+        var paletteLength = palette.Length;
+        var colorTableLength = paletteLength * Unsafe.SizeOf<Rgb24>();
+        var hasAlpha = false;
 
-        using IMemoryOwner<byte> colorTable = this.memoryAllocator.Allocate<byte>(colorTableLength);
-        using IMemoryOwner<byte> alphaTable = this.memoryAllocator.Allocate<byte>(paletteLength);
+        using var colorTable = this.memoryAllocator.Allocate<byte>(colorTableLength);
+        using var alphaTable = this.memoryAllocator.Allocate<byte>(paletteLength);
 
-        ref Rgb24 colorTableRef = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<byte, Rgb24>(colorTable.GetSpan()));
-        ref byte alphaTableRef = ref MemoryMarshal.GetReference(alphaTable.GetSpan());
+        ref var colorTableRef = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<byte, Rgb24>(colorTable.GetSpan()));
+        ref var alphaTableRef = ref MemoryMarshal.GetReference(alphaTable.GetSpan());
 
         // Bulk convert our palette to RGBA to allow assignment to tables.
-        using IMemoryOwner<Rgba32> rgbaOwner = quantized.Configuration.MemoryAllocator.Allocate<Rgba32>(paletteLength);
-        Span<Rgba32> rgbaPaletteSpan = rgbaOwner.GetSpan();
+        using var rgbaOwner = quantized.Configuration.MemoryAllocator.Allocate<Rgba32>(paletteLength);
+        var rgbaPaletteSpan = rgbaOwner.GetSpan();
         PixelOperations<TPixel>.Instance.ToRgba32(quantized.Configuration, quantized.Palette.Span, rgbaPaletteSpan);
-        ref Rgba32 rgbaPaletteRef = ref MemoryMarshal.GetReference(rgbaPaletteSpan);
+        ref var rgbaPaletteRef = ref MemoryMarshal.GetReference(rgbaPaletteSpan);
 
         // Loop, assign, and extract alpha values from the palette.
-        for (int i = 0; i < paletteLength; i++)
+        for (var i = 0; i < paletteLength; i++)
         {
-            Rgba32 rgba = Unsafe.Add(ref rgbaPaletteRef, i);
-            byte alpha = rgba.A;
+            var rgba = Unsafe.Add(ref rgbaPaletteRef, i);
+            var alpha = rgba.A;
 
             Unsafe.Add(ref colorTableRef, i) = rgba.Rgb;
             if (alpha > this.options.Threshold)
@@ -680,12 +680,12 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             return;
         }
 
-        int payloadLength = xmpData.Length + PngConstants.XmpKeyword.Length + iTxtHeaderSize;
-        using (IMemoryOwner<byte> owner = this.memoryAllocator.Allocate<byte>(payloadLength))
+        var payloadLength = xmpData.Length + PngConstants.XmpKeyword.Length + iTxtHeaderSize;
+        using (var owner = this.memoryAllocator.Allocate<byte>(payloadLength))
         {
-            Span<byte> payload = owner.GetSpan();
+            var payload = owner.GetSpan();
             PngConstants.XmpKeyword.CopyTo(payload);
-            int bytesWritten = PngConstants.XmpKeyword.Length;
+            var bytesWritten = PngConstants.XmpKeyword.Length;
 
             // Write the iTxt header (all zeros in this case)
             payload[bytesWritten++] = 0;
@@ -714,10 +714,10 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
         }
 
         const int MaxLatinCode = 255;
-        for (int i = 0; i < meta.TextData.Count; i++)
+        for (var i = 0; i < meta.TextData.Count; i++)
         {
-            PngTextData textData = meta.TextData[i];
-            bool hasUnicodeCharacters = false;
+            var textData = meta.TextData[i];
+            var hasUnicodeCharacters = false;
             foreach (var c in textData.Value)
             {
                 if (c > MaxLatinCode)
@@ -731,20 +731,20 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
                                          !string.IsNullOrWhiteSpace(textData.TranslatedKeyword)))
             {
                 // Write iTXt chunk.
-                byte[] keywordBytes = PngConstants.Encoding.GetBytes(textData.Keyword);
-                byte[] textBytes = textData.Value.Length > this.options.TextCompressionThreshold
+                var keywordBytes = PngConstants.Encoding.GetBytes(textData.Keyword);
+                var textBytes = textData.Value.Length > this.options.TextCompressionThreshold
                     ? this.GetCompressedTextBytes(PngConstants.TranslatedEncoding.GetBytes(textData.Value))
                     : PngConstants.TranslatedEncoding.GetBytes(textData.Value);
 
-                byte[] translatedKeyword = PngConstants.TranslatedEncoding.GetBytes(textData.TranslatedKeyword);
-                byte[] languageTag = PngConstants.LanguageEncoding.GetBytes(textData.LanguageTag);
+                var translatedKeyword = PngConstants.TranslatedEncoding.GetBytes(textData.TranslatedKeyword);
+                var languageTag = PngConstants.LanguageEncoding.GetBytes(textData.LanguageTag);
 
-                int payloadLength = keywordBytes.Length + textBytes.Length + translatedKeyword.Length + languageTag.Length + 5;
-                using (IMemoryOwner<byte> owner = this.memoryAllocator.Allocate<byte>(payloadLength))
+                var payloadLength = keywordBytes.Length + textBytes.Length + translatedKeyword.Length + languageTag.Length + 5;
+                using (var owner = this.memoryAllocator.Allocate<byte>(payloadLength))
                 {
-                    Span<byte> outputBytes = owner.GetSpan();
+                    var outputBytes = owner.GetSpan();
                     keywordBytes.CopyTo(outputBytes);
-                    int bytesWritten = keywordBytes.Length;
+                    var bytesWritten = keywordBytes.Length;
                     outputBytes[bytesWritten++] = 0;
                     if (textData.Value.Length > this.options.TextCompressionThreshold)
                     {
@@ -772,14 +772,14 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
                 if (textData.Value.Length > this.options.TextCompressionThreshold)
                 {
                     // Write zTXt chunk.
-                    byte[] compressedData =
+                    var compressedData =
                         this.GetCompressedTextBytes(PngConstants.Encoding.GetBytes(textData.Value));
-                    int payloadLength = textData.Keyword.Length + compressedData.Length + 2;
-                    using (IMemoryOwner<byte> owner = this.memoryAllocator.Allocate<byte>(payloadLength))
+                    var payloadLength = textData.Keyword.Length + compressedData.Length + 2;
+                    using (var owner = this.memoryAllocator.Allocate<byte>(payloadLength))
                     {
-                        Span<byte> outputBytes = owner.GetSpan();
+                        var outputBytes = owner.GetSpan();
                         PngConstants.Encoding.GetBytes(textData.Keyword).CopyTo(outputBytes);
-                        int bytesWritten = textData.Keyword.Length;
+                        var bytesWritten = textData.Keyword.Length;
                         outputBytes[bytesWritten++] = 0;
                         outputBytes[bytesWritten++] = 0;
                         compressedData.CopyTo(outputBytes.Slice(bytesWritten));
@@ -789,12 +789,12 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
                 else
                 {
                     // Write tEXt chunk.
-                    int payloadLength = textData.Keyword.Length + textData.Value.Length + 1;
-                    using (IMemoryOwner<byte> owner = this.memoryAllocator.Allocate<byte>(payloadLength))
+                    var payloadLength = textData.Keyword.Length + textData.Value.Length + 1;
+                    using (var owner = this.memoryAllocator.Allocate<byte>(payloadLength))
                     {
-                        Span<byte> outputBytes = owner.GetSpan();
+                        var outputBytes = owner.GetSpan();
                         PngConstants.Encoding.GetBytes(textData.Keyword).CopyTo(outputBytes);
-                        int bytesWritten = textData.Keyword.Length;
+                        var bytesWritten = textData.Keyword.Length;
                         outputBytes[bytesWritten++] = 0;
                         PngConstants.Encoding.GetBytes(textData.Value)
                             .CopyTo(outputBytes.Slice(bytesWritten));
@@ -838,7 +838,7 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
         if (this.options.Gamma > 0)
         {
             // 4-byte unsigned integer of gamma * 100,000.
-            uint gammaValue = (uint)(this.options.Gamma * 100_000F);
+            var gammaValue = (uint)(this.options.Gamma * 100_000F);
 
             BinaryPrimitives.WriteUInt32BigEndian(this.chunkDataBuffer.AsSpan(0, 4), gammaValue);
 
@@ -859,12 +859,12 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             return;
         }
 
-        Span<byte> alpha = this.chunkDataBuffer.AsSpan();
+        var alpha = this.chunkDataBuffer.AsSpan();
         if (pngMetadata.ColorType == PngColorType.Rgb)
         {
             if (pngMetadata.TransparentRgb48.HasValue && this.use16Bit)
             {
-                Rgb48 rgb = pngMetadata.TransparentRgb48.Value;
+                var rgb = pngMetadata.TransparentRgb48.Value;
                 BinaryPrimitives.WriteUInt16LittleEndian(alpha, rgb.R);
                 BinaryPrimitives.WriteUInt16LittleEndian(alpha.Slice(2, 2), rgb.G);
                 BinaryPrimitives.WriteUInt16LittleEndian(alpha.Slice(4, 2), rgb.B);
@@ -874,7 +874,7 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
             else if (pngMetadata.TransparentRgb24.HasValue)
             {
                 alpha.Clear();
-                Rgb24 rgb = pngMetadata.TransparentRgb24.Value;
+                var rgb = pngMetadata.TransparentRgb24.Value;
                 alpha[1] = rgb.R;
                 alpha[3] = rgb.G;
                 alpha[5] = rgb.B;
@@ -937,16 +937,16 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
 
         // Store the chunks in repeated 64k blocks.
         // This reduces the memory load for decoding the image for many decoders.
-        int numChunks = bufferLength / MaxBlockSize;
+        var numChunks = bufferLength / MaxBlockSize;
 
         if (bufferLength % MaxBlockSize != 0)
         {
             numChunks++;
         }
 
-        for (int i = 0; i < numChunks; i++)
+        for (var i = 0; i < numChunks; i++)
         {
-            int length = bufferLength - (i * MaxBlockSize);
+            var length = bufferLength - (i * MaxBlockSize);
 
             if (length > MaxBlockSize)
             {
@@ -980,18 +980,18 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
     private void EncodePixels<TPixel>(Image<TPixel> pixels, IndexedImageFrame<TPixel> quantized, ZlibDeflateStream deflateStream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int bytesPerScanline = this.CalculateScanlineLength(this.width);
-        int filterLength = bytesPerScanline + 1;
+        var bytesPerScanline = this.CalculateScanlineLength(this.width);
+        var filterLength = bytesPerScanline + 1;
         this.AllocateScanlineBuffers(bytesPerScanline);
 
-        using IMemoryOwner<byte> filterBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
-        using IMemoryOwner<byte> attemptBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
+        using var filterBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
+        using var attemptBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
 
         pixels.ProcessPixelRows(accessor =>
         {
-            Span<byte> filter = filterBuffer.GetSpan();
-            Span<byte> attempt = attemptBuffer.GetSpan();
-            for (int y = 0; y < this.height; y++)
+            var filter = filterBuffer.GetSpan();
+            var attempt = attemptBuffer.GetSpan();
+            for (var y = 0; y < this.height; y++)
             {
                 this.CollectAndFilterPixelRow(accessor.GetRowSpan(y), ref filter, ref attempt, quantized, y);
                 deflateStream.Write(filter);
@@ -1009,34 +1009,34 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
     private void EncodeAdam7Pixels<TPixel>(Image<TPixel> image, ZlibDeflateStream deflateStream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.Frames.RootFrame.PixelBuffer;
-        for (int pass = 0; pass < 7; pass++)
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.Frames.RootFrame.PixelBuffer;
+        for (var pass = 0; pass < 7; pass++)
         {
-            int startRow = Adam7.FirstRow[pass];
-            int startCol = Adam7.FirstColumn[pass];
-            int blockWidth = Adam7.ComputeBlockWidth(width, pass);
+            var startRow = Adam7.FirstRow[pass];
+            var startCol = Adam7.FirstColumn[pass];
+            var blockWidth = Adam7.ComputeBlockWidth(width, pass);
 
-            int bytesPerScanline = this.bytesPerPixel <= 1
+            var bytesPerScanline = this.bytesPerPixel <= 1
                 ? ((blockWidth * this.bitDepth) + 7) / 8
                 : blockWidth * this.bytesPerPixel;
 
-            int filterLength = bytesPerScanline + 1;
+            var filterLength = bytesPerScanline + 1;
             this.AllocateScanlineBuffers(bytesPerScanline);
 
-            using IMemoryOwner<TPixel> blockBuffer = this.memoryAllocator.Allocate<TPixel>(blockWidth);
-            using IMemoryOwner<byte> filterBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
-            using IMemoryOwner<byte> attemptBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
+            using var blockBuffer = this.memoryAllocator.Allocate<TPixel>(blockWidth);
+            using var filterBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
+            using var attemptBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
 
-            Span<TPixel> block = blockBuffer.GetSpan();
-            Span<byte> filter = filterBuffer.GetSpan();
-            Span<byte> attempt = attemptBuffer.GetSpan();
+            var block = blockBuffer.GetSpan();
+            var filter = filterBuffer.GetSpan();
+            var attempt = attemptBuffer.GetSpan();
 
-            for (int row = startRow; row < height; row += Adam7.RowIncrement[pass])
+            for (var row = startRow; row < height; row += Adam7.RowIncrement[pass])
             {
                 // Collect pixel data
-                Span<TPixel> srcRow = pixelBuffer.DangerousGetRowSpan(row);
+                var srcRow = pixelBuffer.DangerousGetRowSpan(row);
                 for (int col = startCol, i = 0; col < width; col += Adam7.ColumnIncrement[pass])
                 {
                     block[i++] = srcRow[col];
@@ -1062,36 +1062,36 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
     private void EncodeAdam7IndexedPixels<TPixel>(IndexedImageFrame<TPixel> quantized, ZlibDeflateStream deflateStream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = quantized.Width;
-        int height = quantized.Height;
-        for (int pass = 0; pass < 7; pass++)
+        var width = quantized.Width;
+        var height = quantized.Height;
+        for (var pass = 0; pass < 7; pass++)
         {
-            int startRow = Adam7.FirstRow[pass];
-            int startCol = Adam7.FirstColumn[pass];
-            int blockWidth = Adam7.ComputeBlockWidth(width, pass);
+            var startRow = Adam7.FirstRow[pass];
+            var startCol = Adam7.FirstColumn[pass];
+            var blockWidth = Adam7.ComputeBlockWidth(width, pass);
 
-            int bytesPerScanline = this.bytesPerPixel <= 1
+            var bytesPerScanline = this.bytesPerPixel <= 1
                 ? ((blockWidth * this.bitDepth) + 7) / 8
                 : blockWidth * this.bytesPerPixel;
 
-            int filterLength = bytesPerScanline + 1;
+            var filterLength = bytesPerScanline + 1;
 
             this.AllocateScanlineBuffers(bytesPerScanline);
 
-            using IMemoryOwner<byte> blockBuffer = this.memoryAllocator.Allocate<byte>(blockWidth);
-            using IMemoryOwner<byte> filterBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
-            using IMemoryOwner<byte> attemptBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
+            using var blockBuffer = this.memoryAllocator.Allocate<byte>(blockWidth);
+            using var filterBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
+            using var attemptBuffer = this.memoryAllocator.Allocate<byte>(filterLength, AllocationOptions.Clean);
 
-            Span<byte> block = blockBuffer.GetSpan();
-            Span<byte> filter = filterBuffer.GetSpan();
-            Span<byte> attempt = attemptBuffer.GetSpan();
+            var block = blockBuffer.GetSpan();
+            var filter = filterBuffer.GetSpan();
+            var attempt = attemptBuffer.GetSpan();
 
-            for (int row = startRow;
+            for (var row = startRow;
                  row < height;
                  row += Adam7.RowIncrement[pass])
             {
                 // Collect data
-                ReadOnlySpan<byte> srcRow = quantized.DangerousGetRowSpan(row);
+                var srcRow = quantized.DangerousGetRowSpan(row);
                 for (int col = startCol, i = 0;
                      col < width;
                      col += Adam7.ColumnIncrement[pass])
@@ -1138,7 +1138,7 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
 
         stream.Write(this.buffer, 0, 8);
 
-        uint crc = Crc32.Calculate(this.buffer.AsSpan(4, 4)); // Write the type buffer
+        var crc = Crc32.Calculate(this.buffer.AsSpan(4, 4)); // Write the type buffer
 
         if ((!data.IsEmpty) && length > 0)
         {
@@ -1161,10 +1161,10 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
     /// </returns>
     private int CalculateScanlineLength(int width)
     {
-        int mod = this.bitDepth == 16 ? 16 : 8;
-        int scanlineLength = width * this.bitDepth * this.bytesPerPixel;
+        var mod = this.bitDepth == 16 ? 16 : 8;
+        var scanlineLength = width * this.bitDepth * this.bytesPerPixel;
 
-        int amount = scanlineLength % mod;
+        var amount = scanlineLength % mod;
         if (amount != 0)
         {
             scanlineLength += mod - amount;
@@ -1175,14 +1175,14 @@ internal sealed class PngEncoderCore : IImageEncoderInternals, IDisposable
 
     private void SwapScanlineBuffers()
     {
-        IMemoryOwner<byte> temp = this.previousScanline;
+        var temp = this.previousScanline;
         this.previousScanline = this.currentScanline;
         this.currentScanline = temp;
     }
 
     private static void SwapSpans<T>(ref Span<T> a, ref Span<T> b)
     {
-        Span<T> t = b;
+        var t = b;
         b = a;
         a = t;
     }

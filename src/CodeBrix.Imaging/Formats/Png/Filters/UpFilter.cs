@@ -115,14 +115,14 @@ internal static class UpFilter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void DecodeScalar(Span<byte> scanline, Span<byte> previousScanline)
     {
-        ref byte scanBaseRef = ref MemoryMarshal.GetReference(scanline);
-        ref byte prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
+        ref var scanBaseRef = ref MemoryMarshal.GetReference(scanline);
+        ref var prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
 
         // Up(x) + Prior(x)
-        for (int x = 1; x < scanline.Length; x++)
+        for (var x = 1; x < scanline.Length; x++)
         {
-            ref byte scan = ref Unsafe.Add(ref scanBaseRef, x);
-            byte above = Unsafe.Add(ref prevBaseRef, x);
+            ref var scan = ref Unsafe.Add(ref scanBaseRef, x);
+            var above = Unsafe.Add(ref prevBaseRef, x);
             scan = (byte)(scan + above);
         }
     }
@@ -140,15 +140,15 @@ internal static class UpFilter
         DebugGuard.MustBeSameSized(scanline, previousScanline, nameof(scanline));
         DebugGuard.MustBeSizedAtLeast(result, scanline, nameof(result));
 
-        ref byte scanBaseRef = ref MemoryMarshal.GetReference(scanline);
-        ref byte prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
-        ref byte resultBaseRef = ref MemoryMarshal.GetReference(result);
+        ref var scanBaseRef = ref MemoryMarshal.GetReference(scanline);
+        ref var prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
+        ref var resultBaseRef = ref MemoryMarshal.GetReference(result);
         sum = 0;
 
         // Up(x) = Raw(x) - Prior(x)
         resultBaseRef = 2;
 
-        int x = 0;
+        var x = 0;
 
 #if SUPPORTS_RUNTIME_INTRINSICS
             if (Avx2.IsSupported)
@@ -195,10 +195,10 @@ internal static class UpFilter
 
         for (; x < scanline.Length; /* Note: ++x happens in the body to avoid one add operation */)
         {
-            byte scan = Unsafe.Add(ref scanBaseRef, x);
-            byte above = Unsafe.Add(ref prevBaseRef, x);
+            var scan = Unsafe.Add(ref scanBaseRef, x);
+            var above = Unsafe.Add(ref prevBaseRef, x);
             ++x;
-            ref byte res = ref Unsafe.Add(ref resultBaseRef, x);
+            ref var res = ref Unsafe.Add(ref resultBaseRef, x);
             res = (byte)(scan - above);
             sum += Numerics.Abs(unchecked((sbyte)res));
         }

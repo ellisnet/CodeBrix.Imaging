@@ -19,7 +19,7 @@ internal static class ImageEncoderUtilities
         CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Configuration configuration = image.GetConfiguration();
+        var configuration = image.GetConfiguration();
         if (stream.CanSeek)
         {
             await DoEncodeAsync(stream).ConfigureAwait(false);

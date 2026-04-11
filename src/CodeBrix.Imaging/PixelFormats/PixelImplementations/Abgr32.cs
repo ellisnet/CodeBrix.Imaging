@@ -216,8 +216,8 @@ public partial struct Abgr32 : IPixel<Abgr32>, IPackedVector<uint>
     public void FromBgr24(Bgr24 source)
     {
         // We can assign the Bgr24 value directly to last three bytes of this instance.
-        ref byte thisRef = ref Unsafe.As<Abgr32, byte>(ref this);
-        ref byte thisRefFromB = ref Unsafe.AddByteOffset(ref thisRef, new IntPtr(1));
+        ref var thisRef = ref Unsafe.As<Abgr32, byte>(ref this);
+        ref var thisRefFromB = ref Unsafe.AddByteOffset(ref thisRef, new IntPtr(1));
         Unsafe.As<byte, Bgr24>(ref thisRefFromB) = source;
         this.A = byte.MaxValue;
     }
@@ -256,7 +256,7 @@ public partial struct Abgr32 : IPixel<Abgr32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromL16(L16 source)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.PackedValue);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.PackedValue);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;
@@ -277,7 +277,7 @@ public partial struct Abgr32 : IPixel<Abgr32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromLa32(La32 source)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.L);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(source.L);
         this.R = rgb;
         this.G = rgb;
         this.B = rgb;

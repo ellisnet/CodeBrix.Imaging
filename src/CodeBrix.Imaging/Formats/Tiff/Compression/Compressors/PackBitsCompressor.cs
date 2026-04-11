@@ -24,7 +24,7 @@ internal sealed class PackBitsCompressor : TiffBaseCompressor
     /// <inheritdoc/>
     public override void Initialize(int rowsPerStrip)
     {
-        int additionalBytes = ((this.BytesPerRow + 126) / 127) + 1;
+        var additionalBytes = ((this.BytesPerRow + 126) / 127) + 1;
         this.pixelData = this.Allocator.Allocate<byte>(this.BytesPerRow + additionalBytes);
     }
 
@@ -34,11 +34,11 @@ internal sealed class PackBitsCompressor : TiffBaseCompressor
         DebugGuard.IsTrue(rows.Length % height == 0, "Invalid height");
         DebugGuard.IsTrue(this.BytesPerRow == rows.Length / height, "The widths must match");
 
-        Span<byte> span = this.pixelData.GetSpan();
-        for (int i = 0; i < height; i++)
+        var span = this.pixelData.GetSpan();
+        for (var i = 0; i < height; i++)
         {
-            Span<byte> row = rows.Slice(i * this.BytesPerRow, this.BytesPerRow);
-            int size = PackBitsWriter.PackBits(row, span);
+            var row = rows.Slice(i * this.BytesPerRow, this.BytesPerRow);
+            var size = PackBitsWriter.PackBits(row, span);
             this.Output.Write(span.Slice(0, size));
         }
     }

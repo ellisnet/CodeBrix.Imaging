@@ -23,34 +23,34 @@ public static partial class ProcessingExtensions
     public static Buffer2D<ulong> CalculateIntegralImage<TPixel>(this Image<TPixel> source)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Configuration configuration = source.GetConfiguration();
+        var configuration = source.GetConfiguration();
 
-        int endY = source.Height;
-        int endX = source.Width;
+        var endY = source.Height;
+        var endX = source.Width;
 
-        Buffer2D<ulong> intImage = configuration.MemoryAllocator.Allocate2D<ulong>(source.Width, source.Height);
+        var intImage = configuration.MemoryAllocator.Allocate2D<ulong>(source.Width, source.Height);
         ulong sumX0 = 0;
-        Buffer2D<TPixel> sourceBuffer = source.Frames.RootFrame.PixelBuffer;
+        var sourceBuffer = source.Frames.RootFrame.PixelBuffer;
 
-        using (IMemoryOwner<L8> tempRow = configuration.MemoryAllocator.Allocate<L8>(source.Width))
+        using (var tempRow = configuration.MemoryAllocator.Allocate<L8>(source.Width))
         {
-            Span<L8> tempSpan = tempRow.GetSpan();
-            Span<TPixel> sourceRow = sourceBuffer.DangerousGetRowSpan(0);
-            Span<ulong> destRow = intImage.DangerousGetRowSpan(0);
+            var tempSpan = tempRow.GetSpan();
+            var sourceRow = sourceBuffer.DangerousGetRowSpan(0);
+            var destRow = intImage.DangerousGetRowSpan(0);
 
             PixelOperations<TPixel>.Instance.ToL8(configuration, sourceRow, tempSpan);
 
             // First row
-            for (int x = 0; x < endX; x++)
+            for (var x = 0; x < endX; x++)
             {
                 sumX0 += tempSpan[x].PackedValue;
                 destRow[x] = sumX0;
             }
 
-            Span<ulong> previousDestRow = destRow;
+            var previousDestRow = destRow;
 
             // All other rows
-            for (int y = 1; y < endY; y++)
+            for (var y = 1; y < endY; y++)
             {
                 sourceRow = sourceBuffer.DangerousGetRowSpan(y);
                 destRow = intImage.DangerousGetRowSpan(y);
@@ -62,7 +62,7 @@ public static partial class ProcessingExtensions
                 destRow[0] = sumX0 + previousDestRow[0];
 
                 // Process all other colmns
-                for (int x = 1; x < endX; x++)
+                for (var x = 1; x < endX; x++)
                 {
                     sumX0 += tempSpan[x].PackedValue;
                     destRow[x] = sumX0 + previousDestRow[x];

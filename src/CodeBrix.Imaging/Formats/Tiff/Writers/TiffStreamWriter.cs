@@ -46,7 +46,7 @@ internal sealed class TiffStreamWriter : IDisposable
     /// <returns>The offset to be written later.</returns>
     public long PlaceMarker()
     {
-        long offset = this.BaseStream.Position;
+        var offset = this.BaseStream.Position;
         this.Write(0u);
         return offset;
     }
@@ -126,7 +126,7 @@ internal sealed class TiffStreamWriter : IDisposable
     /// <param name="value">The four-byte unsigned integer to write.</param>
     public void WriteMarker(long offset, uint value)
     {
-        long back = this.BaseStream.Position;
+        var back = this.BaseStream.Position;
         this.BaseStream.Seek(offset, SeekOrigin.Begin);
         this.Write(value);
         this.BaseStream.Seek(back, SeekOrigin.Begin);

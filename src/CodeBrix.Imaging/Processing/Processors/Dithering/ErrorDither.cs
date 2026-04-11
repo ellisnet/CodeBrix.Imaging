@@ -103,20 +103,20 @@ public readonly partial struct ErrorDither : IDither, IEquatable<ErrorDither>, I
             ThrowDefaultInstance();
         }
 
-        int offsetY = bounds.Top;
-        int offsetX = bounds.Left;
-        float scale = quantizer.Options.DitherScale;
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var offsetY = bounds.Top;
+        var offsetX = bounds.Left;
+        var scale = quantizer.Options.DitherScale;
+        var sourceBuffer = source.PixelBuffer;
 
-        for (int y = bounds.Top; y < bounds.Bottom; y++)
+        for (var y = bounds.Top; y < bounds.Bottom; y++)
         {
-            ref TPixel sourceRowRef = ref MemoryMarshal.GetReference(sourceBuffer.DangerousGetRowSpan(y));
-            ref byte destinationRowRef = ref MemoryMarshal.GetReference(destination.GetWritablePixelRowSpanUnsafe(y - offsetY));
+            ref var sourceRowRef = ref MemoryMarshal.GetReference(sourceBuffer.DangerousGetRowSpan(y));
+            ref var destinationRowRef = ref MemoryMarshal.GetReference(destination.GetWritablePixelRowSpanUnsafe(y - offsetY));
 
-            for (int x = bounds.Left; x < bounds.Right; x++)
+            for (var x = bounds.Left; x < bounds.Right; x++)
             {
-                TPixel sourcePixel = Unsafe.Add(ref sourceRowRef, x);
-                Unsafe.Add(ref destinationRowRef, x - offsetX) = quantizer.GetQuantizedColor(sourcePixel, out TPixel transformed);
+                var sourcePixel = Unsafe.Add(ref sourceRowRef, x);
+                Unsafe.Add(ref destinationRowRef, x - offsetX) = quantizer.GetQuantizedColor(sourcePixel, out var transformed);
                 this.Dither(source, bounds, sourcePixel, transformed, x, y, scale);
             }
         }
@@ -136,15 +136,15 @@ public readonly partial struct ErrorDither : IDither, IEquatable<ErrorDither>, I
             ThrowDefaultInstance();
         }
 
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
-        float scale = processor.DitherScale;
-        for (int y = bounds.Top; y < bounds.Bottom; y++)
+        var sourceBuffer = source.PixelBuffer;
+        var scale = processor.DitherScale;
+        for (var y = bounds.Top; y < bounds.Bottom; y++)
         {
-            ref TPixel sourceRowRef = ref MemoryMarshal.GetReference(sourceBuffer.DangerousGetRowSpan(y));
-            for (int x = bounds.Left; x < bounds.Right; x++)
+            ref var sourceRowRef = ref MemoryMarshal.GetReference(sourceBuffer.DangerousGetRowSpan(y));
+            for (var x = bounds.Left; x < bounds.Right; x++)
             {
-                ref TPixel sourcePixel = ref Unsafe.Add(ref sourceRowRef, x);
-                TPixel transformed = Unsafe.AsRef(in processor).GetPaletteColor(sourcePixel);
+                ref var sourcePixel = ref Unsafe.Add(ref sourceRowRef, x);
+                var transformed = Unsafe.AsRef(in processor).GetPaletteColor(sourcePixel);
                 this.Dither(source, bounds, sourcePixel, transformed, x, y, scale);
                 sourcePixel = transformed;
             }
@@ -170,11 +170,11 @@ public readonly partial struct ErrorDither : IDither, IEquatable<ErrorDither>, I
         }
 
         // Calculate the error
-        Vector4 error = (source.ToVector4() - transformed.ToVector4()) * scale;
+        var error = (source.ToVector4() - transformed.ToVector4()) * scale;
 
-        int offset = this.offset;
-        DenseMatrix<float> matrix = this.matrix;
-        Buffer2D<TPixel> imageBuffer = image.PixelBuffer;
+        var offset = this.offset;
+        var matrix = this.matrix;
+        var imageBuffer = image.PixelBuffer;
 
         // Loop through and distribute the error amongst neighboring pixels.
         for (int row = 0, targetY = y; row < matrix.Rows; row++, targetY++)
@@ -184,23 +184,23 @@ public readonly partial struct ErrorDither : IDither, IEquatable<ErrorDither>, I
                 continue;
             }
 
-            Span<TPixel> rowSpan = imageBuffer.DangerousGetRowSpan(targetY);
+            var rowSpan = imageBuffer.DangerousGetRowSpan(targetY);
 
-            for (int col = 0; col < matrix.Columns; col++)
+            for (var col = 0; col < matrix.Columns; col++)
             {
-                int targetX = x + (col - offset);
+                var targetX = x + (col - offset);
                 if (targetX < bounds.Left || targetX >= bounds.Right)
                 {
                     continue;
                 }
 
-                float coefficient = matrix[row, col];
+                var coefficient = matrix[row, col];
                 if (coefficient == 0)
                 {
                     continue;
                 }
 
-                ref TPixel pixel = ref rowSpan[targetX];
+                ref var pixel = ref rowSpan[targetX];
                 var result = pixel.ToVector4();
 
                 result += error * coefficient;

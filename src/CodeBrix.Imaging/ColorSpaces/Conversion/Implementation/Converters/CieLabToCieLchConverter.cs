@@ -22,9 +22,9 @@ internal sealed class CieLabToCieLchConverter
         // Conversion algorithm described here:
         // https://en.wikipedia.org/wiki/Lab_color_space#Cylindrical_representation:_CIELCh_or_CIEHLC
         float l = input.L, a = input.A, b = input.B;
-        float c = MathF.Sqrt((a * a) + (b * b));
-        float hRadians = MathF.Atan2(b, a);
-        float hDegrees = GeometryUtilities.RadianToDegree(hRadians);
+        var c = MathF.Sqrt((a * a) + (b * b));
+        var hRadians = MathF.Atan2(b, a);
+        var hDegrees = GeometryUtilities.RadianToDegree(hRadians);
 
         // Wrap the angle round at 360.
         hDegrees %= 360;

@@ -10,7 +10,7 @@ internal class PassStats
 {
     public PassStats(long targetSize, float targetPsnr, int qMin, int qMax, int quality)
     {
-        bool doSizeSearch = targetSize != 0;
+        var doSizeSearch = targetSize != 0;
 
         this.IsFirst = true;
         this.Dq = 10.0f;
@@ -56,7 +56,7 @@ internal class PassStats
         }
         else if (this.Value != this.LastValue)
         {
-            double slope = (this.Target - this.Value) / (this.LastValue - this.Value);
+            var slope = (this.Target - this.Value) / (this.LastValue - this.Value);
             dq = (float)(slope * (this.LastQ - this.Q));
         }
         else

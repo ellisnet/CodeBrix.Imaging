@@ -83,7 +83,7 @@ public class JpegMetadata : IDeepCloneable
                 return Quantization.DefaultQualityFactor;
             }
 
-            int lumaQuality = this.luminanceQuality.Value;
+            var lumaQuality = this.luminanceQuality.Value;
 
             // Jpeg might not have a chrominance table - return luminance quality (grayscale images)
             if (!this.chrominanceQuality.HasValue)
@@ -91,7 +91,7 @@ public class JpegMetadata : IDeepCloneable
                 return lumaQuality;
             }
 
-            int chromaQuality = this.chrominanceQuality.Value;
+            var chromaQuality = this.chrominanceQuality.Value;
 
             // Theoretically, luma quality would always be greater or equal to chroma quality
             // But we've already encountered images which can have higher quality of chroma components

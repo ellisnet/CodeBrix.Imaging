@@ -21,8 +21,8 @@ internal abstract partial class JpegColorConverterBase
 
         internal static void ConvertCoreInplace(Span<float> values, float maxValue)
         {
-            ref float valuesRef = ref MemoryMarshal.GetReference(values);
-            float scale = 1 / maxValue;
+            ref var valuesRef = ref MemoryMarshal.GetReference(values);
+            var scale = 1 / maxValue;
 
             for (nint i = 0; i < values.Length; i++)
             {

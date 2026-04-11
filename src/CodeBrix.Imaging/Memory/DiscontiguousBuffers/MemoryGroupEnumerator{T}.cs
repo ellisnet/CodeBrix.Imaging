@@ -54,7 +54,7 @@ public ref struct MemoryGroupEnumerator<T>
     [MethodImpl(InliningOptions.ShortMethod)]
     public bool MoveNext()
     {
-        int index = this.index + 1;
+        var index = this.index + 1;
 
         if (index < this.count)
         {

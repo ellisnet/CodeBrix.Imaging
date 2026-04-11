@@ -194,7 +194,7 @@ public class Bgra32Tests
         //Arrange
         var pixel = new Bgra32(0, 0, 0, 0);
         var reference = new Bgra32(64, 128, 255, 192);
-        uint packed = reference.PackedValue;
+        var packed = reference.PackedValue;
 
         //Act
         pixel.PackedValue = packed;
@@ -607,7 +607,7 @@ public class Bgra32Tests
     {
         //Arrange & Act
         Assert.True(BitConverter.IsLittleEndian, "Binary compatibility with Format32bppArgb requires a little-endian platform.");
-        int size = Unsafe.SizeOf<Bgra32>();
+        var size = Unsafe.SizeOf<Bgra32>();
 
         //Assert - Format32bppArgb is 32 bits = 4 bytes per pixel
         Assert.Equal(4, size);
@@ -652,14 +652,14 @@ public class Bgra32Tests
         var pixel = new Bgra32(r: 0xFF, g: 0x80, b: 0x40, a: 0xC0);
 
         //Act
-        uint packed = pixel.PackedValue;
+        var packed = pixel.PackedValue;
 
         //Assert
         // In Format32bppArgb, the uint is stored as little-endian BGRA:
         //   packed = (A << 24) | (R << 16) | (G << 8) | B
         // But since Bgra32 uses Unsafe.As<Bgra32, uint> with sequential layout [B, G, R, A],
         // on little-endian systems: packed = B | (G << 8) | (R << 16) | (A << 24)
-        uint expected = 0x40u | (0x80u << 8) | (0xFFu << 16) | (0xC0u << 24);
+        var expected = 0x40u | (0x80u << 8) | (0xFFu << 16) | (0xC0u << 24);
         Assert.Equal(expected, packed);
 
         //Output
@@ -678,10 +678,10 @@ public class Bgra32Tests
         MemoryMarshal.Write(bytes, in pixel);
 
         //Act - Verify each field maps to the expected byte offset
-        byte fieldB = pixel.B;
-        byte fieldG = pixel.G;
-        byte fieldR = pixel.R;
-        byte fieldA = pixel.A;
+        var fieldB = pixel.B;
+        var fieldG = pixel.G;
+        var fieldR = pixel.R;
+        var fieldA = pixel.A;
 
         //Assert - Field values must match the bytes at the expected offsets
         Assert.Equal(fieldB, bytes[0]); // B is at offset 0
@@ -709,7 +709,7 @@ public class Bgra32Tests
         };
 
         //Act - Cast pixel array to byte span (as System.Drawing.Bitmap.LockBits would produce)
-        Span<byte> bytes = MemoryMarshal.AsBytes(pixels.AsSpan());
+        var bytes = MemoryMarshal.AsBytes(pixels.AsSpan());
 
         //Assert - Each pixel occupies 4 contiguous bytes in BGRA order
         Assert.Equal(12, bytes.Length); // 3 pixels × 4 bytes
@@ -733,9 +733,9 @@ public class Bgra32Tests
         Assert.Equal(0xFF, bytes[11]);
 
         //Output
-        for (int i = 0; i < pixels.Length; i++)
+        for (var i = 0; i < pixels.Length; i++)
         {
-            int offset = i * 4;
+            var offset = i * 4;
             _output.WriteLine($"Pixel {i}: B=0x{bytes[offset]:X2}, G=0x{bytes[offset + 1]:X2}, R=0x{bytes[offset + 2]:X2}, A=0x{bytes[offset + 3]:X2}");
         }
     }
@@ -747,7 +747,7 @@ public class Bgra32Tests
         // System.Drawing stores ARGB as: (alpha << 24) | (red << 16) | (green << 8) | blue
         Assert.True(BitConverter.IsLittleEndian, "Binary compatibility with Format32bppArgb requires a little-endian platform.");
         byte r = 200, g = 100, b = 50, a = 255;
-        int argbInt = (a << 24) | (r << 16) | (g << 8) | b;
+        var argbInt = (a << 24) | (r << 16) | (g << 8) | b;
 
         //Act - Create Bgra32 from those components and compare packed value
         var pixel = new Bgra32(r, g, b, a);

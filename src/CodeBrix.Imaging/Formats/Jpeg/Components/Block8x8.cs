@@ -48,7 +48,7 @@ internal unsafe partial struct Block8x8
         {
             DebugGuard.MustBeBetweenOrEqualTo(idx, 0, Size - 1, nameof(idx));
 
-            ref short selfRef = ref Unsafe.As<Block8x8, short>(ref this);
+            ref var selfRef = ref Unsafe.As<Block8x8, short>(ref this);
             return Unsafe.Add(ref selfRef, idx);
         }
 
@@ -57,7 +57,7 @@ internal unsafe partial struct Block8x8
         {
             DebugGuard.MustBeBetweenOrEqualTo(idx, 0, Size - 1, nameof(idx));
 
-            ref short selfRef = ref Unsafe.As<Block8x8, short>(ref this);
+            ref var selfRef = ref Unsafe.As<Block8x8, short>(ref this);
             Unsafe.Add(ref selfRef, idx) = value;
         }
     }
@@ -96,7 +96,7 @@ internal unsafe partial struct Block8x8
     /// </summary>
     public short[] ToArray()
     {
-        short[] result = new short[Size];
+        var result = new short[Size];
         this.CopyTo(result);
         return result;
     }
@@ -106,8 +106,8 @@ internal unsafe partial struct Block8x8
     /// </summary>
     public void CopyTo(Span<short> destination)
     {
-        ref byte selfRef = ref Unsafe.As<Block8x8, byte>(ref this);
-        ref byte destRef = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<short, byte>(destination));
+        ref var selfRef = ref Unsafe.As<Block8x8, byte>(ref this);
+        ref var destRef = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<short, byte>(destination));
         Unsafe.CopyBlockUnaligned(ref destRef, ref selfRef, Size * sizeof(short));
     }
 
@@ -116,7 +116,7 @@ internal unsafe partial struct Block8x8
     /// </summary>
     public void CopyTo(Span<int> destination)
     {
-        for (int i = 0; i < Size; i++)
+        for (var i = 0; i < Size; i++)
         {
             destination[i] = this[i];
         }
@@ -129,8 +129,8 @@ internal unsafe partial struct Block8x8
     [MethodImpl(InliningOptions.ShortMethod)]
     public void LoadFrom(Span<short> source)
     {
-        ref byte sourceRef = ref Unsafe.As<short, byte>(ref MemoryMarshal.GetReference(source));
-        ref byte destRef = ref Unsafe.As<Block8x8, byte>(ref this);
+        ref var sourceRef = ref Unsafe.As<short, byte>(ref MemoryMarshal.GetReference(source));
+        ref var destRef = ref Unsafe.As<Block8x8, byte>(ref this);
 
         Unsafe.CopyBlockUnaligned(ref destRef, ref sourceRef, Size * sizeof(short));
     }
@@ -140,7 +140,7 @@ internal unsafe partial struct Block8x8
     /// </summary>
     public void LoadFrom(Span<int> source)
     {
-        for (int i = 0; i < Size; i++)
+        for (var i = 0; i < Size; i++)
         {
             this[i] = (short)source[i];
         }
@@ -151,7 +151,7 @@ internal unsafe partial struct Block8x8
     {
         var sb = new StringBuilder();
         sb.Append('[');
-        for (int i = 0; i < Size; i++)
+        for (var i = 0; i < Size; i++)
         {
             sb.Append(this[i]);
             if (i < Size - 1)
@@ -210,7 +210,7 @@ internal unsafe partial struct Block8x8
 #endif
         {
             nint index = Size - 1;
-            ref short elemRef = ref Unsafe.As<Block8x8, short>(ref this);
+            ref var elemRef = ref Unsafe.As<Block8x8, short>(ref this);
 
             while (index >= 0 && Unsafe.Add(ref elemRef, index) == 0)
             {
@@ -227,7 +227,7 @@ internal unsafe partial struct Block8x8
     [MethodImpl(InliningOptions.ShortMethod)]
     public void TransposeInplace()
     {
-        ref short elemRef = ref Unsafe.As<Block8x8, short>(ref this);
+        ref var elemRef = ref Unsafe.As<Block8x8, short>(ref this);
 
         // row #0
         Swap(ref Unsafe.Add(ref elemRef, 1), ref Unsafe.Add(ref elemRef, 8));
@@ -273,7 +273,7 @@ internal unsafe partial struct Block8x8
 
         static void Swap(ref short a, ref short b)
         {
-            short tmp = a;
+            var tmp = a;
             a = b;
             b = tmp;
         }
@@ -285,9 +285,9 @@ internal unsafe partial struct Block8x8
     public static long TotalDifference(ref Block8x8 a, ref Block8x8 b)
     {
         long result = 0;
-        for (int i = 0; i < Size; i++)
+        for (var i = 0; i < Size; i++)
         {
-            int d = a[i] - b[i];
+            var d = a[i] - b[i];
             result += Math.Abs(d);
         }
 

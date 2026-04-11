@@ -68,15 +68,15 @@ internal static class SubFilter
 
     private static void DecodeScalar(Span<byte> scanline, int bytesPerPixel)
     {
-        ref byte scanBaseRef = ref MemoryMarshal.GetReference(scanline);
+        ref var scanBaseRef = ref MemoryMarshal.GetReference(scanline);
 
         // Sub(x) + Raw(x-bpp)
         nint x = bytesPerPixel + 1;
         Unsafe.Add(ref scanBaseRef, x);
         for (; x < scanline.Length; ++x)
         {
-            ref byte scan = ref Unsafe.Add(ref scanBaseRef, x);
-            byte prev = Unsafe.Add(ref scanBaseRef, x - bytesPerPixel);
+            ref var scan = ref Unsafe.Add(ref scanBaseRef, x);
+            var prev = Unsafe.Add(ref scanBaseRef, x - bytesPerPixel);
             scan = (byte)(scan + prev);
         }
     }
@@ -93,19 +93,19 @@ internal static class SubFilter
     {
         DebugGuard.MustBeSizedAtLeast(result, scanline, nameof(result));
 
-        ref byte scanBaseRef = ref MemoryMarshal.GetReference(scanline);
-        ref byte resultBaseRef = ref MemoryMarshal.GetReference(result);
+        ref var scanBaseRef = ref MemoryMarshal.GetReference(scanline);
+        ref var resultBaseRef = ref MemoryMarshal.GetReference(result);
         sum = 0;
 
         // Sub(x) = Raw(x) - Raw(x-bpp)
         resultBaseRef = 1;
 
-        int x = 0;
+        var x = 0;
         for (; x < bytesPerPixel; /* Note: ++x happens in the body to avoid one add operation */)
         {
-            byte scan = Unsafe.Add(ref scanBaseRef, x);
+            var scan = Unsafe.Add(ref scanBaseRef, x);
             ++x;
-            ref byte res = ref Unsafe.Add(ref resultBaseRef, x);
+            ref var res = ref Unsafe.Add(ref resultBaseRef, x);
             res = scan;
             sum += Numerics.Abs(unchecked((sbyte)res));
         }
@@ -153,12 +153,12 @@ internal static class SubFilter
             }
 #endif
 
-        for (int xLeft = x - bytesPerPixel; x < scanline.Length; ++xLeft /* Note: ++x happens in the body to avoid one add operation */)
+        for (var xLeft = x - bytesPerPixel; x < scanline.Length; ++xLeft /* Note: ++x happens in the body to avoid one add operation */)
         {
-            byte scan = Unsafe.Add(ref scanBaseRef, x);
-            byte prev = Unsafe.Add(ref scanBaseRef, xLeft);
+            var scan = Unsafe.Add(ref scanBaseRef, x);
+            var prev = Unsafe.Add(ref scanBaseRef, xLeft);
             ++x;
-            ref byte res = ref Unsafe.Add(ref resultBaseRef, x);
+            ref var res = ref Unsafe.Add(ref resultBaseRef, x);
             res = (byte)(scan - prev);
             sum += Numerics.Abs(unchecked((sbyte)res));
         }

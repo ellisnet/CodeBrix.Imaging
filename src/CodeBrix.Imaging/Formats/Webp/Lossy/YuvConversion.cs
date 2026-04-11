@@ -89,11 +89,11 @@ internal static class YuvConversion
 
     private static void UpSampleScalar(Span<byte> topY, Span<byte> bottomY, Span<byte> topU, Span<byte> topV, Span<byte> curU, Span<byte> curV, Span<byte> topDst, Span<byte> bottomDst, int len)
     {
-        int xStep = 3;
-        int lastPixelPair = (len - 1) >> 1;
-        uint tluv = LoadUv(topU[0], topV[0]); // top-left sample
-        uint luv = LoadUv(curU[0], curV[0]); // left-sample
-        uint uv0 = ((3 * tluv) + luv + 0x00020002u) >> 2;
+        var xStep = 3;
+        var lastPixelPair = (len - 1) >> 1;
+        var tluv = LoadUv(topU[0], topV[0]); // top-left sample
+        var luv = LoadUv(curU[0], curV[0]); // left-sample
+        var uv0 = ((3 * tluv) + luv + 0x00020002u) >> 2;
         YuvToBgr(topY[0], (int)(uv0 & 0xff), (int)(uv0 >> 16), topDst);
 
         if (!bottomY.IsEmpty)
@@ -102,18 +102,18 @@ internal static class YuvConversion
             YuvToBgr(bottomY[0], (int)uv0 & 0xff, (int)(uv0 >> 16), bottomDst);
         }
 
-        for (int x = 1; x <= lastPixelPair; x++)
+        for (var x = 1; x <= lastPixelPair; x++)
         {
-            uint tuv = LoadUv(topU[x], topV[x]); // top sample
-            uint uv = LoadUv(curU[x], curV[x]); // sample
+            var tuv = LoadUv(topU[x], topV[x]); // top sample
+            var uv = LoadUv(curU[x], curV[x]); // sample
 
             // Precompute invariant values associated with first and second diagonals.
-            uint avg = tluv + tuv + luv + uv + 0x00080008u;
-            uint diag12 = (avg + (2 * (tuv + luv))) >> 3;
-            uint diag03 = (avg + (2 * (tluv + uv))) >> 3;
+            var avg = tluv + tuv + luv + uv + 0x00080008u;
+            var diag12 = (avg + (2 * (tuv + luv))) >> 3;
+            var diag03 = (avg + (2 * (tluv + uv))) >> 3;
             uv0 = (diag12 + tluv) >> 1;
-            uint uv1 = (diag03 + tuv) >> 1;
-            int xMul2 = x * 2;
+            var uv1 = (diag03 + tuv) >> 1;
+            var xMul2 = x * 2;
             YuvToBgr(topY[xMul2 - 1], (int)(uv0 & 0xff), (int)(uv0 >> 16), topDst.Slice((xMul2 - 1) * xStep));
             YuvToBgr(topY[xMul2 - 0], (int)(uv1 & 0xff), (int)(uv1 >> 16), topDst.Slice((xMul2 - 0) * xStep));
 
@@ -322,29 +322,29 @@ internal static class YuvConversion
     public static bool ConvertRgbToYuv<TPixel>(Image<TPixel> image, Configuration configuration, MemoryAllocator memoryAllocator, Span<byte> y, Span<byte> u, Span<byte> v)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Buffer2D<TPixel> imageBuffer = image.Frames.RootFrame.PixelBuffer;
-        int width = imageBuffer.Width;
-        int height = imageBuffer.Height;
-        int uvWidth = (width + 1) >> 1;
+        var imageBuffer = image.Frames.RootFrame.PixelBuffer;
+        var width = imageBuffer.Width;
+        var height = imageBuffer.Height;
+        var uvWidth = (width + 1) >> 1;
 
         // Temporary storage for accumulated R/G/B values during conversion to U/V.
-        using IMemoryOwner<ushort> tmpRgb = memoryAllocator.Allocate<ushort>(4 * uvWidth);
-        using IMemoryOwner<Bgra32> bgraRow0Buffer = memoryAllocator.Allocate<Bgra32>(width);
-        using IMemoryOwner<Bgra32> bgraRow1Buffer = memoryAllocator.Allocate<Bgra32>(width);
-        Span<ushort> tmpRgbSpan = tmpRgb.GetSpan();
-        Span<Bgra32> bgraRow0 = bgraRow0Buffer.GetSpan();
-        Span<Bgra32> bgraRow1 = bgraRow1Buffer.GetSpan();
-        int uvRowIndex = 0;
+        using var tmpRgb = memoryAllocator.Allocate<ushort>(4 * uvWidth);
+        using var bgraRow0Buffer = memoryAllocator.Allocate<Bgra32>(width);
+        using var bgraRow1Buffer = memoryAllocator.Allocate<Bgra32>(width);
+        var tmpRgbSpan = tmpRgb.GetSpan();
+        var bgraRow0 = bgraRow0Buffer.GetSpan();
+        var bgraRow1 = bgraRow1Buffer.GetSpan();
+        var uvRowIndex = 0;
         int rowIndex;
-        bool hasAlpha = false;
+        var hasAlpha = false;
         for (rowIndex = 0; rowIndex < height - 1; rowIndex += 2)
         {
-            Span<TPixel> rowSpan = imageBuffer.DangerousGetRowSpan(rowIndex);
-            Span<TPixel> nextRowSpan = imageBuffer.DangerousGetRowSpan(rowIndex + 1);
+            var rowSpan = imageBuffer.DangerousGetRowSpan(rowIndex);
+            var nextRowSpan = imageBuffer.DangerousGetRowSpan(rowIndex + 1);
             PixelOperations<TPixel>.Instance.ToBgra32(configuration, rowSpan, bgraRow0);
             PixelOperations<TPixel>.Instance.ToBgra32(configuration, nextRowSpan, bgraRow1);
 
-            bool rowsHaveAlpha = WebpCommonUtils.CheckNonOpaque(bgraRow0) && WebpCommonUtils.CheckNonOpaque(bgraRow1);
+            var rowsHaveAlpha = WebpCommonUtils.CheckNonOpaque(bgraRow0) && WebpCommonUtils.CheckNonOpaque(bgraRow1);
             if (rowsHaveAlpha)
             {
                 hasAlpha = true;
@@ -370,7 +370,7 @@ internal static class YuvConversion
         // Extra last row.
         if ((height & 1) != 0)
         {
-            Span<TPixel> rowSpan = imageBuffer.DangerousGetRowSpan(rowIndex);
+            var rowSpan = imageBuffer.DangerousGetRowSpan(rowIndex);
             PixelOperations<TPixel>.Instance.ToBgra32(configuration, rowSpan, bgraRow0);
             ConvertRgbaToY(bgraRow0, y.Slice(rowIndex * width), width);
 
@@ -399,7 +399,7 @@ internal static class YuvConversion
     [MethodImpl(InliningOptions.ShortMethod)]
     public static void ConvertRgbaToY(Span<Bgra32> rowSpan, Span<byte> y, int width)
     {
-        for (int x = 0; x < width; x++)
+        for (var x = 0; x < width; x++)
         {
             y[x] = (byte)RgbToY(rowSpan[x].R, rowSpan[x].G, rowSpan[x].B, YuvHalf);
         }
@@ -414,8 +414,8 @@ internal static class YuvConversion
     /// <param name="width">The width.</param>
     public static void ConvertRgbaToUv(Span<ushort> rgb, Span<byte> u, Span<byte> v, int width)
     {
-        int rgbIdx = 0;
-        for (int i = 0; i < width; i += 1, rgbIdx += 4)
+        var rgbIdx = 0;
+        for (var i = 0; i < width; i += 1, rgbIdx += 4)
         {
             int r = rgb[rgbIdx], g = rgb[rgbIdx + 1], b = rgb[rgbIdx + 2];
             u[i] = (byte)RgbToU(r, g, b, YuvHalf << 2);
@@ -428,13 +428,13 @@ internal static class YuvConversion
         Bgra32 bgra0;
         Bgra32 bgra1;
         int i, j;
-        int dstIdx = 0;
+        var dstIdx = 0;
         for (i = 0, j = 0; i < (width >> 1); i += 1, j += 2, dstIdx += 4)
         {
             bgra0 = rowSpan[j];
             bgra1 = rowSpan[j + 1];
-            Bgra32 bgra2 = nextRowSpan[j];
-            Bgra32 bgra3 = nextRowSpan[j + 1];
+            var bgra2 = nextRowSpan[j];
+            var bgra3 = nextRowSpan[j + 1];
 
             dst[dstIdx] = (ushort)LinearToGamma(
                 GammaToLinear(bgra0.R) +
@@ -472,14 +472,14 @@ internal static class YuvConversion
         Bgra32 bgra0;
         Bgra32 bgra1;
         int i, j;
-        int dstIdx = 0;
+        var dstIdx = 0;
         for (i = 0, j = 0; i < width >> 1; i += 1, j += 2, dstIdx += 4)
         {
             bgra0 = rowSpan[j];
             bgra1 = rowSpan[j + 1];
-            Bgra32 bgra2 = nextRowSpan[j];
-            Bgra32 bgra3 = nextRowSpan[j + 1];
-            uint a = (uint)(bgra0.A + bgra1.A + bgra2.A + bgra3.A);
+            var bgra2 = nextRowSpan[j];
+            var bgra3 = nextRowSpan[j + 1];
+            var a = (uint)(bgra0.A + bgra1.A + bgra2.A + bgra3.A);
             int r, g, b;
             if (a is 4 * 0xff or 0)
             {
@@ -519,7 +519,7 @@ internal static class YuvConversion
         {
             bgra0 = rowSpan[j];
             bgra1 = nextRowSpan[j];
-            uint a = (uint)(2u * (bgra0.A + bgra1.A));
+            var a = (uint)(2u * (bgra0.A + bgra1.A));
             int r, g, b;
             if (a is 4 * 0xff or 0)
             {
@@ -544,7 +544,7 @@ internal static class YuvConversion
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int LinearToGammaWeighted(byte rgb0, byte rgb1, byte rgb2, byte rgb3, byte a0, byte a1, byte a2, byte a3, uint totalA)
     {
-        uint sum = (a0 * GammaToLinear(rgb0)) + (a1 * GammaToLinear(rgb1)) + (a2 * GammaToLinear(rgb2)) + (a3 * GammaToLinear(rgb3));
+        var sum = (a0 * GammaToLinear(rgb0)) + (a1 * GammaToLinear(rgb1)) + (a2 * GammaToLinear(rgb2)) + (a3 * GammaToLinear(rgb3));
         return LinearToGamma((sum * WebpLookupTables.InvAlpha[totalA]) >> (WebpConstants.AlphaFix - 2), 0);
     }
 
@@ -553,7 +553,7 @@ internal static class YuvConversion
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int LinearToGamma(uint baseValue, int shift)
     {
-        int y = Interpolate((int)(baseValue << shift));   // Final uplifted value.
+        var y = Interpolate((int)(baseValue << shift));   // Final uplifted value.
         return (y + WebpConstants.GammaTabRounder) >> WebpConstants.GammaTabFix;    // Descale.
     }
 
@@ -563,11 +563,11 @@ internal static class YuvConversion
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int Interpolate(int v)
     {
-        int tabPos = v >> (WebpConstants.GammaTabFix + 2);    // integer part.
-        int x = v & ((WebpConstants.GammaTabScale << 2) - 1);  // fractional part.
-        int v0 = WebpLookupTables.LinearToGammaTab[tabPos];
-        int v1 = WebpLookupTables.LinearToGammaTab[tabPos + 1];
-        int y = (v1 * x) + (v0 * ((WebpConstants.GammaTabScale << 2) - x));   // interpolate
+        var tabPos = v >> (WebpConstants.GammaTabFix + 2);    // integer part.
+        var x = v & ((WebpConstants.GammaTabScale << 2) - 1);  // fractional part.
+        var v0 = WebpLookupTables.LinearToGammaTab[tabPos];
+        var v1 = WebpLookupTables.LinearToGammaTab[tabPos + 1];
+        var y = (v1 * x) + (v0 * ((WebpConstants.GammaTabScale << 2) - x));   // interpolate
 
         return y;
     }
@@ -575,21 +575,21 @@ internal static class YuvConversion
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int RgbToY(byte r, byte g, byte b, int rounding)
     {
-        int luma = (16839 * r) + (33059 * g) + (6420 * b);
+        var luma = (16839 * r) + (33059 * g) + (6420 * b);
         return (luma + rounding + (16 << YuvFix)) >> YuvFix;  // No need to clip.
     }
 
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int RgbToU(int r, int g, int b, int rounding)
     {
-        int u = (-9719 * r) - (19081 * g) + (28800 * b);
+        var u = (-9719 * r) - (19081 * g) + (28800 * b);
         return ClipUv(u, rounding);
     }
 
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int RgbToV(int r, int g, int b, int rounding)
     {
-        int v = (+28800 * r) - (24116 * g) - (4684 * b);
+        var v = (+28800 * r) - (24116 * g) - (4684 * b);
         return ClipUv(v, rounding);
     }
 
@@ -796,7 +796,7 @@ internal static class YuvConversion
     [MethodImpl(InliningOptions.ShortMethod)]
     private static byte Clip8(int v)
     {
-        int yuvMask = (256 << 6) - 1;
+        var yuvMask = (256 << 6) - 1;
         return (byte)((v & ~yuvMask) == 0 ? v >> 6 : v < 0 ? 0 : 255);
     }
 }

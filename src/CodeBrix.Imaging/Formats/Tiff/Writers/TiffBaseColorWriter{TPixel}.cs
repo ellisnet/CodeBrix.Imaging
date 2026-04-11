@@ -43,21 +43,21 @@ internal abstract class TiffBaseColorWriter<TPixel> : IDisposable
     public virtual void Write(TiffBaseCompressor compressor, int rowsPerStrip)
     {
         DebugGuard.IsTrue(this.BytesPerRow == compressor.BytesPerRow, "bytes per row of the compressor does not match tiff color writer");
-        int stripsCount = (this.Image.Height + rowsPerStrip - 1) / rowsPerStrip;
+        var stripsCount = (this.Image.Height + rowsPerStrip - 1) / rowsPerStrip;
 
-        uint[] stripOffsets = new uint[stripsCount];
-        uint[] stripByteCounts = new uint[stripsCount];
+        var stripOffsets = new uint[stripsCount];
+        var stripByteCounts = new uint[stripsCount];
 
-        int stripIndex = 0;
+        var stripIndex = 0;
         compressor.Initialize(rowsPerStrip);
-        for (int y = 0; y < this.Image.Height; y += rowsPerStrip)
+        for (var y = 0; y < this.Image.Height; y += rowsPerStrip)
         {
-            long offset = compressor.Output.Position;
+            var offset = compressor.Output.Position;
 
-            int height = Math.Min(rowsPerStrip, this.Image.Height - y);
+            var height = Math.Min(rowsPerStrip, this.Image.Height - y);
             this.EncodeStrip(y, height, compressor);
 
-            long endOffset = compressor.Output.Position;
+            var endOffset = compressor.Output.Position;
             stripOffsets[stripIndex] = (uint)offset;
             stripByteCounts[stripIndex] = (uint)(endOffset - offset);
             stripIndex++;

@@ -35,7 +35,7 @@ internal class CostModel
     public void Build(int xSize, int cacheBits, Vp8LBackwardRefs backwardRefs)
     {
         var histogram = new Vp8LHistogram(cacheBits);
-        using System.Collections.Generic.List<PixOrCopy>.Enumerator refsEnumerator = backwardRefs.Refs.GetEnumerator();
+        using var refsEnumerator = backwardRefs.Refs.GetEnumerator();
 
         // The following code is similar to HistogramCreate but converts the distance to plane code.
         while (refsEnumerator.MoveNext())
@@ -52,21 +52,21 @@ internal class CostModel
 
     public double GetLengthCost(int length)
     {
-        int extraBits = 0;
-        int code = LosslessUtils.PrefixEncodeBits(length, ref extraBits);
+        var extraBits = 0;
+        var code = LosslessUtils.PrefixEncodeBits(length, ref extraBits);
         return this.Literal[ValuesInBytes + code] + extraBits;
     }
 
     public double GetDistanceCost(int distance)
     {
-        int extraBits = 0;
-        int code = LosslessUtils.PrefixEncodeBits(distance, ref extraBits);
+        var extraBits = 0;
+        var code = LosslessUtils.PrefixEncodeBits(distance, ref extraBits);
         return this.Distance[code] + extraBits;
     }
 
     public double GetCacheCost(uint idx)
     {
-        int literalIdx = (int)(ValuesInBytes + WebpConstants.NumLengthCodes + idx);
+        var literalIdx = (int)(ValuesInBytes + WebpConstants.NumLengthCodes + idx);
         return this.Literal[literalIdx];
     }
 
@@ -75,8 +75,8 @@ internal class CostModel
     private static void ConvertPopulationCountTableToBitEstimates(int numSymbols, uint[] populationCounts, double[] output)
     {
         uint sum = 0;
-        int nonzeros = 0;
-        for (int i = 0; i < numSymbols; i++)
+        var nonzeros = 0;
+        for (var i = 0; i < numSymbols; i++)
         {
             sum += populationCounts[i];
             if (populationCounts[i] > 0)
@@ -92,7 +92,7 @@ internal class CostModel
         else
         {
             double logsum = LosslessUtils.FastLog2(sum);
-            for (int i = 0; i < numSymbols; i++)
+            for (var i = 0; i < numSymbols; i++)
             {
                 output[i] = logsum - LosslessUtils.FastLog2(populationCounts[i]);
             }

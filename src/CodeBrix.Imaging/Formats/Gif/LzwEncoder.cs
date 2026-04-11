@@ -268,21 +268,21 @@ internal sealed class LzwEncoder : IDisposable
         this.ResetCodeTable(); // Clear hash table
         this.Output(this.clearCode, stream);
 
-        ref int hashTableRef = ref MemoryMarshal.GetReference(this.hashTable.GetSpan());
-        ref int codeTableRef = ref MemoryMarshal.GetReference(this.codeTable.GetSpan());
+        ref var hashTableRef = ref MemoryMarshal.GetReference(this.hashTable.GetSpan());
+        ref var codeTableRef = ref MemoryMarshal.GetReference(this.codeTable.GetSpan());
 
         int entry = indexedPixels[0, 0];
 
-        for (int y = 0; y < indexedPixels.Height; y++)
+        for (var y = 0; y < indexedPixels.Height; y++)
         {
-            ref byte rowSpanRef = ref MemoryMarshal.GetReference(indexedPixels.DangerousGetRowSpan(y));
-            int offsetX = y == 0 ? 1 : 0;
+            ref var rowSpanRef = ref MemoryMarshal.GetReference(indexedPixels.DangerousGetRowSpan(y));
+            var offsetX = y == 0 ? 1 : 0;
 
-            for (int x = offsetX; x < indexedPixels.Width; x++)
+            for (var x = offsetX; x < indexedPixels.Width; x++)
             {
                 int code = Unsafe.Add(ref rowSpanRef, x);
-                int freeCode = (code << MaxBits) + entry;
-                int hashIndex = (code << HashShift) ^ entry;
+                var freeCode = (code << MaxBits) + entry;
+                var hashIndex = (code << HashShift) ^ entry;
 
                 if (Unsafe.Add(ref hashTableRef, hashIndex) == freeCode)
                 {
@@ -293,7 +293,7 @@ internal sealed class LzwEncoder : IDisposable
                 // Non-empty slot
                 if (Unsafe.Add(ref hashTableRef, hashIndex) >= 0)
                 {
-                    int disp = 1;
+                    var disp = 1;
                     if (hashIndex != 0)
                     {
                         disp = HashSize - hashIndex;
@@ -358,7 +358,7 @@ internal sealed class LzwEncoder : IDisposable
     /// <param name="outs">The stream to write to.</param>
     private void Output(int code, Stream outs)
     {
-        ref byte accumulatorsRef = ref MemoryMarshal.GetReference(this.accumulators.AsSpan());
+        ref var accumulatorsRef = ref MemoryMarshal.GetReference(this.accumulators.AsSpan());
         this.currentAccumulator &= Masks[this.currentBits];
 
         if (this.currentBits > 0)

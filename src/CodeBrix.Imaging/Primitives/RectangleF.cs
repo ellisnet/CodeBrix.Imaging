@@ -201,10 +201,10 @@ public struct RectangleF : IEquatable<RectangleF>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static RectangleF Intersect(RectangleF a, RectangleF b)
     {
-        float x1 = MathF.Max(a.X, b.X);
-        float x2 = MathF.Min(a.Right, b.Right);
-        float y1 = MathF.Max(a.Y, b.Y);
-        float y2 = MathF.Min(a.Bottom, b.Bottom);
+        var x1 = MathF.Max(a.X, b.X);
+        var x2 = MathF.Min(a.Right, b.Right);
+        var y1 = MathF.Max(a.Y, b.Y);
+        var y2 = MathF.Min(a.Bottom, b.Bottom);
 
         if (x2 >= x1 && y2 >= y1)
         {
@@ -224,7 +224,7 @@ public struct RectangleF : IEquatable<RectangleF>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static RectangleF Inflate(RectangleF rectangle, float x, float y)
     {
-        RectangleF r = rectangle;
+        var r = rectangle;
         r.Inflate(x, y);
         return r;
     }
@@ -237,8 +237,8 @@ public struct RectangleF : IEquatable<RectangleF>
     /// <returns>A transformed <see cref="RectangleF"/>.</returns>
     public static RectangleF Transform(RectangleF rectangle, Matrix3x2 matrix)
     {
-        PointF bottomRight = PointF.Transform(new PointF(rectangle.Right, rectangle.Bottom), matrix);
-        PointF topLeft = PointF.Transform(rectangle.Location, matrix);
+        var bottomRight = PointF.Transform(new PointF(rectangle.Right, rectangle.Bottom), matrix);
+        var topLeft = PointF.Transform(rectangle.Location, matrix);
         return new RectangleF(topLeft, new SizeF(bottomRight - topLeft));
     }
 
@@ -251,10 +251,10 @@ public struct RectangleF : IEquatable<RectangleF>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static RectangleF Union(RectangleF a, RectangleF b)
     {
-        float x1 = MathF.Min(a.X, b.X);
-        float x2 = MathF.Max(a.Right, b.Right);
-        float y1 = MathF.Min(a.Y, b.Y);
-        float y2 = MathF.Max(a.Bottom, b.Bottom);
+        var x1 = MathF.Min(a.X, b.X);
+        var x2 = MathF.Max(a.Right, b.Right);
+        var y1 = MathF.Min(a.Y, b.Y);
+        var y2 = MathF.Max(a.Bottom, b.Bottom);
 
         return new RectangleF(x1, y1, x2 - x1, y2 - y1);
     }
@@ -281,7 +281,7 @@ public struct RectangleF : IEquatable<RectangleF>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Intersect(RectangleF rectangle)
     {
-        RectangleF result = Intersect(rectangle, this);
+        var result = Intersect(rectangle, this);
 
         this.X = result.X;
         this.Y = result.Y;

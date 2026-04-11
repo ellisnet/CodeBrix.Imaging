@@ -43,10 +43,10 @@ internal sealed class IccClut : IEquatable<IccClut>
         const float Max = ushort.MaxValue;
 
         this.Values = new float[values.Length][];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             this.Values[i] = new float[values[i].Length];
-            for (int j = 0; j < values[i].Length; j++)
+            for (var j = 0; j < values[i].Length; j++)
             {
                 this.Values[i][j] = values[i][j] / Max;
             }
@@ -72,10 +72,10 @@ internal sealed class IccClut : IEquatable<IccClut>
         const float Max = byte.MaxValue;
 
         this.Values = new float[values.Length][];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             this.Values[i] = new float[values[i].Length];
-            for (int j = 0; j < values[i].Length; j++)
+            for (var j = 0; j < values[i].Length; j++)
             {
                 this.Values[i][j] = values[i][j] / Max;
             }
@@ -154,7 +154,7 @@ internal sealed class IccClut : IEquatable<IccClut>
             return false;
         }
 
-        for (int i = 0; i < this.Values.Length; i++)
+        for (var i = 0; i < this.Values.Length; i++)
         {
             if (!this.Values[i].AsSpan().SequenceEqual(other.Values[i]))
             {
@@ -170,11 +170,11 @@ internal sealed class IccClut : IEquatable<IccClut>
         Guard.MustBeBetweenOrEqualTo(this.InputChannelCount, 1, 15, nameof(this.InputChannelCount));
         Guard.MustBeBetweenOrEqualTo(this.OutputChannelCount, 1, 15, nameof(this.OutputChannelCount));
 
-        bool isLengthDifferent = this.Values.Any(t => t.Length != this.OutputChannelCount);
+        var isLengthDifferent = this.Values.Any(t => t.Length != this.OutputChannelCount);
         Guard.IsFalse(isLengthDifferent, nameof(this.Values), "The number of output values varies");
 
-        int length = 0;
-        for (int i = 0; i < this.InputChannelCount; i++)
+        var length = 0;
+        for (var i = 0; i < this.InputChannelCount; i++)
         {
             length += (int)Math.Pow(this.GridPointCount[i], this.InputChannelCount);
         }

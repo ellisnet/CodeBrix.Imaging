@@ -75,7 +75,7 @@ internal sealed class JpegTiffCompression : TiffBaseDecompressor
                 case TiffPhotometricInterpretation.YCbCr:
                 case TiffPhotometricInterpretation.Rgb:
                 {
-                    using SpectralConverter<Rgb24> spectralConverter = this.photometricInterpretation == TiffPhotometricInterpretation.YCbCr ?
+                    using var spectralConverter = this.photometricInterpretation == TiffPhotometricInterpretation.YCbCr ?
                         new RgbJpegSpectralConverter<Rgb24>(this.configuration) : new SpectralConverter<Rgb24>(this.configuration);
                     var scanDecoder = new HuffmanScanDecoder(stream, spectralConverter, CancellationToken.None);
                     jpegDecoder.LoadTables(this.jpegTables, scanDecoder);
@@ -101,11 +101,11 @@ internal sealed class JpegTiffCompression : TiffBaseDecompressor
 
     private static void CopyImageBytesToBuffer(Span<byte> buffer, Buffer2D<Rgb24> pixelBuffer)
     {
-        int offset = 0;
-        for (int y = 0; y < pixelBuffer.Height; y++)
+        var offset = 0;
+        for (var y = 0; y < pixelBuffer.Height; y++)
         {
-            Span<Rgb24> pixelRowSpan = pixelBuffer.DangerousGetRowSpan(y);
-            Span<byte> rgbBytes = MemoryMarshal.AsBytes(pixelRowSpan);
+            var pixelRowSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var rgbBytes = MemoryMarshal.AsBytes(pixelRowSpan);
             rgbBytes.CopyTo(buffer.Slice(offset));
             offset += rgbBytes.Length;
         }
@@ -113,11 +113,11 @@ internal sealed class JpegTiffCompression : TiffBaseDecompressor
 
     private static void CopyImageBytesToBuffer(Span<byte> buffer, Buffer2D<L8> pixelBuffer)
     {
-        int offset = 0;
-        for (int y = 0; y < pixelBuffer.Height; y++)
+        var offset = 0;
+        for (var y = 0; y < pixelBuffer.Height; y++)
         {
-            Span<L8> pixelRowSpan = pixelBuffer.DangerousGetRowSpan(y);
-            Span<byte> rgbBytes = MemoryMarshal.AsBytes(pixelRowSpan);
+            var pixelRowSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var rgbBytes = MemoryMarshal.AsBytes(pixelRowSpan);
             rgbBytes.CopyTo(buffer.Slice(offset));
             offset += rgbBytes.Length;
         }

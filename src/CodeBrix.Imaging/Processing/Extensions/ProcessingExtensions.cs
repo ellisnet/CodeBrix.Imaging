@@ -80,7 +80,7 @@ public static partial class ProcessingExtensions
         Guard.NotNull(operation, nameof(operation));
         source.EnsureNotDisposed();
 
-        IInternalImageProcessingContext<TPixel> operationsRunner
+        var operationsRunner
             = configuration.ImageOperationsProvider.CreateImageProcessingContext(configuration, source, true);
 
         operation(operationsRunner);
@@ -119,7 +119,7 @@ public static partial class ProcessingExtensions
         Guard.NotNull(operations, nameof(operations));
         source.EnsureNotDisposed();
 
-        IInternalImageProcessingContext<TPixel> operationsRunner
+        var operationsRunner
             = configuration.ImageOperationsProvider.CreateImageProcessingContext(configuration, source, true);
 
         operationsRunner.ApplyProcessors(operations);
@@ -198,7 +198,7 @@ public static partial class ProcessingExtensions
         Guard.NotNull(operation, nameof(operation));
         source.EnsureNotDisposed();
 
-        IInternalImageProcessingContext<TPixel> operationsRunner
+        var operationsRunner
             = configuration.ImageOperationsProvider.CreateImageProcessingContext(configuration, source, false);
 
         operation(operationsRunner);
@@ -241,7 +241,7 @@ public static partial class ProcessingExtensions
         Guard.NotNull(operations, nameof(operations));
         source.EnsureNotDisposed();
 
-        IInternalImageProcessingContext<TPixel> operationsRunner
+        var operationsRunner
             = configuration.ImageOperationsProvider.CreateImageProcessingContext(configuration, source, false);
 
         operationsRunner.ApplyProcessors(operations);
@@ -259,7 +259,7 @@ public static partial class ProcessingExtensions
         this IImageProcessingContext source,
         params IImageProcessor[] operations)
     {
-        foreach (IImageProcessor p in operations)
+        foreach (var p in operations)
         {
             source = source.ApplyProcessor(p);
         }
@@ -287,7 +287,7 @@ public static partial class ProcessingExtensions
         public void Visit<TPixel>(Image<TPixel> image)
             where TPixel : unmanaged, IPixel<TPixel>
         {
-            IInternalImageProcessingContext<TPixel> operationsRunner =
+            var operationsRunner =
                 this.configuration.ImageOperationsProvider.CreateImageProcessingContext(this.configuration, image, this.mutate);
 
             this.operation(operationsRunner);

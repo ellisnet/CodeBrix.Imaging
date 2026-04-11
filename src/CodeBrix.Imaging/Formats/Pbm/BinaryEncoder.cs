@@ -60,16 +60,16 @@ internal class BinaryEncoder
     private static void WriteGrayscale<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToL8Bytes(
                 configuration,
@@ -85,16 +85,16 @@ internal class BinaryEncoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 2;
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToL16Bytes(
                 configuration,
@@ -110,16 +110,16 @@ internal class BinaryEncoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 3;
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToRgb24Bytes(
                 configuration,
@@ -135,16 +135,16 @@ internal class BinaryEncoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 6;
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToRgb48Bytes(
                 configuration,
@@ -159,28 +159,28 @@ internal class BinaryEncoder
     private static void WriteBlackAndWhite<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L8> row = allocator.Allocate<L8>(width);
-        Span<L8> rowSpan = row.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L8>(width);
+        var rowSpan = row.GetSpan();
 
-        int previousValue = 0;
-        int startBit = 0;
-        for (int y = 0; y < height; y++)
+        var previousValue = 0;
+        var startBit = 0;
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToL8(
                 configuration,
                 pixelSpan,
                 rowSpan);
 
-            for (int x = 0; x < width;)
+            for (var x = 0; x < width;)
             {
-                int value = previousValue;
-                for (int i = startBit; i < 8; i++)
+                var value = previousValue;
+                for (var i = startBit; i < 8; i++)
                 {
                     if (rowSpan[x].PackedValue < 128)
                     {

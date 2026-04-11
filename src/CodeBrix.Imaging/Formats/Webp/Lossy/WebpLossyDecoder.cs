@@ -61,8 +61,8 @@ internal sealed class WebpLossyDecoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // Paragraph 9.2: color space and clamp type follow.
-        sbyte colorSpace = (sbyte)this.bitReader.ReadValue(1);
-        sbyte clampType = (sbyte)this.bitReader.ReadValue(1);
+        var colorSpace = (sbyte)this.bitReader.ReadValue(1);
+        var clampType = (sbyte)this.bitReader.ReadValue(1);
         var pictureHeader = new Vp8PictureHeader()
         {
             Width = (uint)width,
@@ -75,11 +75,11 @@ internal sealed class WebpLossyDecoder
 
         // Paragraph 9.3: Parse the segment header.
         var proba = new Vp8Proba();
-        Vp8SegmentHeader vp8SegmentHeader = this.ParseSegmentHeader(proba);
+        var vp8SegmentHeader = this.ParseSegmentHeader(proba);
 
         using (var decoder = new Vp8Decoder(info.Vp8FrameHeader, pictureHeader, vp8SegmentHeader, proba, this.memoryAllocator))
         {
-            Vp8Io io = InitializeVp8Io(decoder, pictureHeader);
+            var io = InitializeVp8Io(decoder, pictureHeader);
 
             // Paragraph 9.4: Parse the filter specs.
             this.ParseFilterHeader(decoder);
@@ -124,11 +124,11 @@ internal sealed class WebpLossyDecoder
     private void DecodePixelValues<TPixel>(int width, int height, Span<byte> pixelData, Buffer2D<TPixel> decodedPixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int widthMul3 = width * 3;
-        for (int y = 0; y < height; y++)
+        var widthMul3 = width * 3;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> row = pixelData.Slice(y * widthMul3, widthMul3);
-            Span<TPixel> decodedPixelRow = decodedPixels.DangerousGetRowSpan(y);
+            var row = pixelData.Slice(y * widthMul3, widthMul3);
+            var decodedPixelRow = decodedPixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromBgr24Bytes(
                 this.configuration,
                 row,
@@ -141,16 +141,16 @@ internal sealed class WebpLossyDecoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         TPixel color = default;
-        Span<byte> alphaSpan = alpha.Memory.Span;
-        Span<Bgr24> pixelsBgr = MemoryMarshal.Cast<byte, Bgr24>(pixelData);
-        for (int y = 0; y < height; y++)
+        var alphaSpan = alpha.Memory.Span;
+        var pixelsBgr = MemoryMarshal.Cast<byte, Bgr24>(pixelData);
+        for (var y = 0; y < height; y++)
         {
-            int yMulWidth = y * width;
-            Span<TPixel> decodedPixelRow = decodedPixels.DangerousGetRowSpan(y);
-            for (int x = 0; x < width; x++)
+            var yMulWidth = y * width;
+            var decodedPixelRow = decodedPixels.DangerousGetRowSpan(y);
+            for (var x = 0; x < width; x++)
             {
-                int offset = yMulWidth + x;
-                Bgr24 bgr = pixelsBgr[offset];
+                var offset = yMulWidth + x;
+                var bgr = pixelsBgr[offset];
                 color.FromBgra32(new Bgra32(bgr.R, bgr.G, bgr.B, alphaSpan[offset]));
                 decodedPixelRow[x] = color;
             }
@@ -163,10 +163,10 @@ internal sealed class WebpLossyDecoder
         {
             // Parse bitstream for this row.
             long bitreaderIdx = dec.MbY & dec.NumPartsMinusOne;
-            Vp8BitReader bitreader = dec.Vp8BitReaders[bitreaderIdx];
+            var bitreader = dec.Vp8BitReaders[bitreaderIdx];
 
             // Parse intra mode mode row.
-            for (int mbX = 0; mbX < dec.MbWidth; ++mbX)
+            for (var mbX = 0; mbX < dec.MbWidth; ++mbX)
             {
                 this.ParseIntraMode(dec, mbX);
             }
@@ -187,9 +187,9 @@ internal sealed class WebpLossyDecoder
 
     private void ParseIntraMode(Vp8Decoder dec, int mbX)
     {
-        Vp8MacroBlockData block = dec.MacroBlockData[mbX];
-        Span<byte> top = dec.IntraT.AsSpan(4 * mbX, 4);
-        byte[] left = dec.IntraL;
+        var block = dec.MacroBlockData[mbX];
+        var top = dec.IntraT.AsSpan(4 * mbX, 4);
+        var left = dec.IntraL;
 
         if (dec.SegmentHeader.UpdateMap)
         {
@@ -213,11 +213,11 @@ internal sealed class WebpLossyDecoder
         if (!block.IsI4x4)
         {
             // Hardcoded 16x16 intra-mode decision tree.
-            int yMode = this.bitReader.GetBit(156) != 0 ?
+            var yMode = this.bitReader.GetBit(156) != 0 ?
                 this.bitReader.GetBit(128) != 0 ? (int)IntraPredictionMode.TrueMotion : (int)IntraPredictionMode.HPrediction :
                 this.bitReader.GetBit(163) != 0 ? (int)IntraPredictionMode.VPrediction : (int)IntraPredictionMode.DcPrediction;
             block.Modes[0] = (byte)yMode;
-            for (int i = 0; i < left.Length; i++)
+            for (var i = 0; i < left.Length; i++)
             {
                 left[i] = (byte)yMode;
                 top[i] = (byte)yMode;
@@ -225,13 +225,13 @@ internal sealed class WebpLossyDecoder
         }
         else
         {
-            Span<byte> modes = block.Modes.AsSpan();
-            for (int y = 0; y < 4; y++)
+            var modes = block.Modes.AsSpan();
+            for (var y = 0; y < 4; y++)
             {
                 int yMode = left[y];
-                for (int x = 0; x < 4; x++)
+                for (var x = 0; x < 4; x++)
                 {
-                    byte[] prob = WebpLookupTables.ModesProba[top[x], yMode];
+                    var prob = WebpLookupTables.ModesProba[top[x], yMode];
                     int i = WebpConstants.YModesIntra4[this.bitReader.GetBit(prob[0])];
                     while (i > 0)
                     {
@@ -256,10 +256,10 @@ internal sealed class WebpLossyDecoder
 
     private void InitScanline(Vp8Decoder dec)
     {
-        Vp8MacroBlock left = dec.LeftMacroBlock;
+        var left = dec.LeftMacroBlock;
         left.NoneZeroAcDcCoeffs = 0;
         left.NoneZeroDcCoeffs = 0;
-        for (int i = 0; i < dec.IntraL.Length; i++)
+        for (var i = 0; i < dec.IntraL.Length; i++)
         {
             dec.IntraL[i] = 0;
         }
@@ -275,25 +275,25 @@ internal sealed class WebpLossyDecoder
 
     private void ReconstructRow(Vp8Decoder dec)
     {
-        int mby = dec.MbY;
+        var mby = dec.MbY;
         const int yOff = (WebpConstants.Bps * 1) + 8;
         const int uOff = yOff + (WebpConstants.Bps * 16) + WebpConstants.Bps;
         const int vOff = uOff + 16;
 
-        Span<byte> yuv = dec.YuvBuffer.Memory.Span;
-        Span<byte> yDst = yuv.Slice(yOff);
-        Span<byte> uDst = yuv.Slice(uOff);
-        Span<byte> vDst = yuv.Slice(vOff);
+        var yuv = dec.YuvBuffer.Memory.Span;
+        var yDst = yuv.Slice(yOff);
+        var uDst = yuv.Slice(uOff);
+        var vDst = yuv.Slice(vOff);
 
         // Initialize left-most block.
-        int end = 16 * WebpConstants.Bps;
-        for (int i = 0; i < end; i += WebpConstants.Bps)
+        var end = 16 * WebpConstants.Bps;
+        for (var i = 0; i < end; i += WebpConstants.Bps)
         {
             yuv[i - 1 + yOff] = 129;
         }
 
         end = 8 * WebpConstants.Bps;
-        for (int i = 0; i < end; i += WebpConstants.Bps)
+        for (var i = 0; i < end; i += WebpConstants.Bps)
         {
             yuv[i - 1 + uOff] = 129;
             yuv[i - 1 + vOff] = 129;
@@ -308,45 +308,45 @@ internal sealed class WebpLossyDecoder
         {
             // We only need to do this init once at block (0,0).
             // Afterward, it remains valid for the whole topmost row.
-            Span<byte> tmp = yuv.Slice(yOff - WebpConstants.Bps - 1, 16 + 4 + 1);
-            for (int i = 0; i < tmp.Length; i++)
+            var tmp = yuv.Slice(yOff - WebpConstants.Bps - 1, 16 + 4 + 1);
+            for (var i = 0; i < tmp.Length; i++)
             {
                 tmp[i] = 127;
             }
 
             tmp = yuv.Slice(uOff - WebpConstants.Bps - 1, 8 + 1);
-            for (int i = 0; i < tmp.Length; i++)
+            for (var i = 0; i < tmp.Length; i++)
             {
                 tmp[i] = 127;
             }
 
             tmp = yuv.Slice(vOff - WebpConstants.Bps - 1, 8 + 1);
-            for (int i = 0; i < tmp.Length; i++)
+            for (var i = 0; i < tmp.Length; i++)
             {
                 tmp[i] = 127;
             }
         }
 
         // Reconstruct one row.
-        for (int mbx = 0; mbx < dec.MbWidth; mbx++)
+        for (var mbx = 0; mbx < dec.MbWidth; mbx++)
         {
-            Vp8MacroBlockData block = dec.MacroBlockData[mbx];
+            var block = dec.MacroBlockData[mbx];
 
             // Rotate in the left samples from previously decoded block. We move four
             // pixels at a time for alignment reason, and because of in-loop filter.
             if (mbx > 0)
             {
-                for (int i = -1; i < 16; i++)
+                for (var i = -1; i < 16; i++)
                 {
-                    int srcIdx = (i * WebpConstants.Bps) + 12 + yOff;
-                    int dstIdx = (i * WebpConstants.Bps) - 4 + yOff;
+                    var srcIdx = (i * WebpConstants.Bps) + 12 + yOff;
+                    var dstIdx = (i * WebpConstants.Bps) - 4 + yOff;
                     yuv.Slice(srcIdx, 4).CopyTo(yuv.Slice(dstIdx));
                 }
 
-                for (int i = -1; i < 8; i++)
+                for (var i = -1; i < 8; i++)
                 {
-                    int srcIdx = (i * WebpConstants.Bps) + 4 + uOff;
-                    int dstIdx = (i * WebpConstants.Bps) - 4 + uOff;
+                    var srcIdx = (i * WebpConstants.Bps) + 4 + uOff;
+                    var dstIdx = (i * WebpConstants.Bps) - 4 + uOff;
                     yuv.Slice(srcIdx, 4).CopyTo(yuv.Slice(dstIdx));
                     srcIdx = (i * WebpConstants.Bps) + 4 + vOff;
                     dstIdx = (i * WebpConstants.Bps) - 4 + vOff;
@@ -355,9 +355,9 @@ internal sealed class WebpLossyDecoder
             }
 
             // Bring top samples into the cache.
-            Vp8TopSamples topYuv = dec.YuvTopSamples[mbx];
-            short[] coeffs = block.Coeffs;
-            uint bits = block.NonZeroY;
+            var topYuv = dec.YuvTopSamples[mbx];
+            var coeffs = block.Coeffs;
+            var bits = block.NonZeroY;
             if (mby > 0)
             {
                 topYuv.Y.CopyTo(yuv.Slice(yOff - WebpConstants.Bps));
@@ -368,13 +368,13 @@ internal sealed class WebpLossyDecoder
             // Predict and add residuals.
             if (block.IsI4x4)
             {
-                Span<byte> topRight = yuv.Slice(yOff - WebpConstants.Bps + 16);
+                var topRight = yuv.Slice(yOff - WebpConstants.Bps + 16);
                 if (mby > 0)
                 {
                     if (mbx >= dec.MbWidth - 1)
                     {
                         // On rightmost border.
-                        byte topYuv15 = topYuv.Y[15];
+                        var topYuv15 = topYuv.Y[15];
                         topRight[0] = topYuv15;
                         topRight[1] = topYuv15;
                         topRight[2] = topYuv15;
@@ -387,15 +387,15 @@ internal sealed class WebpLossyDecoder
                 }
 
                 // Replicate the top-right pixels below.
-                Span<uint> topRightUint = MemoryMarshal.Cast<byte, uint>(yuv.Slice(yOff - WebpConstants.Bps + 16));
+                var topRightUint = MemoryMarshal.Cast<byte, uint>(yuv.Slice(yOff - WebpConstants.Bps + 16));
                 topRightUint[WebpConstants.Bps] = topRightUint[2 * WebpConstants.Bps] = topRightUint[3 * WebpConstants.Bps] = topRightUint[0];
 
                 // Predict and add residuals for all 4x4 blocks in turn.
-                for (int n = 0; n < 16; ++n, bits <<= 2)
+                for (var n = 0; n < 16; ++n, bits <<= 2)
                 {
-                    int offset = yOff + WebpConstants.Scan[n];
-                    Span<byte> dst = yuv.Slice(offset);
-                    byte lumaMode = block.Modes[n];
+                    var offset = yOff + WebpConstants.Scan[n];
+                    var dst = yuv.Slice(offset);
+                    var lumaMode = block.Modes[n];
                     switch (lumaMode)
                     {
                         case 0:
@@ -436,7 +436,7 @@ internal sealed class WebpLossyDecoder
             else
             {
                 // 16x16
-                int mode = CheckMode(mbx, mby, block.Modes[0]);
+                var mode = CheckMode(mbx, mby, block.Modes[0]);
                 switch (mode)
                 {
                     case 0:
@@ -464,7 +464,7 @@ internal sealed class WebpLossyDecoder
 
                 if (bits != 0)
                 {
-                    for (int n = 0; n < 16; ++n, bits <<= 2)
+                    for (var n = 0; n < 16; ++n, bits <<= 2)
                     {
                         this.DoTransform(bits, coeffs.AsSpan(n * 16), yDst.Slice(WebpConstants.Scan[n]), this.scratch);
                     }
@@ -472,8 +472,8 @@ internal sealed class WebpLossyDecoder
             }
 
             // Chroma
-            uint bitsUv = block.NonZeroUv;
-            int chromaMode = CheckMode(mbx, mby, block.UvMode);
+            var bitsUv = block.NonZeroUv;
+            var chromaMode = CheckMode(mbx, mby, block.UvMode);
             switch (chromaMode)
             {
                 case 0:
@@ -518,17 +518,17 @@ internal sealed class WebpLossyDecoder
             }
 
             // Transfer reconstructed samples from yuv_buffer cache to final destination.
-            Span<byte> yOut = dec.CacheY.Memory.Span.Slice(dec.CacheYOffset + (mbx * 16));
-            Span<byte> uOut = dec.CacheU.Memory.Span.Slice(dec.CacheUvOffset + (mbx * 8));
-            Span<byte> vOut = dec.CacheV.Memory.Span.Slice(dec.CacheUvOffset + (mbx * 8));
-            for (int j = 0; j < 16; j++)
+            var yOut = dec.CacheY.Memory.Span.Slice(dec.CacheYOffset + (mbx * 16));
+            var uOut = dec.CacheU.Memory.Span.Slice(dec.CacheUvOffset + (mbx * 8));
+            var vOut = dec.CacheV.Memory.Span.Slice(dec.CacheUvOffset + (mbx * 8));
+            for (var j = 0; j < 16; j++)
             {
                 yDst.Slice(j * WebpConstants.Bps, Math.Min(16, yOut.Length)).CopyTo(yOut.Slice(j * dec.CacheYStride));
             }
 
-            for (int j = 0; j < 8; j++)
+            for (var j = 0; j < 8; j++)
             {
-                int jUvStride = j * dec.CacheUvStride;
+                var jUvStride = j * dec.CacheUvStride;
                 uDst.Slice(j * WebpConstants.Bps, Math.Min(8, uOut.Length)).CopyTo(uOut.Slice(jUvStride));
                 vDst.Slice(j * WebpConstants.Bps, Math.Min(8, vOut.Length)).CopyTo(vOut.Slice(jUvStride));
             }
@@ -537,8 +537,8 @@ internal sealed class WebpLossyDecoder
 
     private void FilterRow(Vp8Decoder dec)
     {
-        int mby = dec.MbY;
-        for (int mbx = dec.TopLeftMbX; mbx < dec.BottomRightMbX; ++mbx)
+        var mby = dec.MbY;
+        for (var mbx = dec.TopLeftMbX; mbx < dec.BottomRightMbX; ++mbx)
         {
             this.DoFilter(dec, mbx, mby);
         }
@@ -546,8 +546,8 @@ internal sealed class WebpLossyDecoder
 
     private void DoFilter(Vp8Decoder dec, int mbx, int mby)
     {
-        int yBps = dec.CacheYStride;
-        Vp8FilterInfo filterInfo = dec.FilterInfo[mbx];
+        var yBps = dec.CacheYStride;
+        var filterInfo = dec.FilterInfo[mbx];
         int iLevel = filterInfo.InnerLevel;
         int limit = filterInfo.Limit;
 
@@ -558,7 +558,7 @@ internal sealed class WebpLossyDecoder
 
         if (dec.Filter == LoopFilter.Simple)
         {
-            int offset = dec.CacheYOffset + (mbx * 16);
+            var offset = dec.CacheYOffset + (mbx * 16);
             if (mbx > 0)
             {
                 LossyUtils.SimpleHFilter16(dec.CacheY.Memory.Span, offset, yBps, limit + 4);
@@ -581,9 +581,9 @@ internal sealed class WebpLossyDecoder
         }
         else if (dec.Filter == LoopFilter.Complex)
         {
-            int uvBps = dec.CacheUvStride;
-            int yOffset = dec.CacheYOffset + (mbx * 16);
-            int uvOffset = dec.CacheUvOffset + (mbx * 8);
+            var uvBps = dec.CacheUvStride;
+            var yOffset = dec.CacheYOffset + (mbx * 16);
+            var uvOffset = dec.CacheUvOffset + (mbx * 8);
             int hevThresh = filterInfo.HighEdgeVarianceThreshold;
             if (mbx > 0)
             {
@@ -614,23 +614,23 @@ internal sealed class WebpLossyDecoder
     private void FinishRow(Vp8Decoder dec, Vp8Io io)
     {
         int extraYRows = WebpConstants.FilterExtraRows[(int)dec.Filter];
-        int ySize = extraYRows * dec.CacheYStride;
-        int uvSize = extraYRows / 2 * dec.CacheUvStride;
-        Span<byte> yDst = dec.CacheY.Memory.Span;
-        Span<byte> uDst = dec.CacheU.Memory.Span;
-        Span<byte> vDst = dec.CacheV.Memory.Span;
-        int mby = dec.MbY;
-        bool isFirstRow = mby == 0;
-        bool isLastRow = mby >= dec.BottomRightMbY - 1;
-        bool filterRow = dec.Filter != LoopFilter.None && dec.MbY >= dec.TopLeftMbY && dec.MbY <= dec.BottomRightMbY;
+        var ySize = extraYRows * dec.CacheYStride;
+        var uvSize = extraYRows / 2 * dec.CacheUvStride;
+        var yDst = dec.CacheY.Memory.Span;
+        var uDst = dec.CacheU.Memory.Span;
+        var vDst = dec.CacheV.Memory.Span;
+        var mby = dec.MbY;
+        var isFirstRow = mby == 0;
+        var isLastRow = mby >= dec.BottomRightMbY - 1;
+        var filterRow = dec.Filter != LoopFilter.None && dec.MbY >= dec.TopLeftMbY && dec.MbY <= dec.BottomRightMbY;
 
         if (filterRow)
         {
             this.FilterRow(dec);
         }
 
-        int yStart = mby * 16;
-        int yEnd = (mby + 1) * 16;
+        var yStart = mby * 16;
+        var yEnd = (mby + 1) * 16;
         if (!isFirstRow)
         {
             yStart -= extraYRows;
@@ -674,25 +674,25 @@ internal sealed class WebpLossyDecoder
 
     private int EmitRgb(Vp8Decoder dec, Vp8Io io)
     {
-        Span<byte> buf = dec.Pixels.Memory.Span;
-        int numLinesOut = io.MbH; // a priori guess.
-        Span<byte> curY = io.Y;
-        Span<byte> curU = io.U;
-        Span<byte> curV = io.V;
-        Span<byte> tmpYBuffer = dec.TmpYBuffer.Memory.Span;
-        Span<byte> tmpUBuffer = dec.TmpUBuffer.Memory.Span;
-        Span<byte> tmpVBuffer = dec.TmpVBuffer.Memory.Span;
-        Span<byte> topU = tmpUBuffer;
-        Span<byte> topV = tmpVBuffer;
-        int bpp = 3;
-        int bufferStride = bpp * io.Width;
-        int dstStartIdx = io.MbY * bufferStride;
-        Span<byte> dst = buf.Slice(dstStartIdx);
-        int yEnd = io.MbY + io.MbH;
-        int mbw = io.MbW;
-        int uvw = (mbw + 1) / 2;
-        int y = io.MbY;
-        byte[] uvBuffer = new byte[(14 * 32) + 15];
+        var buf = dec.Pixels.Memory.Span;
+        var numLinesOut = io.MbH; // a priori guess.
+        var curY = io.Y;
+        var curU = io.U;
+        var curV = io.V;
+        var tmpYBuffer = dec.TmpYBuffer.Memory.Span;
+        var tmpUBuffer = dec.TmpUBuffer.Memory.Span;
+        var tmpVBuffer = dec.TmpVBuffer.Memory.Span;
+        var topU = tmpUBuffer;
+        var topV = tmpVBuffer;
+        var bpp = 3;
+        var bufferStride = bpp * io.Width;
+        var dstStartIdx = io.MbY * bufferStride;
+        var dst = buf.Slice(dstStartIdx);
+        var yEnd = io.MbY + io.MbH;
+        var mbw = io.MbW;
+        var uvw = (mbw + 1) / 2;
+        var y = io.MbY;
+        var uvBuffer = new byte[(14 * 32) + 15];
 
         if (y == 0)
         {
@@ -707,8 +707,8 @@ internal sealed class WebpLossyDecoder
         }
 
         // Loop over each output pairs of row.
-        int bufferStride2 = 2 * bufferStride;
-        int ioStride2 = 2 * io.YStride;
+        var bufferStride2 = 2 * bufferStride;
+        var ioStride2 = 2 * io.YStride;
         for (; y + 2 < yEnd; y += 2)
         {
             topU = curU;
@@ -779,10 +779,10 @@ internal sealed class WebpLossyDecoder
 
     private void DecodeMacroBlock(Vp8Decoder dec, Vp8BitReader bitreader)
     {
-        Vp8MacroBlock left = dec.LeftMacroBlock;
-        Vp8MacroBlock macroBlock = dec.CurrentMacroBlock;
-        Vp8MacroBlockData blockData = dec.CurrentBlockData;
-        bool skip = dec.UseSkipProbability && blockData.Skip;
+        var left = dec.LeftMacroBlock;
+        var macroBlock = dec.CurrentMacroBlock;
+        var blockData = dec.CurrentBlockData;
+        var skip = dec.UseSkipProbability && blockData.Skip;
 
         if (!skip)
         {
@@ -803,7 +803,7 @@ internal sealed class WebpLossyDecoder
         // Store filter info.
         if (dec.Filter != LoopFilter.None)
         {
-            Vp8FilterInfo precomputedFilterInfo = dec.FilterStrength[blockData.Segment, blockData.IsI4x4 ? 1 : 0];
+            var precomputedFilterInfo = dec.FilterStrength[blockData.Segment, blockData.IsI4x4 ? 1 : 0];
             dec.FilterInfo[dec.MbX] = (Vp8FilterInfo)precomputedFilterInfo.DeepClone();
             dec.FilterInfo[dec.MbX].UseInnerFiltering |= !skip;
         }
@@ -814,14 +814,14 @@ internal sealed class WebpLossyDecoder
         uint nonZeroY = 0;
         uint nonZeroUv = 0;
         int first;
-        int dstOffset = 0;
-        Vp8MacroBlockData block = dec.CurrentBlockData;
-        Vp8QuantMatrix q = dec.DeQuantMatrices[block.Segment];
-        Vp8BandProbas[][] bands = dec.Probabilities.BandsPtr;
+        var dstOffset = 0;
+        var block = dec.CurrentBlockData;
+        var q = dec.DeQuantMatrices[block.Segment];
+        var bands = dec.Probabilities.BandsPtr;
         Vp8BandProbas[] acProba;
-        Vp8MacroBlock leftMb = dec.LeftMacroBlock;
-        short[] dst = block.Coeffs;
-        for (int i = 0; i < dst.Length; i++)
+        var leftMb = dec.LeftMacroBlock;
+        var dst = block.Coeffs;
+        for (var i = 0; i < dst.Length; i++)
         {
             dst[i] = 0;
         }
@@ -834,9 +834,9 @@ internal sealed class WebpLossyDecoder
         else
         {
             // Parse DC
-            short[] dc = new short[16];
-            int ctx = (int)(mb.NoneZeroDcCoeffs + leftMb.NoneZeroDcCoeffs);
-            int nz = this.GetCoeffs(br, bands[1], ctx, q.Y2Mat, 0, dc);
+            var dc = new short[16];
+            var ctx = (int)(mb.NoneZeroDcCoeffs + leftMb.NoneZeroDcCoeffs);
+            var nz = this.GetCoeffs(br, bands[1], ctx, q.Y2Mat, 0, dc);
             mb.NoneZeroDcCoeffs = leftMb.NoneZeroDcCoeffs = (uint)(nz > 0 ? 1 : 0);
             if (nz > 1)
             {
@@ -846,8 +846,8 @@ internal sealed class WebpLossyDecoder
             else
             {
                 // Only DC is non-zero -> inlined simplified transform.
-                int dc0 = (dc[0] + 3) >> 3;
-                for (int i = 0; i < 16 * 16; i += 16)
+                var dc0 = (dc[0] + 3) >> 3;
+                for (var i = 0; i < 16 * 16; i += 16)
                 {
                     dst[i] = (short)dc0;
                 }
@@ -857,17 +857,17 @@ internal sealed class WebpLossyDecoder
             acProba = bands[0];
         }
 
-        byte tnz = (byte)(mb.NoneZeroAcDcCoeffs & 0x0f);
-        byte lnz = (byte)(leftMb.NoneZeroAcDcCoeffs & 0x0f);
+        var tnz = (byte)(mb.NoneZeroAcDcCoeffs & 0x0f);
+        var lnz = (byte)(leftMb.NoneZeroAcDcCoeffs & 0x0f);
 
-        for (int y = 0; y < 4; y++)
+        for (var y = 0; y < 4; y++)
         {
-            int l = lnz & 1;
+            var l = lnz & 1;
             uint nzCoeffs = 0;
-            for (int x = 0; x < 4; x++)
+            for (var x = 0; x < 4; x++)
             {
-                int ctx = l + (tnz & 1);
-                int nz = this.GetCoeffs(br, acProba, ctx, q.Y1Mat, first, dst.AsSpan(dstOffset));
+                var ctx = l + (tnz & 1);
+                var nz = this.GetCoeffs(br, acProba, ctx, q.Y1Mat, first, dst.AsSpan(dstOffset));
                 l = nz > first ? 1 : 0;
                 tnz = (byte)((tnz >> 1) | (l << 7));
                 nzCoeffs = NzCodeBits(nzCoeffs, nz, dst[dstOffset] != 0 ? 1 : 0);
@@ -880,21 +880,21 @@ internal sealed class WebpLossyDecoder
         }
 
         uint outTnz = tnz;
-        uint outLnz = (uint)(lnz >> 4);
+        var outLnz = (uint)(lnz >> 4);
 
-        for (int ch = 0; ch < 4; ch += 2)
+        for (var ch = 0; ch < 4; ch += 2)
         {
             uint nzCoeffs = 0;
-            int chPlus4 = 4 + ch;
+            var chPlus4 = 4 + ch;
             tnz = (byte)(mb.NoneZeroAcDcCoeffs >> chPlus4);
             lnz = (byte)(leftMb.NoneZeroAcDcCoeffs >> chPlus4);
-            for (int y = 0; y < 2; y++)
+            for (var y = 0; y < 2; y++)
             {
-                int l = lnz & 1;
-                for (int x = 0; x < 2; x++)
+                var l = lnz & 1;
+                for (var x = 0; x < 2; x++)
                 {
-                    int ctx = l + (tnz & 1);
-                    int nz = this.GetCoeffs(br, bands[2], ctx, q.UvMat, 0, dst.AsSpan(dstOffset));
+                    var ctx = l + (tnz & 1);
+                    var nz = this.GetCoeffs(br, bands[2], ctx, q.UvMat, 0, dst.AsSpan(dstOffset));
                     l = nz > 0 ? 1 : 0;
                     tnz = (byte)((tnz >> 1) | (l << 3));
                     nzCoeffs = NzCodeBits(nzCoeffs, nz, dst[dstOffset] != 0 ? 1 : 0);
@@ -923,7 +923,7 @@ internal sealed class WebpLossyDecoder
     private int GetCoeffs(Vp8BitReader br, Vp8BandProbas[] prob, int ctx, int[] dq, int n, Span<short> coeffs)
     {
         // Returns the position of the last non-zero coeff plus one.
-        Vp8ProbaArray p = prob[n].Probabilities[ctx];
+        var p = prob[n].Probabilities[ctx];
         for (; n < 16; ++n)
         {
             if (br.GetBit(p.Probabilities[0]) == 0)
@@ -955,7 +955,7 @@ internal sealed class WebpLossyDecoder
                 p = prob[n + 1].Probabilities[2];
             }
 
-            int idx = n > 0 ? 1 : 0;
+            var idx = n > 0 ? 1 : 0;
             coeffs[WebpConstants.Zigzag[n]] = (short)(br.GetSigned(v) * dq[idx]);
         }
 
@@ -993,9 +993,9 @@ internal sealed class WebpLossyDecoder
             }
             else
             {
-                int bit1 = br.GetBit(p[8]);
-                int bit0 = br.GetBit(p[9 + bit1]);
-                int cat = (2 * bit1) + bit0;
+                var bit1 = br.GetBit(p[8]);
+                var bit0 = br.GetBit(p[9 + bit1]);
+                var cat = (2 * bit1) + bit0;
                 v = 0;
                 byte[] tab = null;
                 switch (cat)
@@ -1017,7 +1017,7 @@ internal sealed class WebpLossyDecoder
                         break;
                 }
 
-                for (int i = 0; i < tab.Length; i++)
+                for (var i = 0; i < tab.Length; i++)
                 {
                     v += v + br.GetBit(tab[i]);
                 }
@@ -1038,28 +1038,28 @@ internal sealed class WebpLossyDecoder
         if (vp8SegmentHeader.UseSegment)
         {
             vp8SegmentHeader.UpdateMap = this.bitReader.ReadBool();
-            bool updateData = this.bitReader.ReadBool();
+            var updateData = this.bitReader.ReadBool();
             if (updateData)
             {
                 vp8SegmentHeader.Delta = this.bitReader.ReadBool();
                 bool hasValue;
-                for (int i = 0; i < vp8SegmentHeader.Quantizer.Length; i++)
+                for (var i = 0; i < vp8SegmentHeader.Quantizer.Length; i++)
                 {
                     hasValue = this.bitReader.ReadBool();
-                    byte quantizeValue = (byte)(hasValue ? this.bitReader.ReadSignedValue(7) : 0);
+                    var quantizeValue = (byte)(hasValue ? this.bitReader.ReadSignedValue(7) : 0);
                     vp8SegmentHeader.Quantizer[i] = quantizeValue;
                 }
 
-                for (int i = 0; i < vp8SegmentHeader.FilterStrength.Length; i++)
+                for (var i = 0; i < vp8SegmentHeader.FilterStrength.Length; i++)
                 {
                     hasValue = this.bitReader.ReadBool();
-                    byte filterStrengthValue = (byte)(hasValue ? this.bitReader.ReadSignedValue(6) : 0);
+                    var filterStrengthValue = (byte)(hasValue ? this.bitReader.ReadSignedValue(6) : 0);
                     vp8SegmentHeader.FilterStrength[i] = filterStrengthValue;
                 }
 
                 if (vp8SegmentHeader.UpdateMap)
                 {
-                    for (int s = 0; s < proba.Segments.Length; ++s)
+                    for (var s = 0; s < proba.Segments.Length; ++s)
                     {
                         hasValue = this.bitReader.ReadBool();
                         proba.Segments[s] = hasValue ? this.bitReader.ReadValue(8) : 255;
@@ -1077,7 +1077,7 @@ internal sealed class WebpLossyDecoder
 
     private void ParseFilterHeader(Vp8Decoder dec)
     {
-        Vp8FilterHeader vp8FilterHeader = dec.FilterHeader;
+        var vp8FilterHeader = dec.FilterHeader;
         vp8FilterHeader.LoopFilter = this.bitReader.ReadBool() ? LoopFilter.Simple : LoopFilter.Complex;
         vp8FilterHeader.FilterLevel = (int)this.bitReader.ReadValue(6);
         vp8FilterHeader.Sharpness = (int)this.bitReader.ReadValue(3);
@@ -1090,7 +1090,7 @@ internal sealed class WebpLossyDecoder
             if (this.bitReader.ReadBool())
             {
                 bool hasValue;
-                for (int i = 0; i < vp8FilterHeader.RefLfDelta.Length; i++)
+                for (var i = 0; i < vp8FilterHeader.RefLfDelta.Length; i++)
                 {
                     hasValue = this.bitReader.ReadBool();
                     if (hasValue)
@@ -1099,7 +1099,7 @@ internal sealed class WebpLossyDecoder
                     }
                 }
 
-                for (int i = 0; i < vp8FilterHeader.ModeLfDelta.Length; i++)
+                for (var i = 0; i < vp8FilterHeader.ModeLfDelta.Length; i++)
                 {
                     hasValue = this.bitReader.ReadBool();
                     if (hasValue)
@@ -1111,27 +1111,27 @@ internal sealed class WebpLossyDecoder
         }
 
         int extraRows = WebpConstants.FilterExtraRows[(int)dec.Filter];
-        int extraY = extraRows * dec.CacheYStride;
-        int extraUv = extraRows / 2 * dec.CacheUvStride;
+        var extraY = extraRows * dec.CacheYStride;
+        var extraUv = extraRows / 2 * dec.CacheUvStride;
         dec.CacheYOffset = extraY;
         dec.CacheUvOffset = extraUv;
     }
 
     private void ParsePartitions(Vp8Decoder dec)
     {
-        uint size = this.bitReader.Remaining - this.bitReader.PartitionLength;
-        int startIdx = (int)this.bitReader.PartitionLength;
-        Span<byte> sz = this.bitReader.Data.Slice(startIdx);
-        int sizeLeft = (int)size;
+        var size = this.bitReader.Remaining - this.bitReader.PartitionLength;
+        var startIdx = (int)this.bitReader.PartitionLength;
+        var sz = this.bitReader.Data.Slice(startIdx);
+        var sizeLeft = (int)size;
         dec.NumPartsMinusOne = (1 << (int)this.bitReader.ReadValue(2)) - 1;
-        int lastPart = dec.NumPartsMinusOne;
+        var lastPart = dec.NumPartsMinusOne;
 
-        int lastPartMul3 = lastPart * 3;
-        int partStart = startIdx + lastPartMul3;
+        var lastPartMul3 = lastPart * 3;
+        var partStart = startIdx + lastPartMul3;
         sizeLeft -= lastPartMul3;
-        for (int p = 0; p < lastPart; ++p)
+        for (var p = 0; p < lastPart; ++p)
         {
-            int pSize = sz[0] | (sz[1] << 8) | (sz[2] << 16);
+            var pSize = sz[0] | (sz[1] << 8) | (sz[2] << 16);
             if (pSize > sizeLeft)
             {
                 pSize = sizeLeft;
@@ -1148,20 +1148,20 @@ internal sealed class WebpLossyDecoder
 
     private void ParseDequantizationIndices(Vp8Decoder decoder)
     {
-        Vp8SegmentHeader vp8SegmentHeader = decoder.SegmentHeader;
+        var vp8SegmentHeader = decoder.SegmentHeader;
 
-        int baseQ0 = (int)this.bitReader.ReadValue(7);
-        bool hasValue = this.bitReader.ReadBool();
-        int dqy1Dc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
+        var baseQ0 = (int)this.bitReader.ReadValue(7);
+        var hasValue = this.bitReader.ReadBool();
+        var dqy1Dc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
         hasValue = this.bitReader.ReadBool();
-        int dqy2Dc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
+        var dqy2Dc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
         hasValue = this.bitReader.ReadBool();
-        int dqy2Ac = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
+        var dqy2Ac = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
         hasValue = this.bitReader.ReadBool();
-        int dquvDc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
+        var dquvDc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
         hasValue = this.bitReader.ReadBool();
-        int dquvAc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
-        for (int i = 0; i < WebpConstants.NumMbSegments; i++)
+        var dquvAc = hasValue ? this.bitReader.ReadSignedValue(4) : 0;
+        for (var i = 0; i < WebpConstants.NumMbSegments; i++)
         {
             int q;
             if (vp8SegmentHeader.UseSegment)
@@ -1185,7 +1185,7 @@ internal sealed class WebpLossyDecoder
                 }
             }
 
-            Vp8QuantMatrix m = decoder.DeQuantMatrices[i];
+            var m = decoder.DeQuantMatrices[i];
             m.Y1Mat[0] = WebpLookupTables.DcTable[Clip(q + dqy1Dc, 127)];
             m.Y1Mat[1] = WebpLookupTables.AcTable[Clip(q + 0, 127)];
             m.Y2Mat[0] = WebpLookupTables.DcTable[Clip(q + dqy2Dc, 127)] * 2;
@@ -1208,18 +1208,18 @@ internal sealed class WebpLossyDecoder
 
     private void ParseProbabilities(Vp8Decoder dec)
     {
-        Vp8Proba proba = dec.Probabilities;
+        var proba = dec.Probabilities;
 
-        for (int t = 0; t < WebpConstants.NumTypes; ++t)
+        for (var t = 0; t < WebpConstants.NumTypes; ++t)
         {
-            for (int b = 0; b < WebpConstants.NumBands; ++b)
+            for (var b = 0; b < WebpConstants.NumBands; ++b)
             {
-                for (int c = 0; c < WebpConstants.NumCtx; ++c)
+                for (var c = 0; c < WebpConstants.NumCtx; ++c)
                 {
-                    for (int p = 0; p < WebpConstants.NumProbas; ++p)
+                    for (var p = 0; p < WebpConstants.NumProbas; ++p)
                     {
-                        byte prob = WebpLookupTables.CoeffsUpdateProba[t, b, c, p];
-                        byte v = (byte)(this.bitReader.GetBit(prob) != 0
+                        var prob = WebpLookupTables.CoeffsUpdateProba[t, b, c, p];
+                        var v = (byte)(this.bitReader.GetBit(prob) != 0
                             ? this.bitReader.ReadValue(8)
                             : WebpLookupTables.DefaultCoeffsProba[t, b, c, p]);
                         proba.Bands[t, b].Probabilities[c].Probabilities[p] = v;
@@ -1227,7 +1227,7 @@ internal sealed class WebpLossyDecoder
                 }
             }
 
-            for (int b = 0; b < 16 + 1; ++b)
+            for (var b = 0; b < 16 + 1; ++b)
             {
                 proba.BandsPtr[t][b] = proba.Bands[t, WebpConstants.Vp8EncBands[b]];
             }
@@ -1250,11 +1250,11 @@ internal sealed class WebpLossyDecoder
         io.ScaledHeight = io.ScaledHeight;
         io.MbW = io.Width;
         io.MbH = io.Height;
-        uint strideLength = (pictureHeader.Width + 15) >> 4;
+        var strideLength = (pictureHeader.Width + 15) >> 4;
         io.YStride = (int)(16 * strideLength);
         io.UvStride = (int)(8 * strideLength);
 
-        int intraPredModeSize = 4 * dec.MbWidth;
+        var intraPredModeSize = 4 * dec.MbWidth;
         dec.IntraT = new byte[intraPredModeSize];
 
         int extraPixels = WebpConstants.FilterExtraRows[(int)dec.Filter];
@@ -1268,7 +1268,7 @@ internal sealed class WebpLossyDecoder
         {
             // For simple filter, we include 'extraPixels' on the other side of the boundary,
             // since vertical or horizontal filtering of the previous macroblock can modify some abutting pixels.
-            int extraShift4 = -extraPixels >> 4;
+            var extraShift4 = -extraPixels >> 4;
             dec.TopLeftMbX = extraShift4;
             dec.TopLeftMbY = extraShift4;
             if (dec.TopLeftMbX < 0)

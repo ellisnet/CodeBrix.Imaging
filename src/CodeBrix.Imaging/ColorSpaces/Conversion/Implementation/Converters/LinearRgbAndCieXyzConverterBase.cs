@@ -18,26 +18,26 @@ internal abstract class LinearRgbAndCieXyzConverterBase
     public static Matrix4x4 GetRgbToCieXyzMatrix(RgbWorkingSpace workingSpace)
     {
         DebugGuard.NotNull(workingSpace, nameof(workingSpace));
-        RgbPrimariesChromaticityCoordinates chromaticity = workingSpace.ChromaticityCoordinates;
+        var chromaticity = workingSpace.ChromaticityCoordinates;
 
-        float xr = chromaticity.R.X;
-        float xg = chromaticity.G.X;
-        float xb = chromaticity.B.X;
-        float yr = chromaticity.R.Y;
-        float yg = chromaticity.G.Y;
-        float yb = chromaticity.B.Y;
+        var xr = chromaticity.R.X;
+        var xg = chromaticity.G.X;
+        var xb = chromaticity.B.X;
+        var yr = chromaticity.R.Y;
+        var yg = chromaticity.G.Y;
+        var yb = chromaticity.B.Y;
 
-        float mXr = xr / yr;
+        var mXr = xr / yr;
         const float Yr = 1;
-        float mZr = (1 - xr - yr) / yr;
+        var mZr = (1 - xr - yr) / yr;
 
-        float mXg = xg / yg;
+        var mXg = xg / yg;
         const float Yg = 1;
-        float mZg = (1 - xg - yg) / yg;
+        var mZg = (1 - xg - yg) / yg;
 
-        float mXb = xb / yb;
+        var mXb = xb / yb;
         const float Yb = 1;
-        float mZb = (1 - xb - yb) / yb;
+        var mZb = (1 - xb - yb) / yb;
 
         var xyzMatrix = new Matrix4x4
         {
@@ -53,7 +53,7 @@ internal abstract class LinearRgbAndCieXyzConverterBase
             M44 = 1F
         };
 
-        Matrix4x4.Invert(xyzMatrix, out Matrix4x4 inverseXyzMatrix);
+        Matrix4x4.Invert(xyzMatrix, out var inverseXyzMatrix);
 
         var vector = Vector3.Transform(workingSpace.WhitePoint.ToVector3(), inverseXyzMatrix);
 

@@ -189,7 +189,7 @@ public abstract partial class Image : IImage, IConfigurationProvider
     /// <param name="encoder">The encoder that was used to save the image.</param>
     private void UpdateExpectedFormat(IImageEncoder encoder)
     {
-        IImageFormat format = this.GetConfiguration().ImageFormatsManager.FindFormatByEncoder(encoder);
+        var format = this.GetConfiguration().ImageFormatsManager.FindFormatByEncoder(encoder);
         if (format != null)
         {
             this.Metadata.ExpectedFormat = format;

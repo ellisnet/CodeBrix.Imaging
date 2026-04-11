@@ -20,7 +20,7 @@ internal sealed class CmykAndRgbConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public Rgb Convert(in Cmyk input)
     {
-        Vector3 rgb = (Vector3.One - new Vector3(input.C, input.M, input.Y)) * (Vector3.One - new Vector3(input.K));
+        var rgb = (Vector3.One - new Vector3(input.C, input.M, input.Y)) * (Vector3.One - new Vector3(input.K));
         return new Rgb(rgb);
     }
 
@@ -33,7 +33,7 @@ internal sealed class CmykAndRgbConverter
     public Cmyk Convert(in Rgb input)
     {
         // To CMY
-        Vector3 cmy = Vector3.One - input.ToVector3();
+        var cmy = Vector3.One - input.ToVector3();
 
         // To CMYK
         var k = new Vector3(MathF.Min(cmy.X, MathF.Min(cmy.Y, cmy.Z)));

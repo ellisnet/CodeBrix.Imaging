@@ -96,7 +96,7 @@ internal sealed class LzwDecoder : IDisposable
         this.availableCode = this.clearCode + 2;
 
         // Fill the suffix buffer with the initial values represented by the number of colors.
-        Span<int> suffix = this.suffixOwner.GetSpan().Slice(0, this.clearCode);
+        var suffix = this.suffixOwner.GetSpan().Slice(0, this.clearCode);
         int i;
         for (i = 0; i < suffix.Length; i++)
         {
@@ -138,30 +138,30 @@ internal sealed class LzwDecoder : IDisposable
         indices.Clear();
 
         // Get span values from the owners.
-        Span<int> prefix = this.prefixOwner.GetSpan();
-        Span<int> suffix = this.suffixOwner.GetSpan();
-        Span<int> pixelStack = this.pixelStackOwner.GetSpan();
-        Span<byte> buffer = this.bufferOwner.GetSpan();
+        var prefix = this.prefixOwner.GetSpan();
+        var suffix = this.suffixOwner.GetSpan();
+        var pixelStack = this.pixelStackOwner.GetSpan();
+        var buffer = this.bufferOwner.GetSpan();
 
         // Cache frequently accessed instance fields into locals.
         // This helps avoid repeated field loads inside the tight loop.
-        BufferedReadStream stream = this.stream;
-        int top = this.top;
-        int bits = this.bits;
-        int codeSize = this.codeSize;
-        int codeMask = this.codeMask;
-        int minCodeSize = this.minCodeSize;
-        int availableCode = this.availableCode;
-        int oldCode = this.oldCode;
-        int first = this.first;
-        int data = this.data;
-        int count = this.count;
-        int bufferIndex = this.bufferIndex;
-        int code = this.code;
-        int clearCode = this.clearCode;
-        int endCode = this.endCode;
+        var stream = this.stream;
+        var top = this.top;
+        var bits = this.bits;
+        var codeSize = this.codeSize;
+        var codeMask = this.codeMask;
+        var minCodeSize = this.minCodeSize;
+        var availableCode = this.availableCode;
+        var oldCode = this.oldCode;
+        var first = this.first;
+        var data = this.data;
+        var count = this.count;
+        var bufferIndex = this.bufferIndex;
+        var code = this.code;
+        var clearCode = this.clearCode;
+        var endCode = this.endCode;
 
-        int i = 0;
+        var i = 0;
         while (i < indices.Length)
         {
             if (top == 0)
@@ -217,7 +217,7 @@ internal sealed class LzwDecoder : IDisposable
                     continue;
                 }
 
-                int inCode = code;
+                var inCode = code;
                 if (code == availableCode)
                 {
                     pixelStack[top++] = first;
@@ -230,7 +230,7 @@ internal sealed class LzwDecoder : IDisposable
                     code = prefix[code];
                 }
 
-                int suffixCode = suffix[code];
+                var suffixCode = suffix[code];
                 first = suffixCode;
                 pixelStack[top++] = suffixCode;
 
@@ -279,30 +279,30 @@ internal sealed class LzwDecoder : IDisposable
     public void SkipIndices(int length)
     {
         // Get span values from the owners.
-        Span<int> prefix = this.prefixOwner.GetSpan();
-        Span<int> suffix = this.suffixOwner.GetSpan();
-        Span<int> pixelStack = this.pixelStackOwner.GetSpan();
-        Span<byte> buffer = this.bufferOwner.GetSpan();
+        var prefix = this.prefixOwner.GetSpan();
+        var suffix = this.suffixOwner.GetSpan();
+        var pixelStack = this.pixelStackOwner.GetSpan();
+        var buffer = this.bufferOwner.GetSpan();
 
         // Cache frequently accessed instance fields into locals.
         // This helps avoid repeated field loads inside the tight loop.
-        BufferedReadStream stream = this.stream;
-        int top = this.top;
-        int bits = this.bits;
-        int codeSize = this.codeSize;
-        int codeMask = this.codeMask;
-        int minCodeSize = this.minCodeSize;
-        int availableCode = this.availableCode;
-        int oldCode = this.oldCode;
-        int first = this.first;
-        int data = this.data;
-        int count = this.count;
-        int bufferIndex = this.bufferIndex;
-        int code = this.code;
-        int clearCode = this.clearCode;
-        int endCode = this.endCode;
+        var stream = this.stream;
+        var top = this.top;
+        var bits = this.bits;
+        var codeSize = this.codeSize;
+        var codeMask = this.codeMask;
+        var minCodeSize = this.minCodeSize;
+        var availableCode = this.availableCode;
+        var oldCode = this.oldCode;
+        var first = this.first;
+        var data = this.data;
+        var count = this.count;
+        var bufferIndex = this.bufferIndex;
+        var code = this.code;
+        var clearCode = this.clearCode;
+        var endCode = this.endCode;
 
-        int i = 0;
+        var i = 0;
         while (i < length)
         {
             if (top == 0)
@@ -358,7 +358,7 @@ internal sealed class LzwDecoder : IDisposable
                     continue;
                 }
 
-                int inCode = code;
+                var inCode = code;
                 if (code == availableCode)
                 {
                     pixelStack[top++] = first;
@@ -371,7 +371,7 @@ internal sealed class LzwDecoder : IDisposable
                     code = prefix[code];
                 }
 
-                int suffixCode = suffix[code];
+                var suffixCode = suffix[code];
                 first = suffixCode;
                 pixelStack[top++] = suffixCode;
 
@@ -425,14 +425,14 @@ internal sealed class LzwDecoder : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ReadBlock(BufferedReadStream stream, Span<byte> buffer)
     {
-        int bufferSize = stream.ReadByte();
+        var bufferSize = stream.ReadByte();
 
         if (bufferSize < 1)
         {
             return 0;
         }
 
-        int count = stream.Read(buffer, 0, bufferSize);
+        var count = stream.Read(buffer, 0, bufferSize);
 
         return count != bufferSize ? 0 : bufferSize;
     }

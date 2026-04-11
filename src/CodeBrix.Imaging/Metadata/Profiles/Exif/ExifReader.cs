@@ -44,10 +44,10 @@ internal class ExifReader : BaseExifReader
             return values;
         }
 
-        uint ifdOffset = this.ReadUInt32();
+        var ifdOffset = this.ReadUInt32();
         this.ReadValues(values, ifdOffset);
 
-        uint thumbnailOffset = this.ReadUInt32();
+        var thumbnailOffset = this.ReadUInt32();
         this.GetThumbnail(thumbnailOffset);
 
         this.ReadSubIfd(values);
@@ -130,10 +130,10 @@ internal abstract class BaseExifReader
             return;
         }
 
-        int maxSize = 0;
-        foreach ((ulong offset, ExifDataType dataType, ulong numberOfComponents, ExifValue exif) in this.BigValues)
+        var maxSize = 0;
+        foreach ((var offset, var dataType, var numberOfComponents, var exif) in this.BigValues)
         {
-            ulong size = numberOfComponents * ExifDataTypes.GetSize(dataType);
+            var size = numberOfComponents * ExifDataTypes.GetSize(dataType);
             DebugGuard.MustBeLessThanOrEqualTo<ulong>(size, int.MaxValue, nameof(size));
 
             if ((int)size > maxSize)
@@ -145,21 +145,21 @@ internal abstract class BaseExifReader
         if (this.allocator != null)
         {
             // tiff, bigTiff
-            using IMemoryOwner<byte> memory = this.allocator.Allocate<byte>(maxSize);
-            Span<byte> buf = memory.GetSpan();
-            foreach ((ulong Offset, ExifDataType DataType, ulong NumberOfComponents, ExifValue Exif) tag in this.BigValues)
+            using var memory = this.allocator.Allocate<byte>(maxSize);
+            var buf = memory.GetSpan();
+            foreach (var tag in this.BigValues)
             {
-                ulong size = tag.NumberOfComponents * ExifDataTypes.GetSize(tag.DataType);
+                var size = tag.NumberOfComponents * ExifDataTypes.GetSize(tag.DataType);
                 this.ReadBigValue(values, tag, buf.Slice(0, (int)size));
             }
         }
         else
         {
             // embedded exif
-            Span<byte> buf = maxSize <= 256 ? stackalloc byte[256] : new byte[maxSize];
-            foreach ((ulong Offset, ExifDataType DataType, ulong NumberOfComponents, ExifValue Exif) tag in this.BigValues)
+            var buf = maxSize <= 256 ? stackalloc byte[256] : new byte[maxSize];
+            foreach (var tag in this.BigValues)
             {
-                ulong size = tag.NumberOfComponents * ExifDataTypes.GetSize(tag.DataType);
+                var size = tag.NumberOfComponents * ExifDataTypes.GetSize(tag.DataType);
                 this.ReadBigValue(values, tag, buf.Slice(0, (int)size));
             }
         }
@@ -183,7 +183,7 @@ internal abstract class BaseExifReader
         int count = this.ReadUInt16();
 
         Span<byte> offsetBuffer = stackalloc byte[4];
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             this.ReadValue(values, offsetBuffer);
         }
@@ -193,7 +193,7 @@ internal abstract class BaseExifReader
     {
         if (this.subIfds is not null)
         {
-            foreach (ulong subIfdOffset in this.subIfds)
+            foreach (var subIfdOffset in this.subIfds)
             {
                 this.ReadValues(values, (uint)subIfdOffset);
             }
@@ -205,7 +205,7 @@ internal abstract class BaseExifReader
         DebugGuard.MustBeLessThanOrEqualTo(offset, (ulong)this.data.Length, "By spec UInt64.MaxValue is supported, but .NET Stream.Length can Int64.MaxValue.");
 
         this.Seek(offset);
-        ulong count = this.ReadUInt64();
+        var count = this.ReadUInt64();
 
         Span<byte> offsetBuffer = stackalloc byte[8];
         for (ulong i = 0; i < count; i++)
@@ -219,21 +219,21 @@ internal abstract class BaseExifReader
         this.Seek(tag.Offset);
         if (this.TryReadSpan(buffer))
         {
-            object value = this.ConvertValue(tag.DataType, buffer, tag.NumberOfComponents > 1 || tag.Exif.IsArray);
+            var value = this.ConvertValue(tag.DataType, buffer, tag.NumberOfComponents > 1 || tag.Exif.IsArray);
             this.Add(values, tag.Exif, value);
         }
     }
 
     private static TDataType[] ToArray<TDataType>(ExifDataType dataType, ReadOnlySpan<byte> data, ConverterMethod<TDataType> converter)
     {
-        int dataTypeSize = (int)ExifDataTypes.GetSize(dataType);
-        int length = data.Length / dataTypeSize;
+        var dataTypeSize = (int)ExifDataTypes.GetSize(dataType);
+        var length = data.Length / dataTypeSize;
 
         var result = new TDataType[length];
 
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
-            ReadOnlySpan<byte> buffer = data.Slice(i * dataTypeSize, dataTypeSize);
+            var buffer = data.Slice(i * dataTypeSize, dataTypeSize);
 
             result.SetValue(converter(buffer), i);
         }
@@ -243,7 +243,7 @@ internal abstract class BaseExifReader
 
     private static string ConvertToString(Encoding encoding, ReadOnlySpan<byte> buffer)
     {
-        int nullCharIndex = buffer.IndexOf((byte)0);
+        var nullCharIndex = buffer.IndexOf((byte)0);
 
         if (nullCharIndex > -1)
         {
@@ -371,9 +371,9 @@ internal abstract class BaseExifReader
         }
 
         var tag = (ExifTagValue)this.ReadUInt16();
-        ExifDataType dataType = EnumUtils.Parse(this.ReadUInt16(), ExifDataType.Unknown);
+        var dataType = EnumUtils.Parse(this.ReadUInt16(), ExifDataType.Unknown);
 
-        uint numberOfComponents = this.ReadUInt32();
+        var numberOfComponents = this.ReadUInt32();
 
         this.TryReadSpan(offsetBuffer);
 
@@ -390,7 +390,7 @@ internal abstract class BaseExifReader
             numberOfComponents = 4 / ExifDataTypes.GetSize(dataType);
         }
 
-        ExifValue exifValue = ExifValues.Create(tag) ?? ExifValues.Create(tag, dataType, numberOfComponents);
+        var exifValue = ExifValues.Create(tag) ?? ExifValues.Create(tag, dataType, numberOfComponents);
 
         if (exifValue is null)
         {
@@ -398,10 +398,10 @@ internal abstract class BaseExifReader
             return;
         }
 
-        uint size = numberOfComponents * ExifDataTypes.GetSize(dataType);
+        var size = numberOfComponents * ExifDataTypes.GetSize(dataType);
         if (size > 4)
         {
-            uint newOffset = this.ConvertToUInt32(offsetBuffer);
+            var newOffset = this.ConvertToUInt32(offsetBuffer);
 
             // Ensure that the new index does not overrun the data.
             if (newOffset > int.MaxValue || (newOffset + size) > this.data.Length)
@@ -414,7 +414,7 @@ internal abstract class BaseExifReader
         }
         else
         {
-            object value = this.ConvertValue(dataType, offsetBuffer.Slice(0, (int)size), numberOfComponents > 1 || exifValue.IsArray);
+            var value = this.ConvertValue(dataType, offsetBuffer.Slice(0, (int)size), numberOfComponents > 1 || exifValue.IsArray);
             this.Add(values, exifValue, value);
         }
     }
@@ -427,9 +427,9 @@ internal abstract class BaseExifReader
         }
 
         var tag = (ExifTagValue)this.ReadUInt16();
-        ExifDataType dataType = EnumUtils.Parse(this.ReadUInt16(), ExifDataType.Unknown);
+        var dataType = EnumUtils.Parse(this.ReadUInt16(), ExifDataType.Unknown);
 
-        ulong numberOfComponents = this.ReadUInt64();
+        var numberOfComponents = this.ReadUInt64();
 
         this.TryReadSpan(offsetBuffer);
 
@@ -474,10 +474,10 @@ internal abstract class BaseExifReader
             return;
         }
 
-        ulong size = numberOfComponents * ExifDataTypes.GetSize(dataType);
+        var size = numberOfComponents * ExifDataTypes.GetSize(dataType);
         if (size > 8)
         {
-            ulong newOffset = this.ConvertToUInt64(offsetBuffer);
+            var newOffset = this.ConvertToUInt64(offsetBuffer);
             if (newOffset > ulong.MaxValue || newOffset > ((ulong)this.data.Length - size))
             {
                 this.AddInvalidTag(new UnkownExifTag(tag));
@@ -488,7 +488,7 @@ internal abstract class BaseExifReader
         }
         else
         {
-            object value = this.ConvertValue(dataType, offsetBuffer.Slice(0, (int)size), numberOfComponents > 1 || exifValue.IsArray);
+            var value = this.ConvertValue(dataType, offsetBuffer.Slice(0, (int)size), numberOfComponents > 1 || exifValue.IsArray);
             this.Add(values, exifValue, value);
         }
     }
@@ -500,7 +500,7 @@ internal abstract class BaseExifReader
             return;
         }
 
-        foreach (IExifValue val in values)
+        foreach (var val in values)
         {
             // Sometimes duplicates appear, can compare val.Tag == exif.Tag
             if (val == exif)
@@ -535,13 +535,13 @@ internal abstract class BaseExifReader
 
     private bool TryReadSpan(Span<byte> span)
     {
-        int length = span.Length;
+        var length = span.Length;
         if ((this.data.Length - this.data.Position) < length)
         {
             return false;
         }
 
-        int read = this.data.Read(span);
+        var read = this.data.Read(span);
         return read == length;
     }
 
@@ -591,7 +591,7 @@ internal abstract class BaseExifReader
             return default;
         }
 
-        long intValue = this.IsBigEndian
+        var intValue = this.IsBigEndian
             ? BinaryPrimitives.ReadInt64BigEndian(buffer)
             : BinaryPrimitives.ReadInt64LittleEndian(buffer);
 
@@ -630,7 +630,7 @@ internal abstract class BaseExifReader
             return default;
         }
 
-        int intValue = this.IsBigEndian
+        var intValue = this.IsBigEndian
             ? BinaryPrimitives.ReadInt32BigEndian(buffer)
             : BinaryPrimitives.ReadInt32LittleEndian(buffer);
 
@@ -644,8 +644,8 @@ internal abstract class BaseExifReader
             return default;
         }
 
-        uint numerator = this.ConvertToUInt32(buffer.Slice(0, 4));
-        uint denominator = this.ConvertToUInt32(buffer.Slice(4, 4));
+        var numerator = this.ConvertToUInt32(buffer.Slice(0, 4));
+        var denominator = this.ConvertToUInt32(buffer.Slice(4, 4));
 
         return new Rational(numerator, denominator, false);
     }
@@ -671,8 +671,8 @@ internal abstract class BaseExifReader
             return default;
         }
 
-        int numerator = this.ConvertToInt32(buffer.Slice(0, 4));
-        int denominator = this.ConvertToInt32(buffer.Slice(4, 4));
+        var numerator = this.ConvertToInt32(buffer.Slice(0, 4));
+        var denominator = this.ConvertToInt32(buffer.Slice(4, 4));
 
         return new SignedRational(numerator, denominator, false);
     }

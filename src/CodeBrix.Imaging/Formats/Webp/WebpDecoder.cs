@@ -32,7 +32,7 @@ public sealed class WebpDecoder : IImageDecoder, IWebpDecoderOptions, IImageInfo
         }
         catch (InvalidMemoryOperationException ex)
         {
-            Size dims = decoder.Dimensions;
+            var dims = decoder.Dimensions;
 
             throw new InvalidImageContentException($"Cannot decode image. Failed to allocate buffers for possibly degenerate dimensions: {dims.Width}x{dims.Height}.", ex);
         }

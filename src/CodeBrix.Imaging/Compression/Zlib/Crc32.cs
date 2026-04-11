@@ -203,10 +203,10 @@ internal static partial class Crc32
     [MethodImpl(InliningOptions.HotPath | InliningOptions.ShortMethod)]
     private static uint CalculateScalar(uint crc, ReadOnlySpan<byte> buffer)
     {
-        ref uint crcTableRef = ref MemoryMarshal.GetReference(CrcTable.AsSpan());
-        ref byte bufferRef = ref MemoryMarshal.GetReference(buffer);
+        ref var crcTableRef = ref MemoryMarshal.GetReference(CrcTable.AsSpan());
+        ref var bufferRef = ref MemoryMarshal.GetReference(buffer);
 
-        for (int i = 0; i < buffer.Length; i++)
+        for (var i = 0; i < buffer.Length; i++)
         {
             crc = Unsafe.Add(ref crcTableRef, (int)((crc ^ Unsafe.Add(ref bufferRef, i)) & 0xFF)) ^ (crc >> 8);
         }

@@ -40,11 +40,11 @@ internal sealed partial class IccDataReader
     /// <returns>the version number</returns>
     public IccVersion ReadVersionNumber()
     {
-        int version = this.ReadInt32();
+        var version = this.ReadInt32();
 
-        int major = (version >> 24) & 0xFF;
-        int minor = (version >> 20) & 0x0F;
-        int bugfix = (version >> 16) & 0x0F;
+        var major = (version >> 24) & 0xFF;
+        var minor = (version >> 20) & 0x0F;
+        var bugfix = (version >> 16) & 0x0F;
 
         return new IccVersion(major, minor, bugfix);
     }
@@ -103,11 +103,11 @@ internal sealed partial class IccDataReader
     /// <returns>the named color</returns>
     public IccNamedColor ReadNamedColor(uint deviceCoordCount)
     {
-        string name = this.ReadAsciiString(32);
+        var name = this.ReadAsciiString(32);
         ushort[] pcsCoord = { this.ReadUInt16(), this.ReadUInt16(), this.ReadUInt16() };
         var deviceCoord = new ushort[deviceCoordCount];
 
-        for (int i = 0; i < deviceCoordCount; i++)
+        for (var i = 0; i < deviceCoordCount; i++)
         {
             deviceCoord[i] = this.ReadUInt16();
         }
@@ -121,13 +121,13 @@ internal sealed partial class IccDataReader
     /// <returns>the profile description</returns>
     public IccProfileDescription ReadProfileDescription()
     {
-        uint manufacturer = this.ReadUInt32();
-        uint model = this.ReadUInt32();
+        var manufacturer = this.ReadUInt32();
+        var model = this.ReadUInt32();
         var attributes = (IccDeviceAttribute)this.ReadInt64();
         var technologyInfo = (IccProfileTag)this.ReadUInt32();
 
-        IccMultiLocalizedUnicodeTagDataEntry manufacturerInfo = ReadText();
-        IccMultiLocalizedUnicodeTagDataEntry modelInfo = ReadText();
+        var manufacturerInfo = ReadText();
+        var modelInfo = ReadText();
 
         return new IccProfileDescription(
             manufacturer,
@@ -139,7 +139,7 @@ internal sealed partial class IccDataReader
 
         IccMultiLocalizedUnicodeTagDataEntry ReadText()
         {
-            IccTypeSignature type = this.ReadTagDataEntryHeader();
+            var type = this.ReadTagDataEntryHeader();
             switch (type)
             {
                 case IccTypeSignature.MultiLocalizedUnicode:

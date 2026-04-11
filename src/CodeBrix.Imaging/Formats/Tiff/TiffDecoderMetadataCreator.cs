@@ -27,26 +27,26 @@ internal static class TiffDecoderMetadataCreator
             TiffThrowHelper.ThrowImageFormatException("Expected at least one frame.");
         }
 
-        ImageMetadata imageMetaData = Create(byteOrder, isBigTiff, frames[0].Metadata.ExifProfile);
+        var imageMetaData = Create(byteOrder, isBigTiff, frames[0].Metadata.ExifProfile);
 
         if (!ignoreMetadata)
         {
-            for (int i = 0; i < frames.Count; i++)
+            for (var i = 0; i < frames.Count; i++)
             {
-                ImageFrame<TPixel> frame = frames[i];
-                ImageFrameMetadata frameMetaData = frame.Metadata;
-                if (TryGetIptc(frameMetaData.ExifProfile.Values, out byte[] iptcBytes))
+                var frame = frames[i];
+                var frameMetaData = frame.Metadata;
+                if (TryGetIptc(frameMetaData.ExifProfile.Values, out var iptcBytes))
                 {
                     frameMetaData.IptcProfile = new IptcProfile(iptcBytes);
                 }
 
-                IExifValue<byte[]> xmpProfileBytes = frameMetaData.ExifProfile.GetValue(ExifTag.XMP);
+                var xmpProfileBytes = frameMetaData.ExifProfile.GetValue(ExifTag.XMP);
                 if (xmpProfileBytes != null)
                 {
                     frameMetaData.XmpProfile = new XmpProfile(xmpProfileBytes.Value);
                 }
 
-                IExifValue<byte[]> iccProfileBytes = frameMetaData.ExifProfile.GetValue(ExifTag.IccProfile);
+                var iccProfileBytes = frameMetaData.ExifProfile.GetValue(ExifTag.IccProfile);
                 if (iccProfileBytes != null)
                 {
                     frameMetaData.IccProfile = new IccProfile(iccProfileBytes.Value);
@@ -62,7 +62,7 @@ internal static class TiffDecoderMetadataCreator
         var imageMetaData = new ImageMetadata(TiffFormat.Instance);
         SetResolution(imageMetaData, exifProfile);
 
-        TiffMetadata tiffMetadata = imageMetaData.GetTiffMetadata();
+        var tiffMetadata = imageMetaData.GetTiffMetadata();
         tiffMetadata.ByteOrder = byteOrder;
         tiffMetadata.FormatType = isBigTiff ? TiffFormatType.BigTIFF : TiffFormatType.Default;
 
@@ -72,13 +72,13 @@ internal static class TiffDecoderMetadataCreator
     private static void SetResolution(ImageMetadata imageMetaData, ExifProfile exifProfile)
     {
         imageMetaData.ResolutionUnits = exifProfile != null ? UnitConverter.ExifProfileToResolutionUnit(exifProfile) : PixelResolutionUnit.PixelsPerInch;
-        double? horizontalResolution = exifProfile?.GetValue(ExifTag.XResolution)?.Value.ToDouble();
+        var horizontalResolution = exifProfile?.GetValue(ExifTag.XResolution)?.Value.ToDouble();
         if (horizontalResolution != null)
         {
             imageMetaData.HorizontalResolution = horizontalResolution.Value;
         }
 
-        double? verticalResolution = exifProfile?.GetValue(ExifTag.YResolution)?.Value.ToDouble();
+        var verticalResolution = exifProfile?.GetValue(ExifTag.YResolution)?.Value.ToDouble();
         if (verticalResolution != null)
         {
             imageMetaData.VerticalResolution = verticalResolution.Value;
@@ -88,7 +88,7 @@ internal static class TiffDecoderMetadataCreator
     private static bool TryGetIptc(IReadOnlyList<IExifValue> exifValues, out byte[] iptcBytes)
     {
         iptcBytes = null;
-        IExifValue iptc = exifValues.FirstOrDefault(f => f.Tag == ExifTag.IPTC);
+        var iptc = exifValues.FirstOrDefault(f => f.Tag == ExifTag.IPTC);
 
         if (iptc != null)
         {
@@ -101,7 +101,7 @@ internal static class TiffDecoderMetadataCreator
             // Some Encoders write the data type of IPTC as long.
             if (iptc.DataType == ExifDataType.Long)
             {
-                uint[] iptcValues = (uint[])iptc.GetValue();
+                var iptcValues = (uint[])iptc.GetValue();
                 iptcBytes = new byte[iptcValues.Length * 4];
                 Buffer.BlockCopy(iptcValues, 0, iptcBytes, 0, iptcValues.Length * 4);
                 if (iptcBytes[0] == 0x1c)
@@ -114,9 +114,9 @@ internal static class TiffDecoderMetadataCreator
                 }
 
                 // Probably wrong endianess, swap byte order.
-                Span<byte> iptcBytesSpan = iptcBytes.AsSpan();
+                var iptcBytesSpan = iptcBytes.AsSpan();
                 Span<byte> buffer = stackalloc byte[4];
-                for (int i = 0; i < iptcBytes.Length; i += 4)
+                for (var i = 0; i < iptcBytes.Length; i += 4)
                 {
                     iptcBytesSpan.Slice(i, 4).CopyTo(buffer);
                     iptcBytes[i] = buffer[3];

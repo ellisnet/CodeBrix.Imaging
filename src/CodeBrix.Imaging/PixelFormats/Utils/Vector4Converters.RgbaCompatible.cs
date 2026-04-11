@@ -44,7 +44,7 @@ internal static partial class Vector4Converters
             Guard.NotNull(configuration, nameof(configuration));
             Guard.DestinationShouldNotBeTooShort(sourcePixels, destVectors, nameof(destVectors));
 
-            int count = sourcePixels.Length;
+            var count = sourcePixels.Length;
 
             // Not worth for small buffers:
             if (count < Vector4ConversionThreshold)
@@ -55,9 +55,9 @@ internal static partial class Vector4Converters
             }
 
             // Using the last quarter of 'destVectors' as a temporary buffer to avoid allocation:
-            int countWithoutLastItem = count - 1;
-            ReadOnlySpan<TPixel> reducedSource = sourcePixels.Slice(0, countWithoutLastItem);
-            Span<Rgba32> lastQuarterOfDestBuffer = MemoryMarshal.Cast<Vector4, Rgba32>(destVectors).Slice((3 * count) + 1, countWithoutLastItem);
+            var countWithoutLastItem = count - 1;
+            var reducedSource = sourcePixels.Slice(0, countWithoutLastItem);
+            var lastQuarterOfDestBuffer = MemoryMarshal.Cast<Vector4, Rgba32>(destVectors).Slice((3 * count) + 1, countWithoutLastItem);
             pixelOperations.ToRgba32(configuration, reducedSource, lastQuarterOfDestBuffer);
 
             // 'destVectors' and 'lastQuarterOfDestBuffer' are overlapping buffers,
@@ -88,7 +88,7 @@ internal static partial class Vector4Converters
             Guard.NotNull(configuration, nameof(configuration));
             Guard.DestinationShouldNotBeTooShort(sourceVectors, destPixels, nameof(destPixels));
 
-            int count = sourceVectors.Length;
+            var count = sourceVectors.Length;
 
             // Not worth for small buffers:
             if (count < Vector4ConversionThreshold)
@@ -103,9 +103,9 @@ internal static partial class Vector4Converters
 
             // For the opposite direction it's not easy to implement the trick used in RunRgba32CompatibleToVector4Conversion,
             // so let's allocate a temporary buffer as usually:
-            using (IMemoryOwner<Rgba32> tempBuffer = configuration.MemoryAllocator.Allocate<Rgba32>(count))
+            using (var tempBuffer = configuration.MemoryAllocator.Allocate<Rgba32>(count))
             {
-                Span<Rgba32> tempSpan = tempBuffer.Memory.Span;
+                var tempSpan = tempBuffer.Memory.Span;
 
                 SimdUtils.NormalizedFloatToByteSaturate(
                     MemoryMarshal.Cast<Vector4, float>(sourceVectors),

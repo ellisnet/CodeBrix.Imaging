@@ -47,7 +47,7 @@ internal static class ImageDecoderUtilities
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // Test may pass a BufferedReadStream in order to monitor EOF hits, if so, use the existing instance.
-        BufferedReadStream bufferedReadStream = stream as BufferedReadStream ?? new BufferedReadStream(configuration, stream);
+        var bufferedReadStream = stream as BufferedReadStream ?? new BufferedReadStream(configuration, stream);
 
         try
         {

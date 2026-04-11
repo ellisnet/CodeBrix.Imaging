@@ -31,9 +31,9 @@ internal static class OrderedDitherFactory
         // Create our Bayer matrix that matches the given exponent and dimensions
         var matrix = new DenseMatrix<uint>((int)length);
         uint i = 0;
-        for (int y = 0; y < length; y++)
+        for (var y = 0; y < length; y++)
         {
-            for (int x = 0; x < length; x++)
+            for (var x = 0; x < length; x++)
             {
                 matrix[y, x] = Bayer(i / length, i % length, exponent);
                 i++;
@@ -47,14 +47,14 @@ internal static class OrderedDitherFactory
         // 12  4 14  6    12  4 14    7 4 8
         //  3 11  1  9     3 11  1    3 6 1
         // 15  7 13  5
-        uint maxValue = bayerLength * bayerLength;
+        var maxValue = bayerLength * bayerLength;
         uint missing = 0;
         for (uint v = 0; v < maxValue; ++v)
         {
-            bool found = false;
-            for (int y = 0; y < length; ++y)
+            var found = false;
+            for (var y = 0; y < length; ++y)
             {
-                for (int x = 0; x < length; x++)
+                for (var x = 0; x < length; x++)
                 {
                     if (matrix[y, x] == v)
                     {
@@ -80,8 +80,8 @@ internal static class OrderedDitherFactory
         uint result = 0;
         for (uint i = 0; i < order; ++i)
         {
-            uint xOddXorYOdd = (x & 1) ^ (y & 1);
-            uint xOdd = x & 1;
+            var xOddXorYOdd = (x & 1) ^ (y & 1);
+            var xOdd = x & 1;
             result = ((result << 1 | xOddXorYOdd) << 1) | xOdd;
             x >>= 1;
             y >>= 1;

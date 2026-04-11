@@ -36,36 +36,36 @@ internal class AdaptiveThresholdProcessor<TPixel> : ImageProcessor<TPixel>
     {
         var intersect = Rectangle.Intersect(this.SourceRectangle, source.Bounds());
 
-        Configuration configuration = this.Configuration;
-        TPixel upper = this.definition.Upper.ToPixel<TPixel>();
-        TPixel lower = this.definition.Lower.ToPixel<TPixel>();
-        float thresholdLimit = this.definition.ThresholdLimit;
+        var configuration = this.Configuration;
+        var upper = this.definition.Upper.ToPixel<TPixel>();
+        var lower = this.definition.Lower.ToPixel<TPixel>();
+        var thresholdLimit = this.definition.ThresholdLimit;
 
-        int startY = intersect.Y;
-        int endY = intersect.Bottom;
-        int startX = intersect.X;
-        int endX = intersect.Right;
+        var startY = intersect.Y;
+        var endY = intersect.Bottom;
+        var startX = intersect.X;
+        var endX = intersect.Right;
 
-        int width = intersect.Width;
-        int height = intersect.Height;
+        var width = intersect.Width;
+        var height = intersect.Height;
 
         // ClusterSize defines the size of cluster to used to check for average. Tweaked to support up to 4k wide pixels and not more. 4096 / 16 is 256 thus the '-1'
-        byte clusterSize = (byte)Math.Truncate((width / 16f) - 1);
+        var clusterSize = (byte)Math.Truncate((width / 16f) - 1);
 
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var sourceBuffer = source.PixelBuffer;
 
         // Using pooled 2d buffer for integer image table and temp memory to hold Rgb24 converted pixel data.
-        using (Buffer2D<ulong> intImage = this.Configuration.MemoryAllocator.Allocate2D<ulong>(width, height))
+        using (var intImage = this.Configuration.MemoryAllocator.Allocate2D<ulong>(width, height))
         {
             Rgba32 rgb = default;
-            for (int x = startX; x < endX; x++)
+            for (var x = startX; x < endX; x++)
             {
                 ulong sum = 0;
-                for (int y = startY; y < endY; y++)
+                for (var y = startY; y < endY; y++)
                 {
-                    Span<TPixel> row = sourceBuffer.DangerousGetRowSpan(y);
-                    ref TPixel rowRef = ref MemoryMarshal.GetReference(row);
-                    ref TPixel color = ref Unsafe.Add(ref rowRef, x);
+                    var row = sourceBuffer.DangerousGetRowSpan(y);
+                    ref var rowRef = ref MemoryMarshal.GetReference(row);
+                    ref var color = ref Unsafe.Add(ref rowRef, x);
                     color.ToRgba32(ref rgb);
 
                     sum += (ulong)(rgb.R + rgb.G + rgb.B);
@@ -132,11 +132,11 @@ internal class AdaptiveThresholdProcessor<TPixel> : ImageProcessor<TPixel>
         public void Invoke(int y)
         {
             Rgba32 rgb = default;
-            Span<TPixel> pixelRow = this.source.DangerousGetRowSpan(y);
+            var pixelRow = this.source.DangerousGetRowSpan(y);
 
-            for (int x = this.startX; x < this.endX; x++)
+            for (var x = this.startX; x < this.endX; x++)
             {
-                TPixel pixel = pixelRow[x];
+                var pixel = pixelRow[x];
                 pixel.ToRgba32(ref rgb);
 
                 var x1 = Math.Max(x - this.startX - this.clusterSize + 1, 0);

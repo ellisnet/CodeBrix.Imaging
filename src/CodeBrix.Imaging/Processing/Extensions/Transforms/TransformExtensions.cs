@@ -50,8 +50,8 @@ public static class TransformExtensions
         AffineTransformBuilder builder,
         IResampler sampler)
     {
-        Matrix3x2 transform = builder.BuildMatrix(sourceRectangle);
-        Size targetDimensions = TransformUtils.GetTransformedSize(sourceRectangle.Size, transform);
+        var transform = builder.BuildMatrix(sourceRectangle);
+        var targetDimensions = TransformUtils.GetTransformedSize(sourceRectangle.Size, transform);
         return ctx.Transform(sourceRectangle, transform, targetDimensions, sampler);
     }
 
@@ -114,8 +114,8 @@ public static class TransformExtensions
         ProjectiveTransformBuilder builder,
         IResampler sampler)
     {
-        Matrix4x4 transform = builder.BuildMatrix(sourceRectangle);
-        Size targetDimensions = TransformUtils.GetTransformedSize(sourceRectangle.Size, transform);
+        var transform = builder.BuildMatrix(sourceRectangle);
+        var targetDimensions = TransformUtils.GetTransformedSize(sourceRectangle.Size, transform);
         return ctx.Transform(sourceRectangle, transform, targetDimensions, sampler);
     }
 

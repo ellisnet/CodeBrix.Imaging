@@ -60,7 +60,7 @@ internal class Vp8LDecoder : IDisposable
 
         if (this.Transforms != null)
         {
-            foreach (Vp8LTransform transform in this.Transforms)
+            foreach (var transform in this.Transforms)
             {
                 transform.Data?.Dispose();
             }

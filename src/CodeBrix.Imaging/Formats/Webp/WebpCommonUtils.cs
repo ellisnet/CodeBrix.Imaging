@@ -122,7 +122,7 @@ internal static class WebpCommonUtils
             else
 #endif
         {
-            for (int x = 0; x < row.Length; x++)
+            for (var x = 0; x < row.Length; x++)
             {
                 if (row[x].A != 0xFF)
                 {

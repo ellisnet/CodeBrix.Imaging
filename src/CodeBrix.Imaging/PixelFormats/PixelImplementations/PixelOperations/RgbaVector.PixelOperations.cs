@@ -32,7 +32,7 @@ public partial struct RgbaVector
             ReadOnlySpan<TSourcePixel> sourcePixels,
             Span<RgbaVector> destinationPixels)
         {
-            Span<Vector4> destinationVectors = MemoryMarshal.Cast<RgbaVector, Vector4>(destinationPixels);
+            var destinationVectors = MemoryMarshal.Cast<RgbaVector, Vector4>(destinationPixels);
 
             PixelOperations<TSourcePixel>.Instance.ToVector4(configuration, sourcePixels, destinationVectors, PixelConversionModifiers.Scale);
         }
@@ -70,13 +70,13 @@ public partial struct RgbaVector
         {
             Guard.DestinationShouldNotBeTooShort(sourcePixels, destinationPixels, nameof(destinationPixels));
 
-            ref Vector4 sourceBaseRef = ref Unsafe.As<RgbaVector, Vector4>(ref MemoryMarshal.GetReference(sourcePixels));
-            ref L8 destBaseRef = ref MemoryMarshal.GetReference(destinationPixels);
+            ref var sourceBaseRef = ref Unsafe.As<RgbaVector, Vector4>(ref MemoryMarshal.GetReference(sourcePixels));
+            ref var destBaseRef = ref MemoryMarshal.GetReference(destinationPixels);
 
-            for (int i = 0; i < sourcePixels.Length; i++)
+            for (var i = 0; i < sourcePixels.Length; i++)
             {
-                ref Vector4 sp = ref Unsafe.Add(ref sourceBaseRef, i);
-                ref L8 dp = ref Unsafe.Add(ref destBaseRef, i);
+                ref var sp = ref Unsafe.Add(ref sourceBaseRef, i);
+                ref var dp = ref Unsafe.Add(ref destBaseRef, i);
 
                 dp.ConvertFromRgbaScaledVector4(sp);
             }
@@ -89,13 +89,13 @@ public partial struct RgbaVector
         {
             Guard.DestinationShouldNotBeTooShort(sourcePixels, destinationPixels, nameof(destinationPixels));
 
-            ref Vector4 sourceBaseRef = ref Unsafe.As<RgbaVector, Vector4>(ref MemoryMarshal.GetReference(sourcePixels));
-            ref L16 destBaseRef = ref MemoryMarshal.GetReference(destinationPixels);
+            ref var sourceBaseRef = ref Unsafe.As<RgbaVector, Vector4>(ref MemoryMarshal.GetReference(sourcePixels));
+            ref var destBaseRef = ref MemoryMarshal.GetReference(destinationPixels);
 
-            for (int i = 0; i < sourcePixels.Length; i++)
+            for (var i = 0; i < sourcePixels.Length; i++)
             {
-                ref Vector4 sp = ref Unsafe.Add(ref sourceBaseRef, i);
-                ref L16 dp = ref Unsafe.Add(ref destBaseRef, i);
+                ref var sp = ref Unsafe.Add(ref sourceBaseRef, i);
+                ref var dp = ref Unsafe.Add(ref destBaseRef, i);
 
                 dp.ConvertFromRgbaScaledVector4(sp);
             }

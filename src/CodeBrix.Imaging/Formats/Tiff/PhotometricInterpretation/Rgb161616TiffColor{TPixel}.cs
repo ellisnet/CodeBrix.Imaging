@@ -34,19 +34,19 @@ internal class Rgb161616TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         // Note: due to an issue with netcore 2.1 and default values and unpredictable behavior with those,
         // we define our own defaults as a workaround. See: https://github.com/dotnet/runtime/issues/55623
-        Rgba64 rgba = TiffUtils.Rgba64Default;
+        var rgba = TiffUtils.Rgba64Default;
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
 
-        int offset = 0;
+        var offset = 0;
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
 
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     ulong r = TiffUtils.ConvertToUShortBigEndian(data.Slice(offset, 2));
                     offset += 2;
@@ -60,7 +60,7 @@ internal class Rgb161616TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
             }
             else
             {
-                int byteCount = pixelRow.Length * 6;
+                var byteCount = pixelRow.Length * 6;
                 PixelOperations<TPixel>.Instance.FromRgb48Bytes(
                     this.configuration,
                     data.Slice(offset, byteCount),

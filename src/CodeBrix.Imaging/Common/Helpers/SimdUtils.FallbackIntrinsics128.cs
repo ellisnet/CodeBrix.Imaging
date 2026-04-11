@@ -28,8 +28,8 @@ internal static partial class SimdUtils
         {
             DebugGuard.IsTrue(source.Length == dest.Length, nameof(source), "Input spans must be of same length!");
 
-            int remainder = Numerics.Modulo4(source.Length);
-            int adjustedCount = source.Length - remainder;
+            var remainder = Numerics.Modulo4(source.Length);
+            var adjustedCount = source.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -52,8 +52,8 @@ internal static partial class SimdUtils
         {
             DebugGuard.IsTrue(source.Length == dest.Length, nameof(source), "Input spans must be of same length!");
 
-            int remainder = Numerics.Modulo4(source.Length);
-            int adjustedCount = source.Length - remainder;
+            var remainder = Numerics.Modulo4(source.Length);
+            var adjustedCount = source.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -74,21 +74,21 @@ internal static partial class SimdUtils
         {
             VerifySpanInput(source, dest, 4);
 
-            int count = dest.Length / 4;
+            var count = dest.Length / 4;
             if (count == 0)
             {
                 return;
             }
 
-            ref ByteVector4 sBase = ref Unsafe.As<byte, ByteVector4>(ref MemoryMarshal.GetReference(source));
-            ref Vector4 dBase = ref Unsafe.As<float, Vector4>(ref MemoryMarshal.GetReference(dest));
+            ref var sBase = ref Unsafe.As<byte, ByteVector4>(ref MemoryMarshal.GetReference(source));
+            ref var dBase = ref Unsafe.As<float, Vector4>(ref MemoryMarshal.GetReference(dest));
 
             const float Scale = 1f / 255f;
             Vector4 d = default;
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                ref ByteVector4 s = ref Unsafe.Add(ref sBase, i);
+                ref var s = ref Unsafe.Add(ref sBase, i);
                 d.X = s.X;
                 d.Y = s.Y;
                 d.Z = s.Z;
@@ -108,26 +108,26 @@ internal static partial class SimdUtils
         {
             VerifySpanInput(source, dest, 4);
 
-            int count = source.Length / 4;
+            var count = source.Length / 4;
             if (count == 0)
             {
                 return;
             }
 
-            ref Vector4 sBase = ref Unsafe.As<float, Vector4>(ref MemoryMarshal.GetReference(source));
-            ref ByteVector4 dBase = ref Unsafe.As<byte, ByteVector4>(ref MemoryMarshal.GetReference(dest));
+            ref var sBase = ref Unsafe.As<float, Vector4>(ref MemoryMarshal.GetReference(source));
+            ref var dBase = ref Unsafe.As<byte, ByteVector4>(ref MemoryMarshal.GetReference(dest));
 
             var half = new Vector4(0.5f);
             var maxBytes = new Vector4(255f);
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                Vector4 s = Unsafe.Add(ref sBase, i);
+                var s = Unsafe.Add(ref sBase, i);
                 s *= maxBytes;
                 s += half;
                 s = Numerics.Clamp(s, Vector4.Zero, maxBytes);
 
-                ref ByteVector4 d = ref Unsafe.Add(ref dBase, i);
+                ref var d = ref Unsafe.Add(ref dBase, i);
                 d.X = (byte)s.X;
                 d.Y = (byte)s.Y;
                 d.Z = (byte)s.Z;

@@ -106,7 +106,7 @@ internal class Vp8LBitEntropy
     {
         this.Init();
 
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
             if (array[i] != 0)
             {
@@ -130,14 +130,14 @@ internal class Vp8LBitEntropy
     public void BitsEntropyUnrefined(uint[] x, int length, Vp8LStreaks stats)
     {
         int i;
-        int iPrev = 0;
-        uint xPrev = x[0];
+        var iPrev = 0;
+        var xPrev = x[0];
 
         this.Init();
 
         for (i = 1; i < length; i++)
         {
-            uint xi = x[i];
+            var xi = x[i];
             if (xi != xPrev)
             {
                 this.GetEntropyUnrefined(xi, i, ref xPrev, ref iPrev, stats);
@@ -152,14 +152,14 @@ internal class Vp8LBitEntropy
     public void GetCombinedEntropyUnrefined(uint[] x, uint[] y, int length, Vp8LStreaks stats)
     {
         int i;
-        int iPrev = 0;
-        uint xyPrev = x[0] + y[0];
+        var iPrev = 0;
+        var xyPrev = x[0] + y[0];
 
         this.Init();
 
         for (i = 1; i < length; i++)
         {
-            uint xy = x[i] + y[i];
+            var xy = x[i] + y[i];
             if (xy != xyPrev)
             {
                 this.GetEntropyUnrefined(xy, i, ref xyPrev, ref iPrev, stats);
@@ -174,14 +174,14 @@ internal class Vp8LBitEntropy
     public void GetEntropyUnrefined(uint[] x, int length, Vp8LStreaks stats)
     {
         int i;
-        int iPrev = 0;
-        uint xPrev = x[0];
+        var iPrev = 0;
+        var xPrev = x[0];
 
         this.Init();
 
         for (i = 1; i < length; i++)
         {
-            uint xi = x[i];
+            var xi = x[i];
             if (xi != xPrev)
             {
                 this.GetEntropyUnrefined(xi, i, ref xPrev, ref iPrev, stats);
@@ -195,7 +195,7 @@ internal class Vp8LBitEntropy
 
     private void GetEntropyUnrefined(uint val, int i, ref uint valPrev, ref int iPrev, Vp8LStreaks stats)
     {
-        int streak = i - iPrev;
+        var streak = i - iPrev;
 
         // Gather info for the bit entropy.
         if (valPrev != 0)

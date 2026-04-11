@@ -220,7 +220,7 @@ internal sealed class PaintSolid : Paint
         // Apply alpha
         if (Alpha < 1.0f)
         {
-            byte adjustedAlpha = (byte)(color.Alpha * Alpha);
+            var adjustedAlpha = (byte)(color.Alpha * Alpha);
             color = new GlyphColor(color.Blue, color.Green, color.Red, adjustedAlpha);
         }
 
@@ -242,7 +242,7 @@ internal sealed class PaintSolid : Paint
 
         if (Alpha < 1.0f)
         {
-            byte adjustedAlpha = (byte)(color.Alpha * Alpha);
+            var adjustedAlpha = (byte)(color.Alpha * Alpha);
             color = new GlyphColor(color.Blue, color.Green, color.Red, adjustedAlpha);
         }
 
@@ -393,7 +393,7 @@ internal sealed class PaintLinearGradient : Paint
 
         if (middleStop.Alpha < 1.0f)
         {
-            byte adjustedAlpha = (byte)(color.Alpha * middleStop.Alpha);
+            var adjustedAlpha = (byte)(color.Alpha * middleStop.Alpha);
             color = new GlyphColor(color.Blue, color.Green, color.Red, adjustedAlpha);
         }
 
@@ -457,7 +457,7 @@ internal sealed class PaintRadialGradient : Paint
 
         if (middleStop.Alpha < 1.0f)
         {
-            byte adjustedAlpha = (byte)(color.Alpha * middleStop.Alpha);
+            var adjustedAlpha = (byte)(color.Alpha * middleStop.Alpha);
             color = new GlyphColor(color.Blue, color.Green, color.Red, adjustedAlpha);
         }
 
@@ -571,7 +571,7 @@ internal sealed class PaintRotate : Paint
     public override IReadOnlyList<ResolvedColorLayer> Resolve(PaintResolutionContext context)
     {
         // Convert angle from degrees to radians
-        float radians = Angle * MathF.PI / 180f;
+        var radians = Angle * MathF.PI / 180f;
         Matrix3x2 transform;
         if (CenterX == 0 && CenterY == 0)
         {
@@ -609,8 +609,8 @@ internal sealed class PaintSkew : Paint
 
     public override IReadOnlyList<ResolvedColorLayer> Resolve(PaintResolutionContext context)
     {
-        float xTan = MathF.Tan(XSkewAngle * MathF.PI / 180f);
-        float yTan = MathF.Tan(YSkewAngle * MathF.PI / 180f);
+        var xTan = MathF.Tan(XSkewAngle * MathF.PI / 180f);
+        var yTan = MathF.Tan(YSkewAngle * MathF.PI / 180f);
         var skew = new Matrix3x2(1, yTan, xTan, 1, 0, 0);
         
         Matrix3x2 transform;

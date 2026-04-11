@@ -35,22 +35,22 @@ internal sealed class TiffBiColorWriter<TPixel> : TiffBaseColorWriter<TPixel>
     /// <inheritdoc/>
     protected override void EncodeStrip(int y, int height, TiffBaseCompressor compressor)
     {
-        int width = this.Image.Width;
+        var width = this.Image.Width;
 
         if (compressor.Method == TiffCompression.CcittGroup3Fax || compressor.Method == TiffCompression.Ccitt1D || compressor.Method == TiffCompression.CcittGroup4Fax)
         {
             // Special case for T4BitCompressor.
-            int stripPixels = width * height;
+            var stripPixels = width * height;
             this.pixelsAsGray ??= this.MemoryAllocator.Allocate<byte>(stripPixels);
             this.imageBlackWhite.ProcessPixelRows(accessor =>
             {
-                Span<byte> pixelAsGraySpan = this.pixelsAsGray.GetSpan();
-                int lastRow = y + height;
-                int grayRowIdx = 0;
-                for (int row = y; row < lastRow; row++)
+                var pixelAsGraySpan = this.pixelsAsGray.GetSpan();
+                var lastRow = y + height;
+                var grayRowIdx = 0;
+                for (var row = y; row < lastRow; row++)
                 {
-                    Span<TPixel> pixelsBlackWhiteRow = accessor.GetRowSpan(row);
-                    Span<byte> pixelAsGrayRow = pixelAsGraySpan.Slice(grayRowIdx * width, width);
+                    var pixelsBlackWhiteRow = accessor.GetRowSpan(row);
+                    var pixelAsGrayRow = pixelAsGraySpan.Slice(grayRowIdx * width, width);
                     PixelOperations<TPixel>.Instance.ToL8Bytes(this.Configuration, pixelsBlackWhiteRow, pixelAsGrayRow, width);
                     grayRowIdx++;
                 }
@@ -61,27 +61,27 @@ internal sealed class TiffBiColorWriter<TPixel> : TiffBaseColorWriter<TPixel>
         else
         {
             // Write uncompressed image.
-            int bytesPerStrip = this.BytesPerRow * height;
+            var bytesPerStrip = this.BytesPerRow * height;
             this.bitStrip ??= this.MemoryAllocator.Allocate<byte>(bytesPerStrip);
             this.pixelsAsGray ??= this.MemoryAllocator.Allocate<byte>(width);
-            Span<byte> pixelAsGraySpan = this.pixelsAsGray.GetSpan();
+            var pixelAsGraySpan = this.pixelsAsGray.GetSpan();
 
-            Span<byte> rows = this.bitStrip.Slice(0, bytesPerStrip);
+            var rows = this.bitStrip.Slice(0, bytesPerStrip);
             rows.Clear();
-            Buffer2D<TPixel> blackWhiteBuffer = this.imageBlackWhite.Frames.RootFrame.PixelBuffer;
+            var blackWhiteBuffer = this.imageBlackWhite.Frames.RootFrame.PixelBuffer;
 
-            int outputRowIdx = 0;
-            int lastRow = y + height;
-            for (int row = y; row < lastRow; row++)
+            var outputRowIdx = 0;
+            var lastRow = y + height;
+            for (var row = y; row < lastRow; row++)
             {
-                int bitIndex = 0;
-                int byteIndex = 0;
-                Span<byte> outputRow = rows.Slice(outputRowIdx * this.BytesPerRow);
-                Span<TPixel> pixelsBlackWhiteRow = blackWhiteBuffer.DangerousGetRowSpan(row);
+                var bitIndex = 0;
+                var byteIndex = 0;
+                var outputRow = rows.Slice(outputRowIdx * this.BytesPerRow);
+                var pixelsBlackWhiteRow = blackWhiteBuffer.DangerousGetRowSpan(row);
                 PixelOperations<TPixel>.Instance.ToL8Bytes(this.Configuration, pixelsBlackWhiteRow, pixelAsGraySpan, width);
-                for (int x = 0; x < this.Image.Width; x++)
+                for (var x = 0; x < this.Image.Width; x++)
                 {
-                    int shift = 7 - bitIndex;
+                    var shift = 7 - bitIndex;
                     if (pixelAsGraySpan[x] == 255)
                     {
                         outputRow[byteIndex] |= (byte)(1 << shift);

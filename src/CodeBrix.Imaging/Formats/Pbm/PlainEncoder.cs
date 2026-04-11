@@ -74,27 +74,27 @@ internal class PlainEncoder
     private static void WriteGrayscale<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L8> row = allocator.Allocate<L8>(width);
-        Span<L8> rowSpan = row.GetSpan();
-        using IMemoryOwner<byte> plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelGrayscale);
-        Span<byte> plainSpan = plainMemory.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L8>(width);
+        var rowSpan = row.GetSpan();
+        using var plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelGrayscale);
+        var plainSpan = plainMemory.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToL8(
                 configuration,
                 pixelSpan,
                 rowSpan);
 
-            int written = 0;
-            for (int x = 0; x < width; x++)
+            var written = 0;
+            for (var x = 0; x < width; x++)
             {
-                Utf8Formatter.TryFormat(rowSpan[x].PackedValue, plainSpan.Slice(written), out int bytesWritten, DecimalFormat);
+                Utf8Formatter.TryFormat(rowSpan[x].PackedValue, plainSpan.Slice(written), out var bytesWritten, DecimalFormat);
                 written += bytesWritten;
                 plainSpan[written++] = Space;
             }
@@ -107,27 +107,27 @@ internal class PlainEncoder
     private static void WriteWideGrayscale<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L16> row = allocator.Allocate<L16>(width);
-        Span<L16> rowSpan = row.GetSpan();
-        using IMemoryOwner<byte> plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelGrayscaleWide);
-        Span<byte> plainSpan = plainMemory.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L16>(width);
+        var rowSpan = row.GetSpan();
+        using var plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelGrayscaleWide);
+        var plainSpan = plainMemory.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToL16(
                 configuration,
                 pixelSpan,
                 rowSpan);
 
-            int written = 0;
-            for (int x = 0; x < width; x++)
+            var written = 0;
+            for (var x = 0; x < width; x++)
             {
-                Utf8Formatter.TryFormat(rowSpan[x].PackedValue, plainSpan.Slice(written), out int bytesWritten, DecimalFormat);
+                Utf8Formatter.TryFormat(rowSpan[x].PackedValue, plainSpan.Slice(written), out var bytesWritten, DecimalFormat);
                 written += bytesWritten;
                 plainSpan[written++] = Space;
             }
@@ -140,27 +140,27 @@ internal class PlainEncoder
     private static void WriteRgb<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<Rgb24> row = allocator.Allocate<Rgb24>(width);
-        Span<Rgb24> rowSpan = row.GetSpan();
-        using IMemoryOwner<byte> plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelRgb);
-        Span<byte> plainSpan = plainMemory.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<Rgb24>(width);
+        var rowSpan = row.GetSpan();
+        using var plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelRgb);
+        var plainSpan = plainMemory.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToRgb24(
                 configuration,
                 pixelSpan,
                 rowSpan);
 
-            int written = 0;
-            for (int x = 0; x < width; x++)
+            var written = 0;
+            for (var x = 0; x < width; x++)
             {
-                Utf8Formatter.TryFormat(rowSpan[x].R, plainSpan.Slice(written), out int bytesWritten, DecimalFormat);
+                Utf8Formatter.TryFormat(rowSpan[x].R, plainSpan.Slice(written), out var bytesWritten, DecimalFormat);
                 written += bytesWritten;
                 plainSpan[written++] = Space;
                 Utf8Formatter.TryFormat(rowSpan[x].G, plainSpan.Slice(written), out bytesWritten, DecimalFormat);
@@ -179,27 +179,27 @@ internal class PlainEncoder
     private static void WriteWideRgb<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<Rgb48> row = allocator.Allocate<Rgb48>(width);
-        Span<Rgb48> rowSpan = row.GetSpan();
-        using IMemoryOwner<byte> plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelRgbWide);
-        Span<byte> plainSpan = plainMemory.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<Rgb48>(width);
+        var rowSpan = row.GetSpan();
+        using var plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelRgbWide);
+        var plainSpan = plainMemory.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToRgb48(
                 configuration,
                 pixelSpan,
                 rowSpan);
 
-            int written = 0;
-            for (int x = 0; x < width; x++)
+            var written = 0;
+            for (var x = 0; x < width; x++)
             {
-                Utf8Formatter.TryFormat(rowSpan[x].R, plainSpan.Slice(written), out int bytesWritten, DecimalFormat);
+                Utf8Formatter.TryFormat(rowSpan[x].R, plainSpan.Slice(written), out var bytesWritten, DecimalFormat);
                 written += bytesWritten;
                 plainSpan[written++] = Space;
                 Utf8Formatter.TryFormat(rowSpan[x].G, plainSpan.Slice(written), out bytesWritten, DecimalFormat);
@@ -218,27 +218,27 @@ internal class PlainEncoder
     private static void WriteBlackAndWhite<TPixel>(Configuration configuration, Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = image.Width;
-        int height = image.Height;
-        Buffer2D<TPixel> pixelBuffer = image.PixelBuffer;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L8> row = allocator.Allocate<L8>(width);
-        Span<L8> rowSpan = row.GetSpan();
-        using IMemoryOwner<byte> plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelBlackAndWhite);
-        Span<byte> plainSpan = plainMemory.GetSpan();
+        var width = image.Width;
+        var height = image.Height;
+        var pixelBuffer = image.PixelBuffer;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L8>(width);
+        var rowSpan = row.GetSpan();
+        using var plainMemory = allocator.Allocate<byte>(width * MaxCharsPerPixelBlackAndWhite);
+        var plainSpan = plainMemory.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<TPixel> pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
+            var pixelSpan = pixelBuffer.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToL8(
                 configuration,
                 pixelSpan,
                 rowSpan);
 
-            int written = 0;
-            for (int x = 0; x < width; x++)
+            var written = 0;
+            for (var x = 0; x < width; x++)
             {
-                byte value = (rowSpan[x].PackedValue < 128) ? One : Zero;
+                var value = (rowSpan[x].PackedValue < 128) ? One : Zero;
                 plainSpan[written++] = value;
                 plainSpan[written++] = Space;
             }

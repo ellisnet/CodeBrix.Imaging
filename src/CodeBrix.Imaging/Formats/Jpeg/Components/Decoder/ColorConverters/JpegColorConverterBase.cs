@@ -60,7 +60,7 @@ internal abstract partial class JpegColorConverterBase
     /// </summary>
     public static JpegColorConverterBase GetConverter(JpegColorSpace colorSpace, int precision)
     {
-        JpegColorConverterBase converter = Array.Find(
+        var converter = Array.Find(
             Converters,
             c => c.ColorSpace == colorSpace
                  && c.Precision == precision);
@@ -249,10 +249,10 @@ internal abstract partial class JpegColorConverterBase
 
         public ComponentValues Slice(int start, int length)
         {
-            Span<float> c0 = this.Component0.Slice(start, length);
-            Span<float> c1 = this.Component1.Length > 0 ? this.Component1.Slice(start, length) : Span<float>.Empty;
-            Span<float> c2 = this.Component2.Length > 0 ? this.Component2.Slice(start, length) : Span<float>.Empty;
-            Span<float> c3 = this.Component3.Length > 0 ? this.Component3.Slice(start, length) : Span<float>.Empty;
+            var c0 = this.Component0.Slice(start, length);
+            var c1 = this.Component1.Length > 0 ? this.Component1.Slice(start, length) : Span<float>.Empty;
+            var c2 = this.Component2.Length > 0 ? this.Component2.Slice(start, length) : Span<float>.Empty;
+            var c3 = this.Component3.Length > 0 ? this.Component3.Slice(start, length) : Span<float>.Empty;
 
             return new ComponentValues(this.ComponentCount, c0, c1, c2, c3);
         }

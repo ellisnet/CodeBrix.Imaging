@@ -91,7 +91,7 @@ internal static class UnitConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public static PixelResolutionUnit ExifProfileToResolutionUnit(ExifProfile profile)
     {
-        IExifValue<ushort> resolution = profile.GetValue(ExifTag.ResolutionUnit);
+        var resolution = profile.GetValue(ExifTag.ResolutionUnit);
 
         // EXIF is 1, 2, 3 so we minus "1" off the result.
         return resolution is null ? DefaultResolutionUnit : (PixelResolutionUnit)(byte)(resolution.Value - 1);
@@ -126,7 +126,7 @@ internal static class UnitConverter
                 break;
         }
 
-        ushort exifUnit = (ushort)(unit + 1);
+        var exifUnit = (ushort)(unit + 1);
         if (unit == PixelResolutionUnit.AspectRatio)
         {
             return new ExifResolutionValues(exifUnit, null, null);

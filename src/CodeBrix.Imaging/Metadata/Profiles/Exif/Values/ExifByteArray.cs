@@ -53,9 +53,9 @@ internal sealed class ExifByteArray : ExifArrayValue<byte>
         }
 
         var value = new byte[intArrayValue.Length];
-        for (int i = 0; i < intArrayValue.Length; i++)
+        for (var i = 0; i < intArrayValue.Length; i++)
         {
-            int s = intArrayValue[i];
+            var s = intArrayValue[i];
             value[i] = (byte)s;
         }
 

@@ -23,7 +23,7 @@ internal static class LinearTransformUtility
     public static float GetSamplingRadius<TResampler>(in TResampler sampler, int sourceSize, int destinationSize)
         where TResampler : struct, IResampler
     {
-        float scale = (float)sourceSize / destinationSize;
+        var scale = (float)sourceSize / destinationSize;
 
         if (scale < 1F)
         {

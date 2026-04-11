@@ -26,40 +26,40 @@ internal class Vp8EncProba
         this.UseSkipProba = false;
         this.Segments = new byte[3];
         this.Coeffs = new Vp8BandProbas[WebpConstants.NumTypes][];
-        for (int i = 0; i < this.Coeffs.Length; i++)
+        for (var i = 0; i < this.Coeffs.Length; i++)
         {
             this.Coeffs[i] = new Vp8BandProbas[WebpConstants.NumBands];
-            for (int j = 0; j < this.Coeffs[i].Length; j++)
+            for (var j = 0; j < this.Coeffs[i].Length; j++)
             {
                 this.Coeffs[i][j] = new Vp8BandProbas();
             }
         }
 
         this.Stats = new Vp8Stats[WebpConstants.NumTypes][];
-        for (int i = 0; i < this.Coeffs.Length; i++)
+        for (var i = 0; i < this.Coeffs.Length; i++)
         {
             this.Stats[i] = new Vp8Stats[WebpConstants.NumBands];
-            for (int j = 0; j < this.Stats[i].Length; j++)
+            for (var j = 0; j < this.Stats[i].Length; j++)
             {
                 this.Stats[i][j] = new Vp8Stats();
             }
         }
 
         this.LevelCost = new Vp8Costs[WebpConstants.NumTypes][];
-        for (int i = 0; i < this.LevelCost.Length; i++)
+        for (var i = 0; i < this.LevelCost.Length; i++)
         {
             this.LevelCost[i] = new Vp8Costs[WebpConstants.NumBands];
-            for (int j = 0; j < this.LevelCost[i].Length; j++)
+            for (var j = 0; j < this.LevelCost[i].Length; j++)
             {
                 this.LevelCost[i][j] = new Vp8Costs();
             }
         }
 
         this.RemappedCosts = new Vp8Costs[WebpConstants.NumTypes][];
-        for (int i = 0; i < this.RemappedCosts.Length; i++)
+        for (var i = 0; i < this.RemappedCosts.Length; i++)
         {
             this.RemappedCosts[i] = new Vp8Costs[16];
-            for (int j = 0; j < this.RemappedCosts[i].Length; j++)
+            for (var j = 0; j < this.RemappedCosts[i].Length; j++)
             {
                 this.RemappedCosts[i][j] = new Vp8Costs();
             }
@@ -67,14 +67,14 @@ internal class Vp8EncProba
 
         // Initialize with default probabilities.
         this.Segments.AsSpan().Fill(255);
-        for (int t = 0; t < WebpConstants.NumTypes; ++t)
+        for (var t = 0; t < WebpConstants.NumTypes; ++t)
         {
-            for (int b = 0; b < WebpConstants.NumBands; ++b)
+            for (var b = 0; b < WebpConstants.NumBands; ++b)
             {
-                for (int c = 0; c < WebpConstants.NumCtx; ++c)
+                for (var c = 0; c < WebpConstants.NumCtx; ++c)
                 {
-                    Vp8ProbaArray dst = this.Coeffs[t][b].Probabilities[c];
-                    for (int p = 0; p < WebpConstants.NumProbas; ++p)
+                    var dst = this.Coeffs[t][b].Probabilities[c];
+                    for (var p = 0; p < WebpConstants.NumProbas; ++p)
                     {
                         dst.Probabilities[p] = WebpLookupTables.DefaultCoeffsProba[t, b, c, p];
                     }
@@ -123,16 +123,16 @@ internal class Vp8EncProba
             return; // Nothing to do.
         }
 
-        for (int ctype = 0; ctype < WebpConstants.NumTypes; ++ctype)
+        for (var ctype = 0; ctype < WebpConstants.NumTypes; ++ctype)
         {
-            for (int band = 0; band < WebpConstants.NumBands; ++band)
+            for (var band = 0; band < WebpConstants.NumBands; ++band)
             {
-                for (int ctx = 0; ctx < WebpConstants.NumCtx; ++ctx)
+                for (var ctx = 0; ctx < WebpConstants.NumCtx; ++ctx)
                 {
-                    Vp8ProbaArray p = this.Coeffs[ctype][band].Probabilities[ctx];
-                    Vp8CostArray table = this.LevelCost[ctype][band].Costs[ctx];
-                    int cost0 = ctx > 0 ? LossyUtils.Vp8BitCost(1, p.Probabilities[0]) : 0;
-                    int costBase = LossyUtils.Vp8BitCost(1, p.Probabilities[1]) + cost0;
+                    var p = this.Coeffs[ctype][band].Probabilities[ctx];
+                    var table = this.LevelCost[ctype][band].Costs[ctx];
+                    var cost0 = ctx > 0 ? LossyUtils.Vp8BitCost(1, p.Probabilities[0]) : 0;
+                    var costBase = LossyUtils.Vp8BitCost(1, p.Probabilities[1]) + cost0;
                     int v;
                     table.Costs[0] = (ushort)(LossyUtils.Vp8BitCost(0, p.Probabilities[1]) + cost0);
                     for (v = 1; v <= MaxVariableLevel; ++v)
@@ -144,12 +144,12 @@ internal class Vp8EncProba
                 }
             }
 
-            for (int n = 0; n < 16; ++n)
+            for (var n = 0; n < 16; ++n)
             {
-                for (int ctx = 0; ctx < WebpConstants.NumCtx; ++ctx)
+                for (var ctx = 0; ctx < WebpConstants.NumCtx; ++ctx)
                 {
-                    Vp8CostArray dst = this.RemappedCosts[ctype][n].Costs[ctx];
-                    Vp8CostArray src = this.LevelCost[ctype][WebpConstants.Vp8EncBands[n]].Costs[ctx];
+                    var dst = this.RemappedCosts[ctype][n].Costs[ctx];
+                    var src = this.LevelCost[ctype][WebpConstants.Vp8EncBands[n]].Costs[ctx];
                     src.Costs.CopyTo(dst.Costs.AsSpan());
                 }
             }
@@ -160,25 +160,25 @@ internal class Vp8EncProba
 
     public int FinalizeTokenProbas()
     {
-        bool hasChanged = false;
-        int size = 0;
-        for (int t = 0; t < WebpConstants.NumTypes; ++t)
+        var hasChanged = false;
+        var size = 0;
+        for (var t = 0; t < WebpConstants.NumTypes; ++t)
         {
-            for (int b = 0; b < WebpConstants.NumBands; ++b)
+            for (var b = 0; b < WebpConstants.NumBands; ++b)
             {
-                for (int c = 0; c < WebpConstants.NumCtx; ++c)
+                for (var c = 0; c < WebpConstants.NumCtx; ++c)
                 {
-                    for (int p = 0; p < WebpConstants.NumProbas; ++p)
+                    for (var p = 0; p < WebpConstants.NumProbas; ++p)
                     {
-                        uint stats = this.Stats[t][b].Stats[c].Stats[p];
-                        int nb = (int)((stats >> 0) & 0xffff);
-                        int total = (int)((stats >> 16) & 0xffff);
+                        var stats = this.Stats[t][b].Stats[c].Stats[p];
+                        var nb = (int)((stats >> 0) & 0xffff);
+                        var total = (int)((stats >> 16) & 0xffff);
                         int updateProba = WebpLookupTables.CoeffsUpdateProba[t, b, c, p];
                         int oldP = WebpLookupTables.DefaultCoeffsProba[t, b, c, p];
-                        int newP = CalcTokenProba(nb, total);
-                        int oldCost = BranchCost(nb, total, oldP) + LossyUtils.Vp8BitCost(0, (byte)updateProba);
-                        int newCost = BranchCost(nb, total, newP) + LossyUtils.Vp8BitCost(1, (byte)updateProba) + (8 * 256);
-                        bool useNewP = oldCost > newCost;
+                        var newP = CalcTokenProba(nb, total);
+                        var oldCost = BranchCost(nb, total, oldP) + LossyUtils.Vp8BitCost(0, (byte)updateProba);
+                        var newCost = BranchCost(nb, total, newP) + LossyUtils.Vp8BitCost(1, (byte)updateProba) + (8 * 256);
+                        var useNewP = oldCost > newCost;
                         size += LossyUtils.Vp8BitCost(useNewP ? 1 : 0, (byte)updateProba);
                         if (useNewP)
                         {
@@ -202,12 +202,12 @@ internal class Vp8EncProba
 
     public int FinalizeSkipProba(int mbw, int mbh)
     {
-        int nbMbs = mbw * mbh;
-        int nbEvents = this.NbSkip;
+        var nbMbs = mbw * mbh;
+        var nbEvents = this.NbSkip;
         this.SkipProba = (byte)CalcSkipProba(nbEvents, nbMbs);
         this.UseSkipProba = this.SkipProba < SkipProbaThreshold;
 
-        int size = 256;
+        var size = 256;
         if (this.UseSkipProba)
         {
             size += (nbEvents * LossyUtils.Vp8BitCost(1, this.SkipProba)) + ((nbMbs - nbEvents) * LossyUtils.Vp8BitCost(0, this.SkipProba));
@@ -219,13 +219,13 @@ internal class Vp8EncProba
 
     public void ResetTokenStats()
     {
-        for (int t = 0; t < WebpConstants.NumTypes; ++t)
+        for (var t = 0; t < WebpConstants.NumTypes; ++t)
         {
-            for (int b = 0; b < WebpConstants.NumBands; ++b)
+            for (var b = 0; b < WebpConstants.NumBands; ++b)
             {
-                for (int c = 0; c < WebpConstants.NumCtx; ++c)
+                for (var c = 0; c < WebpConstants.NumCtx; ++c)
                 {
-                    for (int p = 0; p < WebpConstants.NumProbas; ++p)
+                    for (var p = 0; p < WebpConstants.NumProbas; ++p)
                     {
                         this.Stats[t][b].Stats[c].Stats[p] = 0;
                     }
@@ -240,8 +240,8 @@ internal class Vp8EncProba
     {
         int pattern = WebpLookupTables.Vp8LevelCodes[level - 1][0];
         int bits = WebpLookupTables.Vp8LevelCodes[level - 1][1];
-        int cost = 0;
-        for (int i = 2; pattern != 0; i++)
+        var cost = 0;
+        for (var i = 2; pattern != 0; i++)
         {
             if ((pattern & 1) != 0)
             {

@@ -47,18 +47,18 @@ public static partial class ParallelRowIterator
     {
         ValidateRectangle(rectangle);
 
-        int top = rectangle.Top;
-        int bottom = rectangle.Bottom;
-        int width = rectangle.Width;
-        int height = rectangle.Height;
+        var top = rectangle.Top;
+        var bottom = rectangle.Bottom;
+        var width = rectangle.Width;
+        var height = rectangle.Height;
 
-        int maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
-        int numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
+        var maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
+        var numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
 
         // Avoid TPL overhead in this trivial case:
         if (numOfSteps == 1)
         {
-            for (int y = top; y < bottom; y++)
+            for (var y = top; y < bottom; y++)
             {
                 Unsafe.AsRef(in operation).Invoke(y);
             }
@@ -66,7 +66,7 @@ public static partial class ParallelRowIterator
             return;
         }
 
-        int verticalStep = DivideCeil(rectangle.Height, numOfSteps);
+        var verticalStep = DivideCeil(rectangle.Height, numOfSteps);
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = numOfSteps };
         var wrappingOperation = new RowOperationWrapper<T>(top, bottom, verticalStep, in operation);
 
@@ -112,22 +112,22 @@ public static partial class ParallelRowIterator
     {
         ValidateRectangle(rectangle);
 
-        int top = rectangle.Top;
-        int bottom = rectangle.Bottom;
-        int width = rectangle.Width;
-        int height = rectangle.Height;
+        var top = rectangle.Top;
+        var bottom = rectangle.Bottom;
+        var width = rectangle.Width;
+        var height = rectangle.Height;
 
-        int maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
-        int numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
-        MemoryAllocator allocator = parallelSettings.MemoryAllocator;
+        var maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
+        var numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
+        var allocator = parallelSettings.MemoryAllocator;
 
         // Avoid TPL overhead in this trivial case:
         if (numOfSteps == 1)
         {
-            using IMemoryOwner<TBuffer> buffer = allocator.Allocate<TBuffer>(width);
-            Span<TBuffer> span = buffer.Memory.Span;
+            using var buffer = allocator.Allocate<TBuffer>(width);
+            var span = buffer.Memory.Span;
 
-            for (int y = top; y < bottom; y++)
+            for (var y = top; y < bottom; y++)
             {
                 Unsafe.AsRef(in operation).Invoke(y, span);
             }
@@ -135,7 +135,7 @@ public static partial class ParallelRowIterator
             return;
         }
 
-        int verticalStep = DivideCeil(height, numOfSteps);
+        var verticalStep = DivideCeil(height, numOfSteps);
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = numOfSteps };
         var wrappingOperation = new RowOperationWrapper<T, TBuffer>(top, bottom, verticalStep, width, allocator, in operation);
 
@@ -176,13 +176,13 @@ public static partial class ParallelRowIterator
     {
         ValidateRectangle(rectangle);
 
-        int top = rectangle.Top;
-        int bottom = rectangle.Bottom;
-        int width = rectangle.Width;
-        int height = rectangle.Height;
+        var top = rectangle.Top;
+        var bottom = rectangle.Bottom;
+        var width = rectangle.Width;
+        var height = rectangle.Height;
 
-        int maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
-        int numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
+        var maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
+        var numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
 
         // Avoid TPL overhead in this trivial case:
         if (numOfSteps == 1)
@@ -192,7 +192,7 @@ public static partial class ParallelRowIterator
             return;
         }
 
-        int verticalStep = DivideCeil(rectangle.Height, numOfSteps);
+        var verticalStep = DivideCeil(rectangle.Height, numOfSteps);
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = numOfSteps };
         var wrappingOperation = new RowIntervalOperationWrapper<T>(top, bottom, verticalStep, in operation);
 
@@ -238,27 +238,27 @@ public static partial class ParallelRowIterator
     {
         ValidateRectangle(rectangle);
 
-        int top = rectangle.Top;
-        int bottom = rectangle.Bottom;
-        int width = rectangle.Width;
-        int height = rectangle.Height;
+        var top = rectangle.Top;
+        var bottom = rectangle.Bottom;
+        var width = rectangle.Width;
+        var height = rectangle.Height;
 
-        int maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
-        int numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
-        MemoryAllocator allocator = parallelSettings.MemoryAllocator;
+        var maxSteps = DivideCeil(width * (long)height, parallelSettings.MinimumPixelsProcessedPerTask);
+        var numOfSteps = Math.Min(parallelSettings.MaxDegreeOfParallelism, maxSteps);
+        var allocator = parallelSettings.MemoryAllocator;
 
         // Avoid TPL overhead in this trivial case:
         if (numOfSteps == 1)
         {
             var rows = new RowInterval(top, bottom);
-            using IMemoryOwner<TBuffer> buffer = allocator.Allocate<TBuffer>(width);
+            using var buffer = allocator.Allocate<TBuffer>(width);
 
             Unsafe.AsRef(in operation).Invoke(in rows, buffer.Memory.Span);
 
             return;
         }
 
-        int verticalStep = DivideCeil(height, numOfSteps);
+        var verticalStep = DivideCeil(height, numOfSteps);
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = numOfSteps };
         var wrappingOperation = new RowIntervalOperationWrapper<T, TBuffer>(top, bottom, verticalStep, width, allocator, in operation);
 

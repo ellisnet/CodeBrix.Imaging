@@ -83,7 +83,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
         int bufferAlignmentInElements,
         AllocationOptions options = AllocationOptions.None)
     {
-        int bufferCapacityInBytes = allocator.GetBufferCapacityInBytes();
+        var bufferCapacityInBytes = allocator.GetBufferCapacityInBytes();
         Guard.NotNull(allocator, nameof(allocator));
 
         if (totalLengthInElements < 0)
@@ -91,7 +91,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of negative length={totalLengthInElements}.");
         }
 
-        int blockCapacityInElements = bufferCapacityInBytes / ElementSize;
+        var blockCapacityInElements = bufferCapacityInBytes / ElementSize;
         if (bufferAlignmentInElements < 0 || bufferAlignmentInElements > blockCapacityInElements)
         {
             throw new InvalidMemoryOperationException(
@@ -104,15 +104,15 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             return new Owned(buffers0, 0, 0, true);
         }
 
-        int numberOfAlignedSegments = blockCapacityInElements / bufferAlignmentInElements;
-        int bufferLength = numberOfAlignedSegments * bufferAlignmentInElements;
+        var numberOfAlignedSegments = blockCapacityInElements / bufferAlignmentInElements;
+        var bufferLength = numberOfAlignedSegments * bufferAlignmentInElements;
         if (totalLengthInElements > 0 && totalLengthInElements < bufferLength)
         {
             bufferLength = (int)totalLengthInElements;
         }
 
-        int sizeOfLastBuffer = (int)(totalLengthInElements % bufferLength);
-        long bufferCount = totalLengthInElements / bufferLength;
+        var sizeOfLastBuffer = (int)(totalLengthInElements % bufferLength);
+        var bufferCount = totalLengthInElements / bufferLength;
 
         if (sizeOfLastBuffer == 0)
         {
@@ -124,7 +124,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
         }
 
         var buffers = new IMemoryOwner<T>[bufferCount];
-        for (int i = 0; i < buffers.Length - 1; i++)
+        for (var i = 0; i < buffers.Length - 1; i++)
         {
             buffers[i] = allocator.Allocate<T>(bufferLength, options);
         }
@@ -144,7 +144,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             buffer.GetSpan().Clear();
         }
 
-        int length = buffer.Memory.Length;
+        var length = buffer.Memory.Length;
         var buffers = new IMemoryOwner<T>[1] { buffer };
         return new Owned(buffers, length, length, true);
     }
@@ -160,7 +160,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
         Guard.MustBeGreaterThanOrEqualTo(totalLengthInElements, 0, nameof(totalLengthInElements));
         Guard.MustBeGreaterThanOrEqualTo(bufferAlignmentInElements, 0, nameof(bufferAlignmentInElements));
 
-        int blockCapacityInElements = pool.BufferLength / ElementSize;
+        var blockCapacityInElements = pool.BufferLength / ElementSize;
 
         if (bufferAlignmentInElements > blockCapacityInElements)
         {
@@ -173,15 +173,15 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             throw new InvalidMemoryOperationException("Allocating 0 length buffer from UniformByteArrayPool is disallowed");
         }
 
-        int numberOfAlignedSegments = blockCapacityInElements / bufferAlignmentInElements;
-        int bufferLength = numberOfAlignedSegments * bufferAlignmentInElements;
+        var numberOfAlignedSegments = blockCapacityInElements / bufferAlignmentInElements;
+        var bufferLength = numberOfAlignedSegments * bufferAlignmentInElements;
         if (totalLengthInElements > 0 && totalLengthInElements < bufferLength)
         {
             bufferLength = (int)totalLengthInElements;
         }
 
-        int sizeOfLastBuffer = (int)(totalLengthInElements % bufferLength);
-        int bufferCount = (int)(totalLengthInElements / bufferLength);
+        var sizeOfLastBuffer = (int)(totalLengthInElements % bufferLength);
+        var bufferCount = (int)(totalLengthInElements / bufferLength);
 
         if (sizeOfLastBuffer == 0)
         {
@@ -192,7 +192,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             bufferCount++;
         }
 
-        UnmanagedMemoryHandle[] arrays = pool.Rent(bufferCount);
+        var arrays = pool.Rent(bufferCount);
 
         if (arrays == null)
         {
@@ -207,8 +207,8 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
 
     public static MemoryGroup<T> Wrap(params Memory<T>[] source)
     {
-        int bufferLength = source.Length > 0 ? source[0].Length : 0;
-        for (int i = 1; i < source.Length - 1; i++)
+        var bufferLength = source.Length > 0 ? source[0].Length : 0;
+        for (var i = 1; i < source.Length - 1; i++)
         {
             if (source[i].Length != bufferLength)
             {
@@ -221,15 +221,15 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             throw new InvalidMemoryOperationException("Wrap: the last buffer is too large!");
         }
 
-        long totalLength = bufferLength > 0 ? ((long)bufferLength * (source.Length - 1)) + source[source.Length - 1].Length : 0;
+        var totalLength = bufferLength > 0 ? ((long)bufferLength * (source.Length - 1)) + source[source.Length - 1].Length : 0;
 
         return new Consumed(source, bufferLength, totalLength);
     }
 
     public static MemoryGroup<T> Wrap(params IMemoryOwner<T>[] source)
     {
-        int bufferLength = source.Length > 0 ? source[0].Memory.Length : 0;
-        for (int i = 1; i < source.Length - 1; i++)
+        var bufferLength = source.Length > 0 ? source[0].Memory.Length : 0;
+        for (var i = 1; i < source.Length - 1; i++)
         {
             if (source[i].Memory.Length != bufferLength)
             {
@@ -242,7 +242,7 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
             throw new InvalidMemoryOperationException("Wrap: the last buffer is too large!");
         }
 
-        long totalLength = bufferLength > 0 ? ((long)bufferLength * (source.Length - 1)) + source[source.Length - 1].Memory.Length : 0;
+        var totalLength = bufferLength > 0 ? ((long)bufferLength * (source.Length - 1)) + source[source.Length - 1].Memory.Length : 0;
 
         return new Owned(source, bufferLength, totalLength, false);
     }
@@ -267,20 +267,20 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
 
             case SpanCacheMode.SinglePointer:
             {
-                void* start = Unsafe.Add<T>(this.memoryGroupSpanCache.SinglePointer, y * width);
+                var start = Unsafe.Add<T>(this.memoryGroupSpanCache.SinglePointer, y * width);
                 return new Span<T>(start, width);
             }
 
             case SpanCacheMode.MultiPointer:
             {
-                this.GetMultiBufferPosition(y, width, out int bufferIdx, out int bufferStart);
-                void* start = Unsafe.Add<T>(this.memoryGroupSpanCache.MultiPointer[bufferIdx], bufferStart);
+                this.GetMultiBufferPosition(y, width, out var bufferIdx, out var bufferStart);
+                var start = Unsafe.Add<T>(this.memoryGroupSpanCache.MultiPointer[bufferIdx], bufferStart);
                 return new Span<T>(start, width);
             }
 
             default:
             {
-                this.GetMultiBufferPosition(y, width, out int bufferIdx, out int bufferStart);
+                this.GetMultiBufferPosition(y, width, out var bufferIdx, out var bufferStart);
                 return this[bufferIdx].Span.Slice(bufferStart, width);
             }
         }
@@ -291,8 +291,8 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
     /// </summary>
     public Span<T> GetRemainingSliceOfBuffer(long start)
     {
-        long bufferIdx = Math.DivRem(start, this.BufferLength, out long bufferStart);
-        Memory<T> memory = this[(int)bufferIdx];
+        var bufferIdx = Math.DivRem(start, this.BufferLength, out var bufferStart);
+        var memory = this[(int)bufferIdx];
         return memory.Span.Slice((int)bufferStart);
     }
 
@@ -314,8 +314,8 @@ internal abstract partial class MemoryGroup<T> : IMemoryGroup<T>, IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void GetMultiBufferPosition(int y, int width, out int bufferIdx, out int bufferStart)
     {
-        long start = y * (long)width;
-        long bufferIdxLong = Math.DivRem(start, this.BufferLength, out long bufferStartLong);
+        var start = y * (long)width;
+        var bufferIdxLong = Math.DivRem(start, this.BufferLength, out var bufferStartLong);
         bufferIdx = (int)bufferIdxLong;
         bufferStart = (int)bufferStartLong;
     }

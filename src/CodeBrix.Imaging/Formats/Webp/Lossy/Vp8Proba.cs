@@ -19,15 +19,15 @@ internal class Vp8Proba
         this.Bands = new Vp8BandProbas[WebpConstants.NumTypes, WebpConstants.NumBands];
         this.BandsPtr = new Vp8BandProbas[WebpConstants.NumTypes][];
 
-        for (int i = 0; i < WebpConstants.NumTypes; i++)
+        for (var i = 0; i < WebpConstants.NumTypes; i++)
         {
-            for (int j = 0; j < WebpConstants.NumBands; j++)
+            for (var j = 0; j < WebpConstants.NumBands; j++)
             {
                 this.Bands[i, j] = new Vp8BandProbas();
             }
         }
 
-        for (int i = 0; i < WebpConstants.NumTypes; i++)
+        for (var i = 0; i < WebpConstants.NumTypes; i++)
         {
             this.BandsPtr[i] = new Vp8BandProbas[16 + 1];
         }

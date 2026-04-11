@@ -85,17 +85,17 @@ internal static class HorizontalPredictor
     private static void ApplyHorizontalPrediction24Bit(Span<byte> rows, int width)
     {
         DebugGuard.IsTrue(rows.Length % width == 0, "Values must be equals");
-        int height = rows.Length / width;
-        for (int y = 0; y < height; y++)
+        var height = rows.Length / width;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> rowSpan = rows.Slice(y * width, width);
-            Span<Rgb24> rowRgb = MemoryMarshal.Cast<byte, Rgb24>(rowSpan);
+            var rowSpan = rows.Slice(y * width, width);
+            var rowRgb = MemoryMarshal.Cast<byte, Rgb24>(rowSpan);
 
-            for (int x = rowRgb.Length - 1; x >= 1; x--)
+            for (var x = rowRgb.Length - 1; x >= 1; x--)
             {
-                byte r = (byte)(rowRgb[x].R - rowRgb[x - 1].R);
-                byte g = (byte)(rowRgb[x].G - rowRgb[x - 1].G);
-                byte b = (byte)(rowRgb[x].B - rowRgb[x - 1].B);
+                var r = (byte)(rowRgb[x].R - rowRgb[x - 1].R);
+                var g = (byte)(rowRgb[x].G - rowRgb[x - 1].G);
+                var b = (byte)(rowRgb[x].B - rowRgb[x - 1].B);
                 var rgb = new Rgb24(r, g, b);
                 rowRgb[x].FromRgb24(rgb);
             }
@@ -111,11 +111,11 @@ internal static class HorizontalPredictor
     private static void ApplyHorizontalPrediction8Bit(Span<byte> rows, int width)
     {
         DebugGuard.IsTrue(rows.Length % width == 0, "Values must be equals");
-        int height = rows.Length / width;
-        for (int y = 0; y < height; y++)
+        var height = rows.Length / width;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> rowSpan = rows.Slice(y * width, width);
-            for (int x = rowSpan.Length - 1; x >= 1; x--)
+            var rowSpan = rows.Slice(y * width, width);
+            for (var x = rowSpan.Length - 1; x >= 1; x--)
             {
                 rowSpan[x] -= rowSpan[x - 1];
             }
@@ -124,14 +124,14 @@ internal static class HorizontalPredictor
 
     private static void UndoGray8Bit(Span<byte> pixelBytes, int width)
     {
-        int rowBytesCount = width;
-        int height = pixelBytes.Length / rowBytesCount;
-        for (int y = 0; y < height; y++)
+        var rowBytesCount = width;
+        var height = pixelBytes.Length / rowBytesCount;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+            var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
 
-            byte pixelValue = rowBytes[0];
-            for (int x = 1; x < width; x++)
+            var pixelValue = rowBytes[0];
+            for (var x = 1; x < width; x++)
             {
                 pixelValue += rowBytes[x];
                 rowBytes[x] = pixelValue;
@@ -141,21 +141,21 @@ internal static class HorizontalPredictor
 
     private static void UndoGray16Bit(Span<byte> pixelBytes, int width, bool isBigEndian)
     {
-        int rowBytesCount = width * 2;
-        int height = pixelBytes.Length / rowBytesCount;
+        var rowBytesCount = width * 2;
+        var height = pixelBytes.Length / rowBytesCount;
         if (isBigEndian)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                ushort pixelValue = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var pixelValue = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 2);
-                    ushort diff = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 2);
+                    var diff = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     pixelValue += diff;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, pixelValue);
                     offset += 2;
@@ -164,17 +164,17 @@ internal static class HorizontalPredictor
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                ushort pixelValue = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var pixelValue = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 2);
-                    ushort diff = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 2);
+                    var diff = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     pixelValue += diff;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, pixelValue);
                     offset += 2;
@@ -185,21 +185,21 @@ internal static class HorizontalPredictor
 
     private static void UndoGray32Bit(Span<byte> pixelBytes, int width, bool isBigEndian)
     {
-        int rowBytesCount = width * 4;
-        int height = pixelBytes.Length / rowBytesCount;
+        var rowBytesCount = width * 4;
+        var height = pixelBytes.Length / rowBytesCount;
         if (isBigEndian)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                uint pixelValue = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var pixelValue = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 4);
-                    uint diff = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 4);
+                    var diff = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     pixelValue += diff;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, pixelValue);
                     offset += 4;
@@ -208,17 +208,17 @@ internal static class HorizontalPredictor
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                uint pixelValue = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var pixelValue = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 4);
-                    uint diff = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 4);
+                    var diff = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     pixelValue += diff;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, pixelValue);
                     offset += 4;
@@ -229,20 +229,20 @@ internal static class HorizontalPredictor
 
     private static void UndoRgb24Bit(Span<byte> pixelBytes, int width)
     {
-        int rowBytesCount = width * 3;
-        int height = pixelBytes.Length / rowBytesCount;
-        for (int y = 0; y < height; y++)
+        var rowBytesCount = width * 3;
+        var height = pixelBytes.Length / rowBytesCount;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-            Span<Rgb24> rowRgb = MemoryMarshal.Cast<byte, Rgb24>(rowBytes).Slice(0, width);
-            ref Rgb24 rowRgbBase = ref MemoryMarshal.GetReference(rowRgb);
-            byte r = rowRgbBase.R;
-            byte g = rowRgbBase.G;
-            byte b = rowRgbBase.B;
+            var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+            var rowRgb = MemoryMarshal.Cast<byte, Rgb24>(rowBytes).Slice(0, width);
+            ref var rowRgbBase = ref MemoryMarshal.GetReference(rowRgb);
+            var r = rowRgbBase.R;
+            var g = rowRgbBase.G;
+            var b = rowRgbBase.B;
 
-            for (int x = 1; x < rowRgb.Length; x++)
+            for (var x = 1; x < rowRgb.Length; x++)
             {
-                ref Rgb24 pixel = ref rowRgb[x];
+                ref var pixel = ref rowRgb[x];
                 r += pixel.R;
                 g += pixel.G;
                 b += pixel.B;
@@ -254,21 +254,21 @@ internal static class HorizontalPredictor
 
     private static void UndoRgba32Bit(Span<byte> pixelBytes, int width)
     {
-        int rowBytesCount = width * 4;
-        int height = pixelBytes.Length / rowBytesCount;
-        for (int y = 0; y < height; y++)
+        var rowBytesCount = width * 4;
+        var height = pixelBytes.Length / rowBytesCount;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-            Span<Rgba32> rowRgb = MemoryMarshal.Cast<byte, Rgba32>(rowBytes).Slice(0, width);
-            ref Rgba32 rowRgbBase = ref MemoryMarshal.GetReference(rowRgb);
-            byte r = rowRgbBase.R;
-            byte g = rowRgbBase.G;
-            byte b = rowRgbBase.B;
-            byte a = rowRgbBase.A;
+            var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+            var rowRgb = MemoryMarshal.Cast<byte, Rgba32>(rowBytes).Slice(0, width);
+            ref var rowRgbBase = ref MemoryMarshal.GetReference(rowRgb);
+            var r = rowRgbBase.R;
+            var g = rowRgbBase.G;
+            var b = rowRgbBase.B;
+            var a = rowRgbBase.A;
 
-            for (int x = 1; x < rowRgb.Length; x++)
+            for (var x = 1; x < rowRgb.Length; x++)
             {
-                ref Rgba32 pixel = ref rowRgb[x];
+                ref var pixel = ref rowRgb[x];
                 r += pixel.R;
                 g += pixel.G;
                 b += pixel.B;
@@ -281,37 +281,37 @@ internal static class HorizontalPredictor
 
     private static void UndoRgb48Bit(Span<byte> pixelBytes, int width, bool isBigEndian)
     {
-        int rowBytesCount = width * 6;
-        int height = pixelBytes.Length / rowBytesCount;
+        var rowBytesCount = width * 6;
+        var height = pixelBytes.Length / rowBytesCount;
         if (isBigEndian)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                ushort r = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort g = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var g = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort b = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var b = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaR = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 2);
+                    var deltaR = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, r);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaG = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, g);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaB = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, b);
                     offset += 2;
@@ -320,33 +320,33 @@ internal static class HorizontalPredictor
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                ushort r = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort g = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var g = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort b = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var b = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaR = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 2);
+                    var deltaR = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, r);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaG = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, g);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaB = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, b);
                     offset += 2;
@@ -357,45 +357,45 @@ internal static class HorizontalPredictor
 
     private static void UndoRgba64Bit(Span<byte> pixelBytes, int width, bool isBigEndian)
     {
-        int rowBytesCount = width * 8;
-        int height = pixelBytes.Length / rowBytesCount;
+        var rowBytesCount = width * 8;
+        var height = pixelBytes.Length / rowBytesCount;
         if (isBigEndian)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                ushort r = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort g = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var g = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort b = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var b = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort a = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
+                var a = TiffUtils.ConvertToUShortBigEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaR = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 2);
+                    var deltaR = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, r);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaG = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, g);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaB = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, b);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaA = TiffUtils.ConvertToUShortBigEndian(rowSpan);
+                    var deltaA = TiffUtils.ConvertToUShortBigEndian(rowSpan);
                     a += deltaA;
                     BinaryPrimitives.WriteUInt16BigEndian(rowSpan, a);
                     offset += 2;
@@ -404,41 +404,41 @@ internal static class HorizontalPredictor
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                ushort r = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort g = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var g = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort b = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var b = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
-                ushort a = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
+                var a = TiffUtils.ConvertToUShortLittleEndian(rowBytes.Slice(offset, 2));
                 offset += 2;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaR = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 2);
+                    var deltaR = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, r);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaG = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, g);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaB = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, b);
                     offset += 2;
 
                     rowSpan = rowBytes.Slice(offset, 2);
-                    ushort deltaA = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
+                    var deltaA = TiffUtils.ConvertToUShortLittleEndian(rowSpan);
                     a += deltaA;
                     BinaryPrimitives.WriteUInt16LittleEndian(rowSpan, a);
                     offset += 2;
@@ -449,37 +449,37 @@ internal static class HorizontalPredictor
 
     private static void UndoRgb96Bit(Span<byte> pixelBytes, int width, bool isBigEndian)
     {
-        int rowBytesCount = width * 12;
-        int height = pixelBytes.Length / rowBytesCount;
+        var rowBytesCount = width * 12;
+        var height = pixelBytes.Length / rowBytesCount;
         if (isBigEndian)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                uint r = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint g = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var g = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint b = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var b = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaR = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 4);
+                    var deltaR = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, r);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaG = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, g);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaB = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, b);
                     offset += 4;
@@ -488,33 +488,33 @@ internal static class HorizontalPredictor
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                uint r = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint g = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var g = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint b = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var b = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaR = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 4);
+                    var deltaR = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, r);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaG = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, g);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaB = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, b);
                     offset += 4;
@@ -525,45 +525,45 @@ internal static class HorizontalPredictor
 
     private static void UndoRgba128Bit(Span<byte> pixelBytes, int width, bool isBigEndian)
     {
-        int rowBytesCount = width * 16;
-        int height = pixelBytes.Length / rowBytesCount;
+        var rowBytesCount = width * 16;
+        var height = pixelBytes.Length / rowBytesCount;
         if (isBigEndian)
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                uint r = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint g = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var g = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint b = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var b = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint a = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
+                var a = TiffUtils.ConvertToUIntBigEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaR = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 4);
+                    var deltaR = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, r);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaG = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, g);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaB = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, b);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaA = TiffUtils.ConvertToUIntBigEndian(rowSpan);
+                    var deltaA = TiffUtils.ConvertToUIntBigEndian(rowSpan);
                     a += deltaA;
                     BinaryPrimitives.WriteUInt32BigEndian(rowSpan, a);
                     offset += 4;
@@ -572,41 +572,41 @@ internal static class HorizontalPredictor
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
-                int offset = 0;
-                Span<byte> rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
-                uint r = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var offset = 0;
+                var rowBytes = pixelBytes.Slice(y * rowBytesCount, rowBytesCount);
+                var r = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint g = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var g = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint b = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var b = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
-                uint a = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
+                var a = TiffUtils.ConvertToUIntLittleEndian(rowBytes.Slice(offset, 4));
                 offset += 4;
 
-                for (int x = 1; x < width; x++)
+                for (var x = 1; x < width; x++)
                 {
-                    Span<byte> rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaR = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var rowSpan = rowBytes.Slice(offset, 4);
+                    var deltaR = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     r += deltaR;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, r);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaG = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var deltaG = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     g += deltaG;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, g);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaB = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var deltaB = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     b += deltaB;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, b);
                     offset += 4;
 
                     rowSpan = rowBytes.Slice(offset, 4);
-                    uint deltaA = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
+                    var deltaA = TiffUtils.ConvertToUIntLittleEndian(rowSpan);
                     a += deltaA;
                     BinaryPrimitives.WriteUInt32LittleEndian(rowSpan, a);
                     offset += 4;

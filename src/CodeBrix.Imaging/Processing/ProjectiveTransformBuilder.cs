@@ -318,9 +318,9 @@ public class ProjectiveTransformBuilder
         // Translate the origin matrix to cater for source rectangle offsets.
         var matrix = Matrix4x4.CreateTranslation(new Vector3(-sourceRectangle.Location, 0));
 
-        Size size = sourceRectangle.Size;
+        var size = sourceRectangle.Size;
 
-        foreach (Func<Size, Matrix4x4> factory in this.matrixFactories)
+        foreach (var factory in this.matrixFactories)
         {
             matrix *= factory(size);
         }

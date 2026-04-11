@@ -60,7 +60,7 @@ public partial struct HalfVector2 : IPixel<HalfVector2>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromScaledVector4(Vector4 vector)
     {
-        Vector2 scaled = new Vector2(vector.X, vector.Y) * 2F;
+        var scaled = new Vector2(vector.X, vector.Y) * 2F;
         scaled -= Vector2.One;
         this.PackedValue = Pack(scaled.X, scaled.Y);
     }
@@ -178,7 +178,7 @@ public partial struct HalfVector2 : IPixel<HalfVector2>, IPackedVector<uint>
     private static uint Pack(float x, float y)
     {
         uint num2 = HalfTypeHelper.Pack(x);
-        uint num = (uint)(HalfTypeHelper.Pack(y) << 0x10);
+        var num = (uint)(HalfTypeHelper.Pack(y) << 0x10);
         return num2 | num;
     }
 }

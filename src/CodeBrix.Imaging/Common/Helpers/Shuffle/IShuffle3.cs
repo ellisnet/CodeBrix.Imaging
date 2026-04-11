@@ -35,14 +35,14 @@ internal readonly struct DefaultShuffle3 : IShuffle3
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref byte sBase = ref MemoryMarshal.GetReference(source);
-        ref byte dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
         int p2 = this.p2;
         int p1 = this.p1;
         int p0 = this.p0;
 
-        for (int i = 0; i < source.Length; i += 3)
+        for (var i = 0; i < source.Length; i += 3)
         {
             Unsafe.Add(ref dBase, i) = Unsafe.Add(ref sBase, p0 + i);
             Unsafe.Add(ref dBase, i + 1) = Unsafe.Add(ref sBase, p1 + i);

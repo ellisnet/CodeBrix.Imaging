@@ -47,9 +47,9 @@ internal readonly struct PhysicalChunkData
     /// <returns>The parsed PhysicalChunkData.</returns>
     public static PhysicalChunkData Parse(ReadOnlySpan<byte> data)
     {
-        uint hResolution = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(0, 4));
-        uint vResolution = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(4, 4));
-        byte unit = data[8];
+        var hResolution = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(0, 4));
+        var vResolution = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(4, 4));
+        var unit = data[8];
 
         return new PhysicalChunkData(hResolution, vResolution, unit);
     }

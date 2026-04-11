@@ -18,11 +18,11 @@ internal abstract partial class JpegColorConverterBase
 
         protected override void ConvertCoreVectorizedInplace(in ComponentValues values)
         {
-            ref Vector<float> rBase =
+            ref var rBase =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(values.Component0));
-            ref Vector<float> gBase =
+            ref var gBase =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(values.Component1));
-            ref Vector<float> bBase =
+            ref var bBase =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(values.Component2));
 
             var scale = new Vector<float>(1 / this.MaximumValue);
@@ -30,9 +30,9 @@ internal abstract partial class JpegColorConverterBase
             nint n = values.Component0.Length / Vector<float>.Count;
             for (nint i = 0; i < n; i++)
             {
-                ref Vector<float> r = ref Unsafe.Add(ref rBase, i);
-                ref Vector<float> g = ref Unsafe.Add(ref gBase, i);
-                ref Vector<float> b = ref Unsafe.Add(ref bBase, i);
+                ref var r = ref Unsafe.Add(ref rBase, i);
+                ref var g = ref Unsafe.Add(ref gBase, i);
+                ref var b = ref Unsafe.Add(ref bBase, i);
                 r *= scale;
                 g *= scale;
                 b *= scale;

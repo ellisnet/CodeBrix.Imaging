@@ -84,8 +84,8 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         cancellationToken.ThrowIfCancellationRequested();
 
         this.outputStream = stream;
-        ImageMetadata metadata = image.Metadata;
-        JpegMetadata jpegMetadata = metadata.GetJpegMetadata();
+        var metadata = image.Metadata;
+        var jpegMetadata = metadata.GetJpegMetadata();
 
         // If the color type was not specified by the user, preserve the color type of the input image.
         if (!this.colorType.HasValue)
@@ -94,12 +94,12 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         }
 
         // Compute number of components based on color type in options.
-        int componentCount = (this.colorType == JpegColorType.Luminance) ? 1 : 3;
-        ReadOnlySpan<byte> componentIds = this.GetComponentIds();
+        var componentCount = (this.colorType == JpegColorType.Luminance) ? 1 : 3;
+        var componentIds = this.GetComponentIds();
 
         // TODO: Right now encoder writes both quantization tables for grayscale images - we shouldn't do that
         // Initialize the quantization tables.
-        this.InitQuantizationTables(componentCount, jpegMetadata, out Block8x8F luminanceQuantTable, out Block8x8F chrominanceQuantTable);
+        this.InitQuantizationTables(componentCount, jpegMetadata, out var luminanceQuantTable, out var chrominanceQuantTable);
 
         // Write the Start Of Image marker.
         this.WriteStartOfImage();
@@ -168,7 +168,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
     {
         // First inspect the image metadata.
         JpegColorType? colorType = null;
-        JpegMetadata metadata = image.Metadata.GetJpegMetadata();
+        var metadata = image.Metadata.GetJpegMetadata();
         if (IsSupportedColorType(metadata.ColorType))
         {
             return metadata.ColorType;
@@ -176,7 +176,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
 
         // Secondly, inspect the pixel type.
         // TODO: PixelTypeInfo should contain a component count!
-        bool isGrayscale =
+        var isGrayscale =
             typeof(TPixel) == typeof(L8) || typeof(TPixel) == typeof(L16) ||
             typeof(TPixel) == typeof(La16) || typeof(TPixel) == typeof(La32);
 
@@ -220,7 +220,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
     private static void WriteDataToDqt(byte[] dqt, ref int offset, QuantIndex i, ref Block8x8F quant)
     {
         dqt[offset++] = (byte)i;
-        for (int j = 0; j < Block8x8F.Size; j++)
+        for (var j = 0; j < Block8x8F.Size; j++)
         {
             dqt[offset++] = (byte)quant[ZigZag.ZigZagOrder[j]];
         }
@@ -258,8 +258,8 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         this.buffer[10] = 0x01; // versionlo
 
         // Resolution. Big Endian
-        Span<byte> hResolution = this.buffer.AsSpan(12, 2);
-        Span<byte> vResolution = this.buffer.AsSpan(14, 2);
+        var hResolution = this.buffer.AsSpan(12, 2);
+        var vResolution = this.buffer.AsSpan(14, 2);
 
         if (meta.ResolutionUnits == PixelResolutionUnit.PixelsPerMeter)
         {
@@ -300,8 +300,8 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
             0x11
         };
 
-        int markerlen = 2;
-        HuffmanSpec[] specs = HuffmanSpec.TheHuffmanSpecs;
+        var markerlen = 2;
+        var specs = HuffmanSpec.TheHuffmanSpecs;
 
         if (componentCount == 1)
         {
@@ -309,14 +309,14 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
             specs = new[] { HuffmanSpec.TheHuffmanSpecs[0], HuffmanSpec.TheHuffmanSpecs[1] };
         }
 
-        for (int i = 0; i < specs.Length; i++)
+        for (var i = 0; i < specs.Length; i++)
         {
-            ref HuffmanSpec s = ref specs[i];
+            ref var s = ref specs[i];
             markerlen += 1 + 16 + s.Values.Length;
         }
 
         this.WriteMarkerHeader(JpegConstants.Markers.DHT, markerlen);
-        for (int i = 0; i < specs.Length; i++)
+        for (var i = 0; i < specs.Length; i++)
         {
             this.outputStream.WriteByte(headers[i]);
             this.outputStream.Write(specs[i].Count);
@@ -330,14 +330,14 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
     private void WriteDefineQuantizationTables(ref Block8x8F luminanceQuantTable, ref Block8x8F chrominanceQuantTable)
     {
         // Marker + quantization table lengths.
-        int markerlen = 2 + (QuantizationTableCount * (1 + Block8x8F.Size));
+        var markerlen = 2 + (QuantizationTableCount * (1 + Block8x8F.Size));
         this.WriteMarkerHeader(JpegConstants.Markers.DQT, markerlen);
 
         // Loop through and collect the tables as one array.
         // This allows us to reduce the number of writes to the stream.
-        int dqtCount = (QuantizationTableCount * Block8x8F.Size) + QuantizationTableCount;
-        byte[] dqt = new byte[dqtCount];
-        int offset = 0;
+        var dqtCount = (QuantizationTableCount * Block8x8F.Size) + QuantizationTableCount;
+        var dqt = new byte[dqtCount];
+        var offset = 0;
 
         WriteDataToDqt(dqt, ref offset, QuantIndex.Luminance, ref luminanceQuantTable);
         WriteDataToDqt(dqt, ref offset, QuantIndex.Chrominance, ref chrominanceQuantTable);
@@ -388,7 +388,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         const int MaxBytesApp1 = 65533; // 64k - 2 padding bytes
         const int MaxBytesWithExifId = 65527; // Max - 6 bytes for EXIF header.
 
-        byte[] data = exifProfile.ToByteArray();
+        var data = exifProfile.ToByteArray();
 
         if (data.Length == 0)
         {
@@ -396,10 +396,10 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         }
 
         // We can write up to a maximum of 64 data to the initial marker so calculate boundaries.
-        int exifMarkerLength = ProfileResolver.ExifMarker.Length;
-        int remaining = exifMarkerLength + data.Length;
-        int bytesToWrite = remaining > MaxBytesApp1 ? MaxBytesApp1 : remaining;
-        int app1Length = bytesToWrite + 2;
+        var exifMarkerLength = ProfileResolver.ExifMarker.Length;
+        var remaining = exifMarkerLength + data.Length;
+        var bytesToWrite = remaining > MaxBytesApp1 ? MaxBytesApp1 : remaining;
+        var app1Length = bytesToWrite + 2;
 
         // Write the app marker, EXIF marker, and data
         this.WriteApp1Header(app1Length);
@@ -408,7 +408,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         remaining -= bytesToWrite;
 
         // If the exif data exceeds 64K, write it in multiple APP1 Markers
-        for (int idx = MaxBytesWithExifId; idx < data.Length; idx += MaxBytesWithExifId)
+        for (var idx = MaxBytesWithExifId; idx < data.Length; idx += MaxBytesWithExifId)
         {
             bytesToWrite = remaining > MaxBytesWithExifId ? MaxBytesWithExifId : remaining;
             app1Length = bytesToWrite + 2 + exifMarkerLength;
@@ -441,7 +441,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         }
 
         iptcProfile.UpdateData();
-        byte[] data = iptcProfile.Data;
+        var data = iptcProfile.Data;
         if (data.Length == 0)
         {
             return;
@@ -452,7 +452,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
             throw new ImageFormatException($"Iptc profile size exceeds limit of {Max} bytes");
         }
 
-        int app13Length = 2 + ProfileResolver.AdobePhotoshopApp13Marker.Length +
+        var app13Length = 2 + ProfileResolver.AdobePhotoshopApp13Marker.Length +
                           ProfileResolver.AdobeImageResourceBlockMarker.Length +
                           ProfileResolver.AdobeIptcMarker.Length +
                           2 + 4 + data.Length;
@@ -485,19 +485,19 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         const int Max = 65533;
         const int MaxData = Max - XmpOverheadLength;
 
-        byte[] data = xmpProfile.Data;
+        var data = xmpProfile.Data;
 
         if (data is null || data.Length == 0)
         {
             return;
         }
 
-        int dataLength = data.Length;
-        int offset = 0;
+        var dataLength = data.Length;
+        var offset = 0;
 
         while (dataLength > 0)
         {
-            int length = dataLength; // Number of bytes to write.
+            var length = dataLength; // Number of bytes to write.
 
             if (length > MaxData)
             {
@@ -506,7 +506,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
 
             dataLength -= length;
 
-            int app1Length = 2 + ProfileResolver.XmpMarker.Length + length;
+            var app1Length = 2 + ProfileResolver.XmpMarker.Length + length;
             this.WriteApp1Header(app1Length);
             this.outputStream.Write(ProfileResolver.XmpMarker);
             this.outputStream.Write(data, offset, length);
@@ -555,7 +555,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         const int Max = 65533;
         const int MaxData = Max - IccOverheadLength;
 
-        byte[] data = iccProfile.ToByteArray();
+        var data = iccProfile.ToByteArray();
 
         if (data is null || data.Length == 0)
         {
@@ -563,8 +563,8 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         }
 
         // Calculate the number of markers we'll need, rounding up of course.
-        int dataLength = data.Length;
-        int count = dataLength / MaxData;
+        var dataLength = data.Length;
+        var count = dataLength / MaxData;
 
         if (count * MaxData != dataLength)
         {
@@ -572,12 +572,12 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         }
 
         // Per spec, counting starts at 1.
-        int current = 1;
-        int offset = 0;
+        var current = 1;
+        var offset = 0;
 
         while (dataLength > 0)
         {
-            int length = dataLength; // Number of bytes to write.
+            var length = dataLength; // Number of bytes to write.
 
             if (length > MaxData)
             {
@@ -588,7 +588,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
 
             this.buffer[0] = JpegConstants.Markers.XFF;
             this.buffer[1] = JpegConstants.Markers.APP2; // Application Marker
-            int markerLength = length + 16;
+            var markerLength = length + 16;
             this.buffer[2] = (byte)((markerLength >> 8) & 0xFF);
             this.buffer[3] = (byte)(markerLength & 0xFF);
 
@@ -711,7 +711,7 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         }
 
         // Length (high byte, low byte), 8 + components * 3.
-        int markerlen = 8 + (3 * componentCount);
+        var markerlen = 8 + (3 * componentCount);
         this.WriteMarkerHeader(JpegConstants.Markers.SOF0, markerlen);
         this.buffer[0] = 8; // Data Precision. 8 for now, 12 and 16 bit jpegs not supported
         this.buffer[1] = (byte)(height >> 8);
@@ -720,12 +720,12 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         this.buffer[4] = (byte)(width & 0xff); // (2 bytes, Hi-Lo), must be > 0 if DNL not supported
         this.buffer[5] = (byte)componentCount;
 
-        for (int i = 0; i < componentCount; i++)
+        for (var i = 0; i < componentCount; i++)
         {
-            int i3 = 3 * i;
+            var i3 = 3 * i;
 
             // Component ID.
-            Span<byte> bufferSpan = this.buffer.AsSpan(i3 + 6, 3);
+            var bufferSpan = this.buffer.AsSpan(i3 + 6, 3);
             bufferSpan[2] = chroma[i];
             bufferSpan[1] = subsamples[i];
             bufferSpan[0] = componentIds[i];
@@ -774,13 +774,13 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         this.buffer[1] = JpegConstants.Markers.SOS;
 
         // Length (high byte, low byte), must be 6 + 2 * (number of components in scan)
-        int sosSize = 6 + (2 * componentCount);
+        var sosSize = 6 + (2 * componentCount);
         this.buffer[2] = 0x00;
         this.buffer[3] = (byte)sosSize;
         this.buffer[4] = (byte)componentCount; // Number of components in a scan
-        for (int i = 0; i < componentCount; i++)
+        for (var i = 0; i < componentCount; i++)
         {
-            int i2 = 2 * i;
+            var i2 = 2 * i;
             this.buffer[i2 + 5] = componentIds[i]; // Component Id
             this.buffer[i2 + 6] = huffmanId[i]; // DC/AC Huffman table
         }

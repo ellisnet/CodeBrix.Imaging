@@ -223,7 +223,7 @@ public partial struct La32 : IPixel<La32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void ToRgba32(ref Rgba32 dest)
     {
-        byte rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(this.L);
+        var rgb = ColorNumerics.DownScaleFrom16BitTo8Bit(this.L);
         dest.R = rgb;
         dest.G = rgb;
         dest.B = rgb;
@@ -238,7 +238,7 @@ public partial struct La32 : IPixel<La32>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Vector4 ToVector4()
     {
-        float scaled = this.L / Max;
+        var scaled = this.L / Max;
         return new Vector4(scaled, scaled, scaled, this.A / Max);
     }
 

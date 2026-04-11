@@ -47,7 +47,7 @@ public static class GrayscaleExtensions
     /// <returns>The <see cref="IImageProcessingContext"/>.</returns>
     public static IImageProcessingContext Grayscale(this IImageProcessingContext source, GrayscaleMode mode, float amount)
     {
-        IImageProcessor processor = mode == GrayscaleMode.Bt709
+        var processor = mode == GrayscaleMode.Bt709
             ? (IImageProcessor)new GrayscaleBt709Processor(amount)
             : new GrayscaleBt601Processor(amount);
 
@@ -102,7 +102,7 @@ public static class GrayscaleExtensions
     /// <returns>The <see cref="IImageProcessingContext"/>.</returns>
     public static IImageProcessingContext Grayscale(this IImageProcessingContext source, GrayscaleMode mode, float amount, Rectangle rectangle)
     {
-        IImageProcessor processor = mode == GrayscaleMode.Bt709
+        var processor = mode == GrayscaleMode.Bt709
             ? (IImageProcessor)new GrayscaleBt709Processor(amount)
             : new GrayscaleBt601Processor(amount);
 

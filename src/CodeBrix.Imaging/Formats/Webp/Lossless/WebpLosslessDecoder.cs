@@ -106,9 +106,9 @@ internal sealed class WebpLosslessDecoder
 
     public IMemoryOwner<uint> DecodeImageStream(Vp8LDecoder decoder, int xSize, int ySize, bool isLevel0)
     {
-        int transformXSize = xSize;
-        int transformYSize = ySize;
-        int numberOfTransformsPresent = 0;
+        var transformXSize = xSize;
+        var transformYSize = ySize;
+        var numberOfTransformsPresent = 0;
         if (isLevel0)
         {
             decoder.Transforms = new List<Vp8LTransform>(WebpConstants.MaxNumberOfTransforms);
@@ -136,16 +136,16 @@ internal sealed class WebpLosslessDecoder
         }
 
         // Color cache.
-        bool isColorCachePresent = this.bitReader.ReadBit();
-        int colorCacheBits = 0;
-        int colorCacheSize = 0;
+        var isColorCachePresent = this.bitReader.ReadBit();
+        var colorCacheBits = 0;
+        var colorCacheSize = 0;
         if (isColorCachePresent)
         {
             colorCacheBits = (int)this.bitReader.ReadValue(4);
 
             // Note: According to webpinfo color cache bits of 11 are valid, even though 10 is defined in the source code as maximum.
             // That is why 11 bits is also considered valid here.
-            bool colorCacheBitsIsValid = colorCacheBits is >= 1 and <= WebpConstants.MaxColorCacheBits + 1;
+            var colorCacheBitsIsValid = colorCacheBits is >= 1 and <= WebpConstants.MaxColorCacheBits + 1;
             if (!colorCacheBitsIsValid)
             {
                 WebpThrowHelper.ThrowImageFormatException("Invalid color cache bits found");
@@ -177,7 +177,7 @@ internal sealed class WebpLosslessDecoder
         }
 
         // Use the Huffman trees to decode the LZ77 encoded data.
-        IMemoryOwner<uint> pixelData = this.memoryAllocator.Allocate<uint>(decoder.Width * decoder.Height, AllocationOptions.Clean);
+        var pixelData = this.memoryAllocator.Allocate<uint>(decoder.Width * decoder.Height, AllocationOptions.Clean);
         this.DecodeImageData(decoder, pixelData.GetSpan());
 
         return pixelData;
@@ -186,17 +186,17 @@ internal sealed class WebpLosslessDecoder
     private void DecodePixelValues<TPixel>(Vp8LDecoder decoder, Buffer2D<TPixel> pixels, int width, int height)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Span<uint> pixelData = decoder.Pixels.GetSpan();
+        var pixelData = decoder.Pixels.GetSpan();
 
         // Apply reverse transformations, if any are present.
         ApplyInverseTransforms(decoder, pixelData, this.memoryAllocator);
 
-        Span<byte> pixelDataAsBytes = MemoryMarshal.Cast<uint, byte>(pixelData);
-        int bytesPerRow = width * 4;
-        for (int y = 0; y < height; y++)
+        var pixelDataAsBytes = MemoryMarshal.Cast<uint, byte>(pixelData);
+        var bytesPerRow = width * 4;
+        for (var y = 0; y < height; y++)
         {
-            Span<byte> rowAsBytes = pixelDataAsBytes.Slice(y * bytesPerRow, bytesPerRow);
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y);
+            var rowAsBytes = pixelDataAsBytes.Slice(y * bytesPerRow, bytesPerRow);
+            var pixelRow = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromBgra32Bytes(
                 this.configuration,
                 rowAsBytes.Slice(0, bytesPerRow),
@@ -207,21 +207,21 @@ internal sealed class WebpLosslessDecoder
 
     public void DecodeImageData(Vp8LDecoder decoder, Span<uint> pixelData)
     {
-        int lastPixel = 0;
-        int width = decoder.Width;
-        int height = decoder.Height;
-        int row = lastPixel / width;
-        int col = lastPixel % width;
+        var lastPixel = 0;
+        var width = decoder.Width;
+        var height = decoder.Height;
+        var row = lastPixel / width;
+        var col = lastPixel % width;
         const int lenCodeLimit = WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes;
-        int colorCacheSize = decoder.Metadata.ColorCacheSize;
-        ColorCache colorCache = decoder.Metadata.ColorCache;
-        int colorCacheLimit = lenCodeLimit + colorCacheSize;
-        int mask = decoder.Metadata.HuffmanMask;
-        Span<HTreeGroup> hTreeGroup = GetHTreeGroupForPos(decoder.Metadata, col, row);
+        var colorCacheSize = decoder.Metadata.ColorCacheSize;
+        var colorCache = decoder.Metadata.ColorCache;
+        var colorCacheLimit = lenCodeLimit + colorCacheSize;
+        var mask = decoder.Metadata.HuffmanMask;
+        var hTreeGroup = GetHTreeGroupForPos(decoder.Metadata, col, row);
 
-        int totalPixels = width * height;
-        int decodedPixels = 0;
-        int lastCached = decodedPixels;
+        var totalPixels = width * height;
+        var decodedPixels = 0;
+        var lastCached = decodedPixels;
         while (decodedPixels < totalPixels)
         {
             int code;
@@ -271,10 +271,10 @@ internal sealed class WebpLosslessDecoder
                 }
                 else
                 {
-                    uint red = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Red]);
+                    var red = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Red]);
                     this.bitReader.FillBitWindow();
-                    uint blue = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Blue]);
-                    uint alpha = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Alpha]);
+                    var blue = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Blue]);
+                    var alpha = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Alpha]);
                     if (this.bitReader.IsEndOfStream())
                     {
                         break;
@@ -288,12 +288,12 @@ internal sealed class WebpLosslessDecoder
             else if (code < lenCodeLimit)
             {
                 // Backward reference is used.
-                int lengthSym = code - WebpConstants.NumLiteralCodes;
-                int length = this.GetCopyLength(lengthSym);
-                uint distSymbol = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Dist]);
+                var lengthSym = code - WebpConstants.NumLiteralCodes;
+                var length = this.GetCopyLength(lengthSym);
+                var distSymbol = this.ReadSymbol(hTreeGroup[0].HTrees[HuffIndex.Dist]);
                 this.bitReader.FillBitWindow();
-                int distCode = this.GetCopyDistance((int)distSymbol);
-                int dist = PlaneCodeToDistance(width, distCode);
+                var distCode = this.GetCopyDistance((int)distSymbol);
+                var dist = PlaneCodeToDistance(width, distCode);
                 if (this.bitReader.IsEndOfStream())
                 {
                     break;
@@ -325,7 +325,7 @@ internal sealed class WebpLosslessDecoder
             else if (code < colorCacheLimit)
             {
                 // Color cache should be used.
-                int key = code - lenCodeLimit;
+                var key = code - lenCodeLimit;
                 while (lastCached < decodedPixels)
                 {
                     colorCache.Insert(pixelData[lastCached]);
@@ -364,29 +364,29 @@ internal sealed class WebpLosslessDecoder
 
     private void ReadHuffmanCodes(Vp8LDecoder decoder, int xSize, int ySize, int colorCacheBits, bool allowRecursion)
     {
-        int maxAlphabetSize = 0;
-        int numHTreeGroups = 1;
-        int numHTreeGroupsMax = 1;
+        var maxAlphabetSize = 0;
+        var numHTreeGroups = 1;
+        var numHTreeGroupsMax = 1;
 
         // If the next bit is zero, there is only one meta Huffman code used everywhere in the image. No more data is stored.
         // If this bit is one, the image uses multiple meta Huffman codes. These meta Huffman codes are stored as an entropy image.
         if (allowRecursion && this.bitReader.ReadBit())
         {
             // Use meta Huffman codes.
-            int huffmanPrecision = (int)(this.bitReader.ReadValue(3) + 2);
-            int huffmanXSize = LosslessUtils.SubSampleSize(xSize, huffmanPrecision);
-            int huffmanYSize = LosslessUtils.SubSampleSize(ySize, huffmanPrecision);
-            int huffmanPixels = huffmanXSize * huffmanYSize;
+            var huffmanPrecision = (int)(this.bitReader.ReadValue(3) + 2);
+            var huffmanXSize = LosslessUtils.SubSampleSize(xSize, huffmanPrecision);
+            var huffmanYSize = LosslessUtils.SubSampleSize(ySize, huffmanPrecision);
+            var huffmanPixels = huffmanXSize * huffmanYSize;
 
-            IMemoryOwner<uint> huffmanImage = this.DecodeImageStream(decoder, huffmanXSize, huffmanYSize, false);
-            Span<uint> huffmanImageSpan = huffmanImage.GetSpan();
+            var huffmanImage = this.DecodeImageStream(decoder, huffmanXSize, huffmanYSize, false);
+            var huffmanImageSpan = huffmanImage.GetSpan();
             decoder.Metadata.HuffmanSubSampleBits = huffmanPrecision;
 
             // TODO: Isn't huffmanPixels the length of the span?
-            for (int i = 0; i < huffmanPixels; i++)
+            for (var i = 0; i < huffmanPixels; i++)
             {
                 // The huffman data is stored in red and green bytes.
-                uint group = (huffmanImageSpan[i] >> 8) & 0xffff;
+                var group = (huffmanImageSpan[i] >> 8) & 0xffff;
                 huffmanImageSpan[i] = group;
                 if (group >= numHTreeGroupsMax)
                 {
@@ -399,9 +399,9 @@ internal sealed class WebpLosslessDecoder
         }
 
         // Find maximum alphabet size for the hTree group.
-        for (int j = 0; j < WebpConstants.HuffmanCodesPerMetaCode; j++)
+        for (var j = 0; j < WebpConstants.HuffmanCodesPerMetaCode; j++)
         {
-            int alphabetSize = WebpConstants.AlphabetSize[j];
+            var alphabetSize = WebpConstants.AlphabetSize[j];
             if (j == 0 && colorCacheBits > 0)
             {
                 alphabetSize += 1 << colorCacheBits;
@@ -413,28 +413,28 @@ internal sealed class WebpLosslessDecoder
             }
         }
 
-        int tableSize = TableSize[colorCacheBits];
+        var tableSize = TableSize[colorCacheBits];
         var huffmanTables = new HuffmanCode[numHTreeGroups * tableSize];
         var hTreeGroups = new HTreeGroup[numHTreeGroups];
-        Span<HuffmanCode> huffmanTable = huffmanTables.AsSpan();
-        int[] codeLengths = new int[maxAlphabetSize];
-        for (int i = 0; i < numHTreeGroupsMax; i++)
+        var huffmanTable = huffmanTables.AsSpan();
+        var codeLengths = new int[maxAlphabetSize];
+        for (var i = 0; i < numHTreeGroupsMax; i++)
         {
             hTreeGroups[i] = new HTreeGroup(HuffmanUtils.HuffmanPackedTableSize);
-            HTreeGroup hTreeGroup = hTreeGroups[i];
-            int totalSize = 0;
-            bool isTrivialLiteral = true;
-            int maxBits = 0;
+            var hTreeGroup = hTreeGroups[i];
+            var totalSize = 0;
+            var isTrivialLiteral = true;
+            var maxBits = 0;
             codeLengths.AsSpan().Clear();
-            for (int j = 0; j < WebpConstants.HuffmanCodesPerMetaCode; j++)
+            for (var j = 0; j < WebpConstants.HuffmanCodesPerMetaCode; j++)
             {
-                int alphabetSize = WebpConstants.AlphabetSize[j];
+                var alphabetSize = WebpConstants.AlphabetSize[j];
                 if (j == 0 && colorCacheBits > 0)
                 {
                     alphabetSize += 1 << colorCacheBits;
                 }
 
-                int size = this.ReadHuffmanCode(alphabetSize, codeLengths, huffmanTable);
+                var size = this.ReadHuffmanCode(alphabetSize, codeLengths, huffmanTable);
                 if (size == 0)
                 {
                     WebpThrowHelper.ThrowImageFormatException("Huffman table size is zero");
@@ -443,7 +443,7 @@ internal sealed class WebpLosslessDecoder
                 // TODO: Avoid allocation.
                 hTreeGroup.HTrees.Add(huffmanTable.Slice(0, size).ToArray());
 
-                HuffmanCode huffTableZero = huffmanTable[0];
+                var huffTableZero = huffmanTable[0];
                 if (isTrivialLiteral && LiteralMap[j] == 1)
                 {
                     isTrivialLiteral = huffTableZero.BitsUsed == 0;
@@ -454,11 +454,11 @@ internal sealed class WebpLosslessDecoder
 
                 if (j <= HuffIndex.Alpha)
                 {
-                    int localMaxBits = codeLengths[0];
+                    var localMaxBits = codeLengths[0];
                     int k;
                     for (k = 1; k < alphabetSize; ++k)
                     {
-                        int codeLengthK = codeLengths[k];
+                        var codeLengthK = codeLengths[k];
                         if (codeLengthK > localMaxBits)
                         {
                             localMaxBits = codeLengthK;
@@ -473,10 +473,10 @@ internal sealed class WebpLosslessDecoder
             hTreeGroup.IsTrivialCode = false;
             if (isTrivialLiteral)
             {
-                uint red = hTreeGroup.HTrees[HuffIndex.Red][0].Value;
-                uint blue = hTreeGroup.HTrees[HuffIndex.Blue][0].Value;
-                uint green = hTreeGroup.HTrees[HuffIndex.Green][0].Value;
-                uint alpha = hTreeGroup.HTrees[HuffIndex.Alpha][0].Value;
+                var red = hTreeGroup.HTrees[HuffIndex.Red][0].Value;
+                var blue = hTreeGroup.HTrees[HuffIndex.Blue][0].Value;
+                var green = hTreeGroup.HTrees[HuffIndex.Green][0].Value;
+                var alpha = hTreeGroup.HTrees[HuffIndex.Alpha][0].Value;
                 hTreeGroup.LiteralArb = (alpha << 24) | (red << 16) | blue;
                 if (totalSize == 0 && green < WebpConstants.NumLiteralCodes)
                 {
@@ -499,8 +499,8 @@ internal sealed class WebpLosslessDecoder
 
     private int ReadHuffmanCode(int alphabetSize, int[] codeLengths, Span<HuffmanCode> table)
     {
-        bool simpleCode = this.bitReader.ReadBit();
-        for (int i = 0; i < alphabetSize; i++)
+        var simpleCode = this.bitReader.ReadBit();
+        for (var i = 0; i < alphabetSize; i++)
         {
             codeLengths[i] = 0;
         }
@@ -512,11 +512,11 @@ internal sealed class WebpLosslessDecoder
             // and are in the range of[0, 255]. All other Huffman code lengths are implicitly zeros.
 
             // Read symbols, codes & code lengths directly.
-            uint numSymbols = this.bitReader.ReadValue(1) + 1;
-            uint firstSymbolLenCode = this.bitReader.ReadValue(1);
+            var numSymbols = this.bitReader.ReadValue(1) + 1;
+            var firstSymbolLenCode = this.bitReader.ReadValue(1);
 
             // The first code is either 1 bit or 8 bit code.
-            uint symbol = this.bitReader.ReadValue(firstSymbolLenCode == 0 ? 1 : 8);
+            var symbol = this.bitReader.ReadValue(firstSymbolLenCode == 0 ? 1 : 8);
             codeLengths[symbol] = 1;
 
             // The second code (if present), is always 8 bit long.
@@ -531,14 +531,14 @@ internal sealed class WebpLosslessDecoder
             // (ii) Normal Code Length Code:
             // The code lengths of a Huffman code are read as follows: num_code_lengths specifies the number of code lengths;
             // the rest of the code lengths (according to the order in kCodeLengthCodeOrder) are zeros.
-            int[] codeLengthCodeLengths = new int[NumCodeLengthCodes];
-            uint numCodes = this.bitReader.ReadValue(4) + 4;
+            var codeLengthCodeLengths = new int[NumCodeLengthCodes];
+            var numCodes = this.bitReader.ReadValue(4) + 4;
             if (numCodes > NumCodeLengthCodes)
             {
                 WebpThrowHelper.ThrowImageFormatException("Bitstream error, numCodes has an invalid value");
             }
 
-            for (int i = 0; i < numCodes; i++)
+            for (var i = 0; i < numCodes; i++)
             {
                 codeLengthCodeLengths[CodeLengthCodeOrder[i]] = (int)this.bitReader.ReadValue(3);
             }
@@ -546,7 +546,7 @@ internal sealed class WebpLosslessDecoder
             this.ReadHuffmanCodeLengths(table, codeLengthCodeLengths, alphabetSize, codeLengths);
         }
 
-        int size = HuffmanUtils.BuildHuffmanTable(table, HuffmanUtils.HuffmanTableBits, codeLengths, alphabetSize);
+        var size = HuffmanUtils.BuildHuffmanTable(table, HuffmanUtils.HuffmanTableBits, codeLengths, alphabetSize);
 
         return size;
     }
@@ -554,9 +554,9 @@ internal sealed class WebpLosslessDecoder
     private void ReadHuffmanCodeLengths(Span<HuffmanCode> table, int[] codeLengthCodeLengths, int numSymbols, int[] codeLengths)
     {
         int maxSymbol;
-        int symbol = 0;
-        int prevCodeLen = WebpConstants.DefaultCodeLength;
-        int size = HuffmanUtils.BuildHuffmanTable(table, WebpConstants.LengthTableBits, codeLengthCodeLengths, NumCodeLengthCodes);
+        var symbol = 0;
+        var prevCodeLen = WebpConstants.DefaultCodeLength;
+        var size = HuffmanUtils.BuildHuffmanTable(table, WebpConstants.LengthTableBits, codeLengthCodeLengths, NumCodeLengthCodes);
         if (size == 0)
         {
             WebpThrowHelper.ThrowImageFormatException("Error building huffman table");
@@ -564,7 +564,7 @@ internal sealed class WebpLosslessDecoder
 
         if (this.bitReader.ReadBit())
         {
-            int lengthNBits = 2 + (2 * (int)this.bitReader.ReadValue(3));
+            var lengthNBits = 2 + (2 * (int)this.bitReader.ReadValue(3));
             maxSymbol = 2 + (int)this.bitReader.ReadValue(lengthNBits);
         }
         else
@@ -580,11 +580,11 @@ internal sealed class WebpLosslessDecoder
             }
 
             this.bitReader.FillBitWindow();
-            ulong prefetchBits = this.bitReader.PrefetchBits();
-            int idx = (int)(prefetchBits & 127);
-            HuffmanCode huffmanCode = table[idx];
+            var prefetchBits = this.bitReader.PrefetchBits();
+            var idx = (int)(prefetchBits & 127);
+            var huffmanCode = table[idx];
             this.bitReader.AdvanceBitPosition(huffmanCode.BitsUsed);
-            uint codeLen = huffmanCode.Value;
+            var codeLen = huffmanCode.Value;
             if (codeLen < WebpConstants.CodeLengthLiterals)
             {
                 codeLengths[symbol++] = (int)codeLen;
@@ -595,17 +595,17 @@ internal sealed class WebpLosslessDecoder
             }
             else
             {
-                bool usePrev = codeLen == WebpConstants.CodeLengthRepeatCode;
-                uint slot = codeLen - WebpConstants.CodeLengthLiterals;
-                int extraBits = WebpConstants.CodeLengthExtraBits[slot];
-                int repeatOffset = WebpConstants.CodeLengthRepeatOffsets[slot];
-                int repeat = (int)(this.bitReader.ReadValue(extraBits) + repeatOffset);
+                var usePrev = codeLen == WebpConstants.CodeLengthRepeatCode;
+                var slot = codeLen - WebpConstants.CodeLengthLiterals;
+                var extraBits = WebpConstants.CodeLengthExtraBits[slot];
+                var repeatOffset = WebpConstants.CodeLengthRepeatOffsets[slot];
+                var repeat = (int)(this.bitReader.ReadValue(extraBits) + repeatOffset);
                 if (symbol + repeat > numSymbols)
                 {
                     return;
                 }
 
-                int length = usePrev ? prevCodeLen : 0;
+                var length = usePrev ? prevCodeLen : 0;
                 while (repeat-- > 0)
                 {
                     codeLengths[symbol++] = length;
@@ -626,7 +626,7 @@ internal sealed class WebpLosslessDecoder
         var transform = new Vp8LTransform(transformType, xSize, ySize);
 
         // Each transform is allowed to be used only once.
-        foreach (Vp8LTransform decoderTransform in decoder.Transforms)
+        foreach (var decoderTransform in decoder.Transforms)
         {
             if (decoderTransform.TransformType == transform.TransformType)
             {
@@ -642,16 +642,16 @@ internal sealed class WebpLosslessDecoder
             case Vp8LTransformType.ColorIndexingTransform:
                 // The transform data contains color table size and the entries in the color table.
                 // 8 bit value for color table size.
-                uint numColors = this.bitReader.ReadValue(8) + 1;
-                int bits = numColors > 16 ? 0
+                var numColors = this.bitReader.ReadValue(8) + 1;
+                var bits = numColors > 16 ? 0
                     : numColors > 4 ? 1
                     : numColors > 2 ? 2
                     : 3;
                 transform.Bits = bits;
-                using (IMemoryOwner<uint> colorMap = this.DecodeImageStream(decoder, (int)numColors, 1, false))
+                using (var colorMap = this.DecodeImageStream(decoder, (int)numColors, 1, false))
                 {
-                    int finalNumColors = 1 << (8 >> transform.Bits);
-                    IMemoryOwner<uint> newColorMap = this.memoryAllocator.Allocate<uint>(finalNumColors, AllocationOptions.Clean);
+                    var finalNumColors = 1 << (8 >> transform.Bits);
+                    var newColorMap = this.memoryAllocator.Allocate<uint>(finalNumColors, AllocationOptions.Clean);
                     LosslessUtils.ExpandColorMap((int)numColors, colorMap.GetSpan(), newColorMap.GetSpan());
                     transform.Data = newColorMap;
                 }
@@ -663,9 +663,9 @@ internal sealed class WebpLosslessDecoder
             {
                 // The first 3 bits of prediction data define the block width and height in number of bits.
                 transform.Bits = (int)this.bitReader.ReadValue(3) + 2;
-                int blockWidth = LosslessUtils.SubSampleSize(transform.XSize, transform.Bits);
-                int blockHeight = LosslessUtils.SubSampleSize(transform.YSize, transform.Bits);
-                IMemoryOwner<uint> transformData = this.DecodeImageStream(decoder, blockWidth, blockHeight, false);
+                var blockWidth = LosslessUtils.SubSampleSize(transform.XSize, transform.Bits);
+                var blockHeight = LosslessUtils.SubSampleSize(transform.YSize, transform.Bits);
+                var transformData = this.DecodeImageStream(decoder, blockWidth, blockHeight, false);
                 transform.Data = transformData;
                 break;
             }
@@ -683,15 +683,15 @@ internal sealed class WebpLosslessDecoder
     /// <param name="memoryAllocator">The memory allocator is needed to allocate memory during the predictor transform.</param>
     public static void ApplyInverseTransforms(Vp8LDecoder decoder, Span<uint> pixelData, MemoryAllocator memoryAllocator)
     {
-        List<Vp8LTransform> transforms = decoder.Transforms;
-        for (int i = transforms.Count - 1; i >= 0; i--)
+        var transforms = decoder.Transforms;
+        for (var i = transforms.Count - 1; i >= 0; i--)
         {
-            Vp8LTransform transform = transforms[i];
-            Vp8LTransformType transformType = transform.TransformType;
+            var transform = transforms[i];
+            var transformType = transform.TransformType;
             switch (transformType)
             {
                 case Vp8LTransformType.PredictorTransform:
-                    using (IMemoryOwner<uint> output = memoryAllocator.Allocate<uint>(pixelData.Length, AllocationOptions.Clean))
+                    using (var output = memoryAllocator.Allocate<uint>(pixelData.Length, AllocationOptions.Clean))
                     {
                         LosslessUtils.PredictorInverseTransform(transform, pixelData, output.GetSpan());
                     }
@@ -717,21 +717,21 @@ internal sealed class WebpLosslessDecoder
     /// <param name="dec">The alpha decoder.</param>
     public void DecodeAlphaData(AlphaDecoder dec)
     {
-        Span<uint> pixelData = dec.Vp8LDec.Pixels.Memory.Span;
-        Span<byte> data = MemoryMarshal.Cast<uint, byte>(pixelData);
-        int row = 0;
-        int col = 0;
-        Vp8LDecoder vp8LDec = dec.Vp8LDec;
-        int width = vp8LDec.Width;
-        int height = vp8LDec.Height;
-        Vp8LMetadata hdr = vp8LDec.Metadata;
-        int pos = 0; // Current position.
-        int end = width * height; // End of data.
-        int last = end; // Last pixel to decode.
-        int lastRow = height;
+        var pixelData = dec.Vp8LDec.Pixels.Memory.Span;
+        var data = MemoryMarshal.Cast<uint, byte>(pixelData);
+        var row = 0;
+        var col = 0;
+        var vp8LDec = dec.Vp8LDec;
+        var width = vp8LDec.Width;
+        var height = vp8LDec.Height;
+        var hdr = vp8LDec.Metadata;
+        var pos = 0; // Current position.
+        var end = width * height; // End of data.
+        var last = end; // Last pixel to decode.
+        var lastRow = height;
         const int lenCodeLimit = WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes;
-        int mask = hdr.HuffmanMask;
-        Span<HTreeGroup> htreeGroup = pos < last ? GetHTreeGroupForPos(hdr, col, row) : null;
+        var mask = hdr.HuffmanMask;
+        var htreeGroup = pos < last ? GetHTreeGroupForPos(hdr, col, row) : null;
         while (!this.bitReader.Eos && pos < last)
         {
             // Only update when changing tile.
@@ -741,7 +741,7 @@ internal sealed class WebpLosslessDecoder
             }
 
             this.bitReader.FillBitWindow();
-            int code = (int)this.ReadSymbol(htreeGroup[0].HTrees[HuffIndex.Green]);
+            var code = (int)this.ReadSymbol(htreeGroup[0].HTrees[HuffIndex.Green]);
             if (code < WebpConstants.NumLiteralCodes)
             {
                 // Literal
@@ -762,12 +762,12 @@ internal sealed class WebpLosslessDecoder
             else if (code < lenCodeLimit)
             {
                 // Backward reference
-                int lengthSym = code - WebpConstants.NumLiteralCodes;
-                int length = this.GetCopyLength(lengthSym);
-                int distSymbol = (int)this.ReadSymbol(htreeGroup[0].HTrees[HuffIndex.Dist]);
+                var lengthSym = code - WebpConstants.NumLiteralCodes;
+                var length = this.GetCopyLength(lengthSym);
+                var distSymbol = (int)this.ReadSymbol(htreeGroup[0].HTrees[HuffIndex.Dist]);
                 this.bitReader.FillBitWindow();
-                int distCode = this.GetCopyDistance(distSymbol);
-                int dist = PlaneCodeToDistance(width, distCode);
+                var distCode = this.GetCopyDistance(distSymbol);
+                var dist = PlaneCodeToDistance(width, distCode);
                 if (pos >= dist && end - pos >= length)
                 {
                     CopyBlock8B(data, pos, dist, length);
@@ -808,7 +808,7 @@ internal sealed class WebpLosslessDecoder
 
     private void UpdateDecoder(Vp8LDecoder decoder, int width, int height)
     {
-        int numBits = decoder.Metadata.HuffmanSubSampleBits;
+        var numBits = decoder.Metadata.HuffmanSubSampleBits;
         decoder.Width = width;
         decoder.Height = height;
         decoder.Metadata.HuffmanXSize = LosslessUtils.SubSampleSize(width, numBits);
@@ -817,8 +817,8 @@ internal sealed class WebpLosslessDecoder
 
     private uint ReadPackedSymbols(Span<HTreeGroup> group, Span<uint> pixelData, int decodedPixels)
     {
-        uint val = (uint)(this.bitReader.PrefetchBits() & (HuffmanUtils.HuffmanPackedTableSize - 1));
-        HuffmanCode code = group[0].PackedTable[val];
+        var val = (uint)(this.bitReader.PrefetchBits() & (HuffmanUtils.HuffmanPackedTableSize - 1));
+        var code = group[0].PackedTable[val];
         if (code.BitsUsed < BitsSpecialMarker)
         {
             this.bitReader.AdvanceBitPosition(code.BitsUsed);
@@ -835,9 +835,9 @@ internal sealed class WebpLosslessDecoder
     {
         for (uint code = 0; code < HuffmanUtils.HuffmanPackedTableSize; code++)
         {
-            uint bits = code;
-            ref HuffmanCode huff = ref hTreeGroup.PackedTable[bits];
-            HuffmanCode hCode = hTreeGroup.HTrees[HuffIndex.Green][bits];
+            var bits = code;
+            ref var huff = ref hTreeGroup.PackedTable[bits];
+            var hCode = hTreeGroup.HTrees[HuffIndex.Green][bits];
             if (hCode.Value >= WebpConstants.NumLiteralCodes)
             {
                 huff.BitsUsed = hCode.BitsUsed + BitsSpecialMarker;
@@ -861,9 +861,9 @@ internal sealed class WebpLosslessDecoder
     /// </summary>
     private uint ReadSymbol(Span<HuffmanCode> table)
     {
-        uint val = (uint)this.bitReader.PrefetchBits();
-        Span<HuffmanCode> tableSpan = table.Slice((int)(val & HuffmanUtils.HuffmanTableMask));
-        int nBits = tableSpan[0].BitsUsed - HuffmanUtils.HuffmanTableBits;
+        var val = (uint)this.bitReader.PrefetchBits();
+        var tableSpan = table.Slice((int)(val & HuffmanUtils.HuffmanTableMask));
+        var nBits = tableSpan[0].BitsUsed - HuffmanUtils.HuffmanTableBits;
         if (nBits > 0)
         {
             this.bitReader.AdvanceBitPosition(HuffmanUtils.HuffmanTableBits);
@@ -888,8 +888,8 @@ internal sealed class WebpLosslessDecoder
             return distanceSymbol + 1;
         }
 
-        int extraBits = (distanceSymbol - 2) >> 1;
-        int offset = (2 + (distanceSymbol & 1)) << extraBits;
+        var extraBits = (distanceSymbol - 2) >> 1;
+        var offset = (2 + (distanceSymbol & 1)) << extraBits;
 
         return (int)(offset + this.bitReader.ReadValue(extraBits) + 1);
     }
@@ -897,7 +897,7 @@ internal sealed class WebpLosslessDecoder
     [MethodImpl(InliningOptions.ShortMethod)]
     private static Span<HTreeGroup> GetHTreeGroupForPos(Vp8LMetadata metadata, int x, int y)
     {
-        uint metaIndex = GetMetaIndex(metadata.HuffmanImage, metadata.HuffmanXSize, metadata.HuffmanSubSampleBits, x, y);
+        var metaIndex = GetMetaIndex(metadata.HuffmanImage, metadata.HuffmanXSize, metadata.HuffmanSubSampleBits, x, y);
         return metadata.HTreeGroups.AsSpan((int)metaIndex);
     }
 
@@ -909,7 +909,7 @@ internal sealed class WebpLosslessDecoder
             return 0;
         }
 
-        Span<uint> huffmanImageSpan = huffmanImage.GetSpan();
+        var huffmanImageSpan = huffmanImage.GetSpan();
         return huffmanImageSpan[(xSize * (y >> bits)) + (x >> bits)];
     }
 
@@ -920,10 +920,10 @@ internal sealed class WebpLosslessDecoder
             return planeCode - CodeToPlaneCodes;
         }
 
-        int distCode = WebpLookupTables.CodeToPlane[planeCode - 1];
-        int yOffset = distCode >> 4;
-        int xOffset = 8 - (distCode & 0xf);
-        int dist = (yOffset * xSize) + xOffset;
+        var distCode = WebpLookupTables.CodeToPlane[planeCode - 1];
+        var yOffset = distCode >> 4;
+        var xOffset = 8 - (distCode & 0xf);
+        var dist = (yOffset * xSize) + xOffset;
 
         // dist < 1 can happen if xSize is very small.
         return dist >= 1 ? dist : 1;
@@ -939,7 +939,7 @@ internal sealed class WebpLosslessDecoder
     /// <param name="length">The number of pixels to copy.</param>
     private static void CopyBlock(Span<uint> pixelData, int decodedPixels, int dist, int length)
     {
-        int start = decodedPixels - dist;
+        var start = decodedPixels - dist;
         if (start < 0)
         {
             WebpThrowHelper.ThrowImageFormatException("webp image data seems to be invalid");
@@ -948,16 +948,16 @@ internal sealed class WebpLosslessDecoder
         if (dist >= length)
         {
             // no overlap.
-            Span<uint> src = pixelData.Slice(start, length);
-            Span<uint> dest = pixelData.Slice(decodedPixels);
+            var src = pixelData.Slice(start, length);
+            var dest = pixelData.Slice(decodedPixels);
             src.CopyTo(dest);
         }
         else
         {
             // There is overlap between the backward reference distance and the pixels to copy.
-            Span<uint> src = pixelData.Slice(start);
-            Span<uint> dest = pixelData.Slice(decodedPixels);
-            for (int i = 0; i < length; i++)
+            var src = pixelData.Slice(start);
+            var dest = pixelData.Slice(decodedPixels);
+            for (var i = 0; i < length; i++)
             {
                 dest[i] = src[i];
             }
@@ -981,9 +981,9 @@ internal sealed class WebpLosslessDecoder
         }
         else
         {
-            Span<byte> dst = data.Slice(pos);
-            Span<byte> src = data.Slice(pos - dist);
-            for (int i = 0; i < length; i++)
+            var dst = data.Slice(pos);
+            var src = data.Slice(pos - dist);
+            for (var i = 0; i < length; i++)
             {
                 dst[i] = src[i];
             }

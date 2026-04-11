@@ -31,7 +31,7 @@ public static class PadExtensions
     /// <returns>The <see cref="IImageProcessingContext"/> to allow chaining of operations.</returns>
     public static IImageProcessingContext Pad(this IImageProcessingContext source, int width, int height, Color color)
     {
-        Size size = source.GetCurrentSize();
+        var size = source.GetCurrentSize();
         var options = new ResizeOptions
         {
             // Prevent downsizing.

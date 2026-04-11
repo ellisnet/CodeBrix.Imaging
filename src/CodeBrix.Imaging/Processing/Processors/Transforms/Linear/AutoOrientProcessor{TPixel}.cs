@@ -28,8 +28,8 @@ internal class AutoOrientProcessor<TPixel> : ImageProcessor<TPixel>
     /// <inheritdoc/>
     protected override void BeforeImageApply()
     {
-        ushort orientation = GetExifOrientation(this.Source);
-        Size size = this.SourceRectangle.Size;
+        var orientation = GetExifOrientation(this.Source);
+        var size = this.SourceRectangle.Size;
         switch (orientation)
         {
             case ExifOrientationMode.TopRight:
@@ -89,7 +89,7 @@ internal class AutoOrientProcessor<TPixel> : ImageProcessor<TPixel>
             return ExifOrientationMode.Unknown;
         }
 
-        IExifValue<ushort> value = source.Metadata.ExifProfile.GetValue(ExifTag.Orientation);
+        var value = source.Metadata.ExifProfile.GetValue(ExifTag.Orientation);
         if (value is null)
         {
             return ExifOrientationMode.Unknown;

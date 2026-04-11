@@ -48,15 +48,15 @@ internal static class BackwardReferenceEncoder
         Vp8LBackwardRefs best,
         Vp8LBackwardRefs worst)
     {
-        int lz77TypeBest = 0;
+        var lz77TypeBest = 0;
         double bitCostBest = -1;
-        int cacheBitsInitial = cacheBits;
+        var cacheBitsInitial = cacheBits;
         Vp8LHashChain hashChainBox = null;
         var stats = new Vp8LStreaks();
         var bitsEntropy = new Vp8LBitEntropy();
-        for (int lz77Type = 1; lz77TypesToTry > 0; lz77TypesToTry &= ~lz77Type, lz77Type <<= 1)
+        for (var lz77Type = 1; lz77TypesToTry > 0; lz77TypesToTry &= ~lz77Type, lz77Type <<= 1)
         {
-            int cacheBitsTmp = cacheBitsInitial;
+            var cacheBitsTmp = cacheBitsInitial;
             if ((lz77TypesToTry & lz77Type) == 0)
             {
                 continue;
@@ -86,11 +86,11 @@ internal static class BackwardReferenceEncoder
 
             // Keep the best backward references.
             var histo = new Vp8LHistogram(worst, cacheBitsTmp);
-            double bitCost = histo.EstimateBits(stats, bitsEntropy);
+            var bitCost = histo.EstimateBits(stats, bitsEntropy);
 
             if (lz77TypeBest == 0 || bitCost < bitCostBest)
             {
-                Vp8LBackwardRefs tmp = worst;
+                var tmp = worst;
                 worst = best;
                 best = tmp;
                 bitCostBest = bitCost;
@@ -102,10 +102,10 @@ internal static class BackwardReferenceEncoder
         // Improve on simple LZ77 but only for high quality (TraceBackwards is costly).
         if ((lz77TypeBest == (int)Vp8LLz77Type.Lz77Standard || lz77TypeBest == (int)Vp8LLz77Type.Lz77Box) && quality >= 25)
         {
-            Vp8LHashChain hashChainTmp = lz77TypeBest == (int)Vp8LLz77Type.Lz77Standard ? hashChain : hashChainBox;
+            var hashChainTmp = lz77TypeBest == (int)Vp8LLz77Type.Lz77Standard ? hashChain : hashChainBox;
             BackwardReferencesTraceBackwards(width, height, memoryAllocator, bgra, cacheBits, hashChainTmp, best, worst);
             var histo = new Vp8LHistogram(worst, cacheBits);
-            double bitCostTrace = histo.EstimateBits(stats, bitsEntropy);
+            var bitCostTrace = histo.EstimateBits(stats, bitsEntropy);
             if (bitCostTrace < bitCostBest)
             {
                 best = worst;
@@ -127,7 +127,7 @@ internal static class BackwardReferenceEncoder
     /// <returns>Best cache size.</returns>
     private static int CalculateBestCacheSize(ReadOnlySpan<uint> bgra, int quality, Vp8LBackwardRefs refs, int bestCacheBits)
     {
-        int cacheBitsMax = quality <= 25 ? 0 : bestCacheBits;
+        var cacheBitsMax = quality <= 25 ? 0 : bestCacheBits;
         if (cacheBitsMax == 0)
         {
             // Local color cache is disabled.
@@ -135,10 +135,10 @@ internal static class BackwardReferenceEncoder
         }
 
         double entropyMin = MaxEntropy;
-        int pos = 0;
+        var pos = 0;
         var colorCache = new ColorCache[WebpConstants.MaxColorCacheBits + 1];
         var histos = new Vp8LHistogram[WebpConstants.MaxColorCacheBits + 1];
-        for (int i = 0; i <= WebpConstants.MaxColorCacheBits; i++)
+        for (var i = 0; i <= WebpConstants.MaxColorCacheBits; i++)
         {
             histos[i] = new Vp8LHistogram(paletteCodeBits: i);
             colorCache[i] = new ColorCache();
@@ -146,19 +146,19 @@ internal static class BackwardReferenceEncoder
         }
 
         // Find the cacheBits giving the lowest entropy.
-        for (int idx = 0; idx < refs.Refs.Count; idx++)
+        for (var idx = 0; idx < refs.Refs.Count; idx++)
         {
-            PixOrCopy v = refs.Refs[idx];
+            var v = refs.Refs[idx];
             if (v.IsLiteral())
             {
-                uint pix = bgra[pos++];
-                uint a = (pix >> 24) & 0xff;
-                uint r = (pix >> 16) & 0xff;
-                uint g = (pix >> 8) & 0xff;
-                uint b = (pix >> 0) & 0xff;
+                var pix = bgra[pos++];
+                var a = (pix >> 24) & 0xff;
+                var r = (pix >> 16) & 0xff;
+                var g = (pix >> 8) & 0xff;
+                var b = (pix >> 0) & 0xff;
 
                 // The keys of the caches can be derived from the longest one.
-                int key = ColorCache.HashPix(pix, 32 - cacheBitsMax);
+                var key = ColorCache.HashPix(pix, 32 - cacheBitsMax);
 
                 // Do not use the color cache for cacheBits = 0.
                 ++histos[0].Blue[b];
@@ -167,7 +167,7 @@ internal static class BackwardReferenceEncoder
                 ++histos[0].Alpha[a];
 
                 // Deal with cacheBits > 0.
-                for (int i = cacheBitsMax; i >= 1; --i, key >>= 1)
+                for (var i = cacheBitsMax; i >= 1; --i, key >>= 1)
                 {
                     if (colorCache[i].Lookup(key) == pix)
                     {
@@ -191,11 +191,11 @@ internal static class BackwardReferenceEncoder
                 // histogram contributions, we can ignore them, except for the length
                 // prefix that is part of the literal_ histogram.
                 int len = v.Len;
-                uint bgraPrev = bgra[pos] ^ 0xffffffffu;
+                var bgraPrev = bgra[pos] ^ 0xffffffffu;
 
                 int extraBits = 0, extraBitsValue = 0;
-                int code = LosslessUtils.PrefixEncode(len, ref extraBits, ref extraBitsValue);
-                for (int i = 0; i <= cacheBitsMax; i++)
+                var code = LosslessUtils.PrefixEncode(len, ref extraBits, ref extraBitsValue);
+                for (var i = 0; i <= cacheBitsMax; i++)
                 {
                     ++histos[i].Literal[WebpConstants.NumLiteralCodes + code];
                 }
@@ -206,8 +206,8 @@ internal static class BackwardReferenceEncoder
                     if (bgra[pos] != bgraPrev)
                     {
                         // Efficiency: insert only if the color changes.
-                        int key = ColorCache.HashPix(bgra[pos], 32 - cacheBitsMax);
-                        for (int i = cacheBitsMax; i >= 1; --i, key >>= 1)
+                        var key = ColorCache.HashPix(bgra[pos], 32 - cacheBitsMax);
+                        for (var i = cacheBitsMax; i >= 1; --i, key >>= 1)
                         {
                             colorCache[i].Colors[key] = bgra[pos];
                         }
@@ -223,9 +223,9 @@ internal static class BackwardReferenceEncoder
 
         var stats = new Vp8LStreaks();
         var bitsEntropy = new Vp8LBitEntropy();
-        for (int i = 0; i <= cacheBitsMax; i++)
+        for (var i = 0; i <= cacheBitsMax; i++)
         {
-            double entropy = histos[i].EstimateBits(stats, bitsEntropy);
+            var entropy = histos[i].EstimateBits(stats, bitsEntropy);
             if (i == 0 || entropy < entropyMin)
             {
                 entropyMin = entropy;
@@ -246,13 +246,13 @@ internal static class BackwardReferenceEncoder
         Vp8LBackwardRefs refsSrc,
         Vp8LBackwardRefs refsDst)
     {
-        int distArraySize = xSize * ySize;
-        using IMemoryOwner<ushort> distArrayBuffer = memoryAllocator.Allocate<ushort>(distArraySize);
-        Span<ushort> distArray = distArrayBuffer.GetSpan();
+        var distArraySize = xSize * ySize;
+        using var distArrayBuffer = memoryAllocator.Allocate<ushort>(distArraySize);
+        var distArray = distArrayBuffer.GetSpan();
 
         BackwardReferencesHashChainDistanceOnly(xSize, ySize, memoryAllocator, bgra, cacheBits, hashChain, refsSrc, distArrayBuffer);
-        int chosenPathSize = TraceBackwards(distArray, distArraySize);
-        Span<ushort> chosenPath = distArray.Slice(distArraySize - chosenPathSize);
+        var chosenPathSize = TraceBackwards(distArray, distArraySize);
+        var chosenPath = distArray.Slice(distArraySize - chosenPathSize);
         BackwardReferencesHashChainFollowChosenPath(bgra, cacheBits, chosenPath, chosenPathSize, hashChain, refsDst);
     }
 
@@ -266,15 +266,15 @@ internal static class BackwardReferenceEncoder
         Vp8LBackwardRefs refs,
         IMemoryOwner<ushort> distArrayBuffer)
     {
-        int pixCount = xSize * ySize;
-        bool useColorCache = cacheBits > 0;
-        int literalArraySize = WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes + (cacheBits > 0 ? 1 << cacheBits : 0);
+        var pixCount = xSize * ySize;
+        var useColorCache = cacheBits > 0;
+        var literalArraySize = WebpConstants.NumLiteralCodes + WebpConstants.NumLengthCodes + (cacheBits > 0 ? 1 << cacheBits : 0);
         var costModel = new CostModel(literalArraySize);
-        int offsetPrev = -1;
-        int lenPrev = -1;
+        var offsetPrev = -1;
+        var lenPrev = -1;
         double offsetCost = -1;
-        int firstOffsetIsConstant = -1;  // initialized with 'impossible' value.
-        int reach = 0;
+        var firstOffsetIsConstant = -1;  // initialized with 'impossible' value.
+        var reach = 0;
         var colorCache = new ColorCache();
 
         if (useColorCache)
@@ -284,8 +284,8 @@ internal static class BackwardReferenceEncoder
 
         costModel.Build(xSize, cacheBits, refs);
         using var costManager = new CostManager(memoryAllocator, distArrayBuffer, pixCount, costModel);
-        Span<float> costManagerCosts = costManager.Costs.GetSpan();
-        Span<ushort> distArray = distArrayBuffer.GetSpan();
+        var costManagerCosts = costManager.Costs.GetSpan();
+        var distArray = distArrayBuffer.GetSpan();
 
         // We loop one pixel at a time, but store all currently best points to non-processed locations from this point.
         distArray[0] = 0;
@@ -293,11 +293,11 @@ internal static class BackwardReferenceEncoder
         // Add first pixel as literal.
         AddSingleLiteralWithCostModel(bgra, colorCache, costModel, 0, useColorCache, 0.0f, costManagerCosts, distArray);
 
-        for (int i = 1; i < pixCount; i++)
+        for (var i = 1; i < pixCount; i++)
         {
-            float prevCost = costManagerCosts[i - 1];
-            int offset = hashChain.FindOffset(i);
-            int len = hashChain.FindLength(i);
+            var prevCost = costManagerCosts[i - 1];
+            var offset = hashChain.FindOffset(i);
+            var len = hashChain.FindLength(i);
 
             // Try adding the pixel as a literal.
             AddSingleLiteralWithCostModel(bgra, colorCache, costModel, i, useColorCache, prevCost, costManagerCosts, distArray);
@@ -307,7 +307,7 @@ internal static class BackwardReferenceEncoder
             {
                 if (offset != offsetPrev)
                 {
-                    int code = DistanceToPlaneCode(xSize, offset);
+                    var code = DistanceToPlaneCode(xSize, offset);
                     offsetCost = costModel.GetDistanceCost(code);
                     firstOffsetIsConstant = 1;
                     costManager.PushInterval(prevCost + offsetCost, i, len);
@@ -327,11 +327,11 @@ internal static class BackwardReferenceEncoder
 
                     if (i + len - 1 > reach)
                     {
-                        int lenJ = 0;
+                        var lenJ = 0;
                         int j;
                         for (j = i; j <= reach; j++)
                         {
-                            int offsetJ = hashChain.FindOffset(j + 1);
+                            var offsetJ = hashChain.FindOffset(j + 1);
                             lenJ = hashChain.FindLength(j + 1);
                             if (offsetJ != offset)
                             {
@@ -358,12 +358,12 @@ internal static class BackwardReferenceEncoder
 
     private static int TraceBackwards(Span<ushort> distArray, int distArraySize)
     {
-        int chosenPathSize = 0;
-        int pathPos = distArraySize;
-        int curPos = distArraySize - 1;
+        var chosenPathSize = 0;
+        var pathPos = distArraySize;
+        var curPos = distArraySize - 1;
         while (curPos >= 0)
         {
-            ushort cur = distArray[curPos];
+            var cur = distArray[curPos];
             pathPos--;
             chosenPathSize++;
             distArray[pathPos] = cur;
@@ -375,9 +375,9 @@ internal static class BackwardReferenceEncoder
 
     private static void BackwardReferencesHashChainFollowChosenPath(ReadOnlySpan<uint> bgra, int cacheBits, Span<ushort> chosenPath, int chosenPathSize, Vp8LHashChain hashChain, Vp8LBackwardRefs backwardRefs)
     {
-        bool useColorCache = cacheBits > 0;
+        var useColorCache = cacheBits > 0;
         var colorCache = new ColorCache();
-        int i = 0;
+        var i = 0;
 
         if (useColorCache)
         {
@@ -385,17 +385,17 @@ internal static class BackwardReferenceEncoder
         }
 
         backwardRefs.Refs.Clear();
-        for (int ix = 0; ix < chosenPathSize; ix++)
+        for (var ix = 0; ix < chosenPathSize; ix++)
         {
             int len = chosenPath[ix];
             if (len != 1)
             {
-                int offset = hashChain.FindOffset(i);
+                var offset = hashChain.FindOffset(i);
                 backwardRefs.Add(PixOrCopy.CreateCopy((uint)offset, (ushort)len));
 
                 if (useColorCache)
                 {
-                    for (int k = 0; k < len; k++)
+                    for (var k = 0; k < len; k++)
                     {
                         colorCache.Insert(bgra[i + k]);
                     }
@@ -406,7 +406,7 @@ internal static class BackwardReferenceEncoder
             else
             {
                 PixOrCopy v;
-                int idx = useColorCache ? colorCache.Contains(bgra[i]) : -1;
+                var idx = useColorCache ? colorCache.Contains(bgra[i]) : -1;
                 if (idx >= 0)
                 {
                     // useColorCache is true and color cache contains bgra[i]
@@ -440,16 +440,16 @@ internal static class BackwardReferenceEncoder
         Span<ushort> distArray)
     {
         double costVal = prevCost;
-        uint color = bgra[idx];
-        int ix = useColorCache ? colorCache.Contains(color) : -1;
+        var color = bgra[idx];
+        var ix = useColorCache ? colorCache.Contains(color) : -1;
         if (ix >= 0)
         {
-            double mul0 = 0.68;
+            var mul0 = 0.68;
             costVal += costModel.GetCacheCost((uint)ix) * mul0;
         }
         else
         {
-            double mul1 = 0.82;
+            var mul1 = 0.82;
             if (useColorCache)
             {
                 colorCache.Insert(color);
@@ -467,9 +467,9 @@ internal static class BackwardReferenceEncoder
 
     private static void BackwardReferencesLz77(int xSize, int ySize, ReadOnlySpan<uint> bgra, int cacheBits, Vp8LHashChain hashChain, Vp8LBackwardRefs refs)
     {
-        int iLastCheck = -1;
-        bool useColorCache = cacheBits > 0;
-        int pixCount = xSize * ySize;
+        var iLastCheck = -1;
+        var useColorCache = cacheBits > 0;
+        var pixCount = xSize * ySize;
         var colorCache = new ColorCache();
         if (useColorCache)
         {
@@ -477,17 +477,17 @@ internal static class BackwardReferenceEncoder
         }
 
         refs.Refs.Clear();
-        for (int i = 0; i < pixCount;)
+        for (var i = 0; i < pixCount;)
         {
             // Alternative #1: Code the pixels starting at 'i' using backward reference.
             int j;
-            int offset = hashChain.FindOffset(i);
-            int len = hashChain.FindLength(i);
+            var offset = hashChain.FindOffset(i);
+            var len = hashChain.FindLength(i);
             if (len >= MinLength)
             {
-                int lenIni = len;
-                int maxReach = 0;
-                int jMax = i + lenIni >= pixCount ? pixCount - 1 : i + lenIni;
+                var lenIni = len;
+                var maxReach = 0;
+                var jMax = i + lenIni >= pixCount ? pixCount - 1 : i + lenIni;
 
                 // Only start from what we have not checked already.
                 iLastCheck = i > iLastCheck ? i : iLastCheck;
@@ -500,8 +500,8 @@ internal static class BackwardReferenceEncoder
                 // [i,j) (where j<=i+len) + [j, length of best match at j)
                 for (j = iLastCheck + 1; j <= jMax; j++)
                 {
-                    int lenJ = hashChain.FindLength(j);
-                    int reach = j + (lenJ >= MinLength ? lenJ : 1); // 1 for single literal.
+                    var lenJ = hashChain.FindLength(j);
+                    var reach = j + (lenJ >= MinLength ? lenJ : 1); // 1 for single literal.
                     if (reach > maxReach)
                     {
                         len = j - i;
@@ -545,18 +545,18 @@ internal static class BackwardReferenceEncoder
     /// </summary>
     private static void BackwardReferencesLz77Box(int xSize, int ySize, ReadOnlySpan<uint> bgra, int cacheBits, Vp8LHashChain hashChainBest, Vp8LHashChain hashChain, Vp8LBackwardRefs refs)
     {
-        int pixelCount = xSize * ySize;
-        int[] windowOffsets = new int[WindowOffsetsSizeMax];
-        int[] windowOffsetsNew = new int[WindowOffsetsSizeMax];
-        int windowOffsetsSize = 0;
-        int windowOffsetsNewSize = 0;
-        short[] counts = new short[xSize * ySize];
-        int bestOffsetPrev = -1;
-        int bestLengthPrev = -1;
+        var pixelCount = xSize * ySize;
+        var windowOffsets = new int[WindowOffsetsSizeMax];
+        var windowOffsetsNew = new int[WindowOffsetsSizeMax];
+        var windowOffsetsSize = 0;
+        var windowOffsetsNewSize = 0;
+        var counts = new short[xSize * ySize];
+        var bestOffsetPrev = -1;
+        var bestLengthPrev = -1;
 
         // counts[i] counts how many times a pixel is repeated starting at position i.
-        int i = pixelCount - 2;
-        int countsPos = i;
+        var i = pixelCount - 2;
+        var countsPos = i;
         counts[countsPos + 1] = 1;
         for (; i >= 0; --i, --countsPos)
         {
@@ -577,11 +577,11 @@ internal static class BackwardReferenceEncoder
 
         // Figure out the window offsets around a pixel. They are stored in a
         // spiraling order around the pixel as defined by DistanceToPlaneCode.
-        for (int y = 0; y <= 6; y++)
+        for (var y = 0; y <= 6; y++)
         {
-            for (int x = -6; x <= 6; x++)
+            for (var x = -6; x <= 6; x++)
             {
-                int offset = (y * xSize) + x;
+                var offset = (y * xSize) + x;
 
                 // Ignore offsets that bring us after the pixel.
                 if (offset <= 0)
@@ -589,7 +589,7 @@ internal static class BackwardReferenceEncoder
                     continue;
                 }
 
-                int planeCode = DistanceToPlaneCode(xSize, offset) - 1;
+                var planeCode = DistanceToPlaneCode(xSize, offset) - 1;
                 if (planeCode >= WindowOffsetsSizeMax)
                 {
                     continue;
@@ -614,8 +614,8 @@ internal static class BackwardReferenceEncoder
         // with any of the offsets in windowOffsets[].
         for (i = 0; i < windowOffsetsSize; i++)
         {
-            bool isReachable = false;
-            for (int j = 0; j < windowOffsetsSize && !isReachable; j++)
+            var isReachable = false;
+            for (var j = 0; j < windowOffsetsSize && !isReachable; j++)
             {
                 isReachable |= windowOffsets[i] == windowOffsets[j] + 1;
             }
@@ -627,14 +627,14 @@ internal static class BackwardReferenceEncoder
             }
         }
 
-        Span<uint> hashChainOffsetLength = hashChain.OffsetLength.GetSpan();
+        var hashChainOffsetLength = hashChain.OffsetLength.GetSpan();
         hashChainOffsetLength[0] = 0;
         for (i = 1; i < pixelCount; i++)
         {
             int ind;
-            int bestLength = hashChainBest.FindLength(i);
-            int bestOffset = 0;
-            bool doCompute = true;
+            var bestLength = hashChainBest.FindLength(i);
+            var bestOffset = 0;
+            var doCompute = true;
 
             if (bestLength >= MaxLength)
             {
@@ -654,17 +654,17 @@ internal static class BackwardReferenceEncoder
             {
                 // Figure out if we should use the offset/length from the previous pixel
                 // as an initial guess and therefore only inspect the offsets in windowOffsetsNew[].
-                bool usePrev = bestLengthPrev is > 1 and < MaxLength;
-                int numInd = usePrev ? windowOffsetsNewSize : windowOffsetsSize;
+                var usePrev = bestLengthPrev is > 1 and < MaxLength;
+                var numInd = usePrev ? windowOffsetsNewSize : windowOffsetsSize;
                 bestLength = usePrev ? bestLengthPrev - 1 : 0;
                 bestOffset = usePrev ? bestOffsetPrev : 0;
 
                 // Find the longest match in a window around the pixel.
                 for (ind = 0; ind < numInd; ind++)
                 {
-                    int currLength = 0;
-                    int j = i;
-                    int jOffset = usePrev ? i - windowOffsetsNew[ind] : i - windowOffsets[ind];
+                    var currLength = 0;
+                    var j = i;
+                    var jOffset = usePrev ? i - windowOffsetsNew[ind] : i - windowOffsets[ind];
                     if (jOffset < 0 || bgra[jOffset] != bgra[i])
                     {
                         continue;
@@ -724,8 +724,8 @@ internal static class BackwardReferenceEncoder
 
     private static void BackwardReferencesRle(int xSize, int ySize, ReadOnlySpan<uint> bgra, int cacheBits, Vp8LBackwardRefs refs)
     {
-        int pixelCount = xSize * ySize;
-        bool useColorCache = cacheBits > 0;
+        var pixelCount = xSize * ySize;
+        var useColorCache = cacheBits > 0;
         var colorCache = new ColorCache();
 
         if (useColorCache)
@@ -737,12 +737,12 @@ internal static class BackwardReferenceEncoder
 
         // Add first pixel as literal.
         AddSingleLiteral(bgra[0], useColorCache, colorCache, refs);
-        int i = 1;
+        var i = 1;
         while (i < pixelCount)
         {
-            int maxLen = LosslessUtils.MaxFindCopyLength(pixelCount - i);
-            int rleLen = LosslessUtils.FindMatchLength(bgra.Slice(i), bgra.Slice(i - 1), 0, maxLen);
-            int prevRowLen = i < xSize ? 0 : LosslessUtils.FindMatchLength(bgra.Slice(i), bgra.Slice(i - xSize), 0, maxLen);
+            var maxLen = LosslessUtils.MaxFindCopyLength(pixelCount - i);
+            var rleLen = LosslessUtils.FindMatchLength(bgra.Slice(i), bgra.Slice(i - 1), 0, maxLen);
+            var prevRowLen = i < xSize ? 0 : LosslessUtils.FindMatchLength(bgra.Slice(i), bgra.Slice(i - xSize), 0, maxLen);
             if (rleLen >= prevRowLen && rleLen >= MinLength)
             {
                 refs.Add(PixOrCopy.CreateCopy(1, (ushort)rleLen));
@@ -756,7 +756,7 @@ internal static class BackwardReferenceEncoder
                 refs.Add(PixOrCopy.CreateCopy((uint)xSize, (ushort)prevRowLen));
                 if (useColorCache)
                 {
-                    for (int k = 0; k < prevRowLen; ++k)
+                    for (var k = 0; k < prevRowLen; ++k)
                     {
                         colorCache.Insert(bgra[i + k]);
                     }
@@ -777,16 +777,16 @@ internal static class BackwardReferenceEncoder
     /// </summary>
     private static void BackwardRefsWithLocalCache(ReadOnlySpan<uint> bgra, int cacheBits, Vp8LBackwardRefs refs)
     {
-        int pixelIndex = 0;
+        var pixelIndex = 0;
         var colorCache = new ColorCache();
         colorCache.Init(cacheBits);
-        for (int idx = 0; idx < refs.Refs.Count; idx++)
+        for (var idx = 0; idx < refs.Refs.Count; idx++)
         {
-            PixOrCopy v = refs.Refs[idx];
+            var v = refs.Refs[idx];
             if (v.IsLiteral())
             {
-                uint bgraLiteral = v.BgraOrDistance;
-                int ix = colorCache.Contains(bgraLiteral);
+                var bgraLiteral = v.BgraOrDistance;
+                var ix = colorCache.Contains(bgraLiteral);
                 if (ix >= 0)
                 {
                     // Color cache contains bgraLiteral
@@ -804,7 +804,7 @@ internal static class BackwardReferenceEncoder
             else
             {
                 // refs was created without local cache, so it can not have cache indexes.
-                for (int k = 0; k < v.Len; ++k)
+                for (var k = 0; k < v.Len; ++k)
                 {
                     colorCache.Insert(bgra[pixelIndex++]);
                 }
@@ -814,13 +814,13 @@ internal static class BackwardReferenceEncoder
 
     private static void BackwardReferences2DLocality(int xSize, Vp8LBackwardRefs refs)
     {
-        using List<PixOrCopy>.Enumerator c = refs.Refs.GetEnumerator();
+        using var c = refs.Refs.GetEnumerator();
         while (c.MoveNext())
         {
             if (c.Current.IsCopy())
             {
-                int dist = (int)c.Current.BgraOrDistance;
-                int transformedDist = DistanceToPlaneCode(xSize, dist);
+                var dist = (int)c.Current.BgraOrDistance;
+                var transformedDist = DistanceToPlaneCode(xSize, dist);
                 c.Current.BgraOrDistance = (uint)transformedDist;
             }
         }
@@ -831,7 +831,7 @@ internal static class BackwardReferenceEncoder
         PixOrCopy v;
         if (useColorCache)
         {
-            int key = colorCache.GetIndex(pixel);
+            var key = colorCache.GetIndex(pixel);
             if (colorCache.Lookup(key) == pixel)
             {
                 v = PixOrCopy.CreateCacheIdx(key);
@@ -852,8 +852,8 @@ internal static class BackwardReferenceEncoder
 
     public static int DistanceToPlaneCode(int xSize, int dist)
     {
-        int yOffset = dist / xSize;
-        int xOffset = dist - (yOffset * xSize);
+        var yOffset = dist / xSize;
+        var xOffset = dist - (yOffset * xSize);
         if (xOffset <= 8 && yOffset < 8)
         {
             return (int)WebpLookupTables.PlaneToCodeLut[(yOffset * 16) + 8 - xOffset] + 1;

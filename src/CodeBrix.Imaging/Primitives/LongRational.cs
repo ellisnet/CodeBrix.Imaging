@@ -151,9 +151,9 @@ internal readonly struct LongRational : IEquatable<LongRational>
         long numerator = 1;
         long denominator = 1;
 
-        double val = Math.Abs(value);
-        double df = numerator / (double)denominator;
-        double epsilon = bestPrecision ? double.Epsilon : .000001;
+        var val = Math.Abs(value);
+        var df = numerator / (double)denominator;
+        var epsilon = bestPrecision ? double.Epsilon : .000001;
 
         while (Math.Abs(df - val) > epsilon)
         {
@@ -213,7 +213,7 @@ internal readonly struct LongRational : IEquatable<LongRational>
             return new LongRational(1, 1);
         }
 
-        long gcd = GreatestCommonDivisor(Math.Abs(this.Numerator), Math.Abs(this.Denominator));
+        var gcd = GreatestCommonDivisor(Math.Abs(this.Numerator), Math.Abs(this.Denominator));
 
         if (gcd > 1)
         {

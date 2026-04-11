@@ -18,7 +18,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMatrix(Matrix4x4 value, bool isSingle)
     {
-        int count = 0;
+        var count = 0;
 
         if (isSingle)
         {
@@ -60,10 +60,10 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMatrix(in DenseMatrix<float> value, bool isSingle)
     {
-        int count = 0;
-        for (int y = 0; y < value.Rows; y++)
+        var count = 0;
+        for (var y = 0; y < value.Rows; y++)
         {
-            for (int x = 0; x < value.Columns; x++)
+            for (var x = 0; x < value.Columns; x++)
             {
                 if (isSingle)
                 {
@@ -87,10 +87,10 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMatrix(float[,] value, bool isSingle)
     {
-        int count = 0;
-        for (int y = 0; y < value.GetLength(1); y++)
+        var count = 0;
+        for (var y = 0; y < value.GetLength(1); y++)
         {
-            for (int x = 0; x < value.GetLength(0); x++)
+            for (var x = 0; x < value.GetLength(0); x++)
             {
                 if (isSingle)
                 {
@@ -114,7 +114,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMatrix(Vector3 value, bool isSingle)
     {
-        int count = 0;
+        var count = 0;
         if (isSingle)
         {
             count += this.WriteSingle(value.X);
@@ -139,8 +139,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteMatrix(float[] value, bool isSingle)
     {
-        int count = 0;
-        for (int i = 0; i < value.Length; i++)
+        var count = 0;
+        for (var i = 0; i < value.Length; i++)
         {
             if (isSingle)
             {

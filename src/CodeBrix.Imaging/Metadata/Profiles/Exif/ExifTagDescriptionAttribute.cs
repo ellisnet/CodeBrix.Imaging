@@ -32,16 +32,16 @@ internal sealed class ExifTagDescriptionAttribute : Attribute
     public static string GetDescription(ExifTag tag, object value)
     {
         var tagValue = (ExifTagValue)(ushort)tag;
-        FieldInfo field = tagValue.GetType().GetTypeInfo().GetDeclaredField(tagValue.ToString());
+        var field = tagValue.GetType().GetTypeInfo().GetDeclaredField(tagValue.ToString());
 
         if (field is null)
         {
             return null;
         }
 
-        foreach (CustomAttributeData customAttribute in field.CustomAttributes)
+        foreach (var customAttribute in field.CustomAttributes)
         {
-            object attributeValue = customAttribute.ConstructorArguments[0].Value;
+            var attributeValue = customAttribute.ConstructorArguments[0].Value;
 
             if (Equals(attributeValue, value))
             {

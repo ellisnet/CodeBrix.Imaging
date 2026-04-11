@@ -20,7 +20,7 @@ internal sealed class IccOneDimensionalCurve : IEquatable<IccOneDimensionalCurve
         Guard.NotNull(breakPoints, nameof(breakPoints));
         Guard.NotNull(segments, nameof(segments));
 
-        bool isSizeCorrect = breakPoints.Length == segments.Length - 1;
+        var isSizeCorrect = breakPoints.Length == segments.Length - 1;
         Guard.IsTrue(isSizeCorrect, $"{nameof(breakPoints)},{nameof(segments)}", "Number of BreakPoints must be one less than number of Segments");
 
         this.BreakPoints = breakPoints;

@@ -230,7 +230,7 @@ public readonly partial struct Color : IEquatable<Color>
     {
         result = default;
 
-        if (Rgba32.TryParseHex(hex, out Rgba32 rgba))
+        if (Rgba32.TryParseHex(hex, out var rgba))
         {
             result = new Color(rgba);
             return true;
@@ -254,7 +254,7 @@ public readonly partial struct Color : IEquatable<Color>
     {
         Guard.NotNull(input, nameof(input));
 
-        if (!TryParse(input, out Color color))
+        if (!TryParse(input, out var color))
         {
             throw new ArgumentException("Input string is not in the correct format.", nameof(input));
         }
@@ -354,7 +354,7 @@ public readonly partial struct Color : IEquatable<Color>
         where TPixel : unmanaged, IPixel<TPixel>
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        for (int i = 0; i < source.Length; i++)
+        for (var i = 0; i < source.Length; i++)
         {
             destination[i] = source[i].ToPixel<TPixel>();
         }

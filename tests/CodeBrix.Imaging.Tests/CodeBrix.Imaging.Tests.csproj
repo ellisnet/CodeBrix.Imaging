@@ -9,11 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
-    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
-    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
-    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
-    <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
     <None Remove="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <None Remove="SampleFiles\fonts\Nabla-Regular-VariableFont_EDPT_EHLT.ttf" />
     <None Remove="SampleFiles\fonts\NotoColorEmoji-Regular.ttf" />
@@ -27,12 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
-    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
-    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
-    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
-    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
-    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <EmbeddedResource Include="SampleFiles\fonts\Nabla-Regular-VariableFont_EDPT_EHLT.ttf" />
     <EmbeddedResource Include="SampleFiles\fonts\NotoColorEmoji-Regular.ttf" />
     <EmbeddedResource Include="SampleFiles\fonts\Roboto-Regular.ttf" />
@@ -48,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

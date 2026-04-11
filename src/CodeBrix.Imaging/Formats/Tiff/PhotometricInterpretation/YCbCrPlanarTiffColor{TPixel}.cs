@@ -25,9 +25,9 @@ internal class YCbCrPlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
     /// <inheritdoc/>
     public override void Decode(IMemoryOwner<byte>[] data, Buffer2D<TPixel> pixels, int left, int top, int width, int height)
     {
-        Span<byte> yData = data[0].GetSpan();
-        Span<byte> cbData = data[1].GetSpan();
-        Span<byte> crData = data[2].GetSpan();
+        var yData = data[0].GetSpan();
+        var cbData = data[1].GetSpan();
+        var crData = data[2].GetSpan();
 
         if (this.ycbcrSubSampling != null && !(this.ycbcrSubSampling[0] == 1 && this.ycbcrSubSampling[1] == 1))
         {
@@ -35,20 +35,20 @@ internal class YCbCrPlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
         }
 
         var color = default(TPixel);
-        int offset = 0;
-        int widthPadding = 0;
+        var offset = 0;
+        var widthPadding = 0;
         if (this.ycbcrSubSampling != null)
         {
             // Round to the next integer multiple of horizontalSubSampling.
             widthPadding = TiffUtils.PaddingToNextInteger(width, this.ycbcrSubSampling[0]);
         }
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                Rgba32 rgba = this.converter.ConvertToRgba32(yData[offset], cbData[offset], crData[offset]);
+                var rgba = this.converter.ConvertToRgba32(yData[offset], cbData[offset], crData[offset]);
                 color.FromRgba32(rgba);
                 pixelRow[x] = color;
                 offset++;
@@ -65,12 +65,12 @@ internal class YCbCrPlanarTiffColor<TPixel> : TiffBasePlanarColorDecoder<TPixel>
         width += TiffUtils.PaddingToNextInteger(width, horizontalSubSampling);
         height += TiffUtils.PaddingToNextInteger(height, verticalSubSampling);
 
-        for (int row = height - 1; row >= 0; row--)
+        for (var row = height - 1; row >= 0; row--)
         {
-            for (int col = width - 1; col >= 0; col--)
+            for (var col = width - 1; col >= 0; col--)
             {
-                int offset = (row * width) + col;
-                int subSampleOffset = (row / verticalSubSampling * (width / horizontalSubSampling)) + (col / horizontalSubSampling);
+                var offset = (row * width) + col;
+                var subSampleOffset = (row / verticalSubSampling * (width / horizontalSubSampling)) + (col / horizontalSubSampling);
                 planarCb[offset] = planarCb[subSampleOffset];
                 planarCr[offset] = planarCr[subSampleOffset];
             }

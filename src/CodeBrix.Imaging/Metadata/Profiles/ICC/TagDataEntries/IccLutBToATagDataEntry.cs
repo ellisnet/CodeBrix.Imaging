@@ -194,8 +194,8 @@ internal sealed class IccLutBToATagDataEntry : IccTagDataEntry, IEquatable<IccLu
 
     private bool EqualsCurve(IccTagDataEntry[] thisCurves, IccTagDataEntry[] entryCurves)
     {
-        bool thisNull = thisCurves is null;
-        bool entryNull = entryCurves is null;
+        var thisNull = thisCurves is null;
+        var entryNull = entryCurves is null;
 
         if (thisNull && entryNull)
         {
@@ -241,7 +241,7 @@ internal sealed class IccLutBToATagDataEntry : IccTagDataEntry, IEquatable<IccLu
     {
         if (curves != null)
         {
-            bool isNotCurve = curves.Any(t => !(t is IccParametricCurveTagDataEntry) && !(t is IccCurveTagDataEntry));
+            var isNotCurve = curves.Any(t => !(t is IccParametricCurveTagDataEntry) && !(t is IccCurveTagDataEntry));
             Guard.IsFalse(isNotCurve, nameof(name), $"{nameof(name)} must be of type {nameof(IccParametricCurveTagDataEntry)} or {nameof(IccCurveTagDataEntry)}");
         }
     }
@@ -255,7 +255,7 @@ internal sealed class IccLutBToATagDataEntry : IccTagDataEntry, IEquatable<IccLu
 
         if (matrix3x3 != null)
         {
-            bool is3By3 = matrix3x3.GetLength(0) == 3 && matrix3x3.GetLength(1) == 3;
+            var is3By3 = matrix3x3.GetLength(0) == 3 && matrix3x3.GetLength(1) == 3;
             Guard.IsTrue(is3By3, nameof(matrix3x3), "Matrix must have a size of three by three");
         }
     }

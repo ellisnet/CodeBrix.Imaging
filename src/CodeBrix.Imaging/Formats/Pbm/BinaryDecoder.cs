@@ -64,20 +64,20 @@ internal class BinaryDecoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 1;
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             if (stream.Read(rowSpan) < rowSpan.Length)
             {
                 return;
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromL8Bytes(
                 configuration,
                 rowSpan,
@@ -90,20 +90,20 @@ internal class BinaryDecoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 2;
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             if (stream.Read(rowSpan) < rowSpan.Length)
             {
                 return;
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromL16Bytes(
                 configuration,
                 rowSpan,
@@ -116,20 +116,20 @@ internal class BinaryDecoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 3;
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             if (stream.Read(rowSpan) < rowSpan.Length)
             {
                 return;
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromRgb24Bytes(
                 configuration,
                 rowSpan,
@@ -142,20 +142,20 @@ internal class BinaryDecoder
         where TPixel : unmanaged, IPixel<TPixel>
     {
         const int bytesPerPixel = 6;
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<byte> row = allocator.Allocate<byte>(width * bytesPerPixel);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<byte>(width * bytesPerPixel);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
             if (stream.Read(rowSpan) < rowSpan.Length)
             {
                 return;
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromRgb48Bytes(
                 configuration,
                 rowSpan,
@@ -167,32 +167,32 @@ internal class BinaryDecoder
     private static void ProcessBlackAndWhite<TPixel>(Configuration configuration, Buffer2D<TPixel> pixels, BufferedReadStream stream)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int height = pixels.Height;
-        MemoryAllocator allocator = configuration.MemoryAllocator;
-        using IMemoryOwner<L8> row = allocator.Allocate<L8>(width);
-        Span<L8> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var height = pixels.Height;
+        var allocator = configuration.MemoryAllocator;
+        using var row = allocator.Allocate<L8>(width);
+        var rowSpan = row.GetSpan();
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width;)
+            for (var x = 0; x < width;)
             {
-                int raw = stream.ReadByte();
+                var raw = stream.ReadByte();
                 if (raw < 0)
                 {
                     return;
                 }
 
-                int stopBit = Math.Min(8, width - x);
-                for (int bit = 0; bit < stopBit; bit++)
+                var stopBit = Math.Min(8, width - x);
+                for (var bit = 0; bit < stopBit; bit++)
                 {
-                    bool bitValue = (raw & (0x80 >> bit)) != 0;
+                    var bitValue = (raw & (0x80 >> bit)) != 0;
                     rowSpan[x] = bitValue ? black : white;
                     x++;
                 }
             }
 
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.FromL8(
                 configuration,
                 rowSpan,

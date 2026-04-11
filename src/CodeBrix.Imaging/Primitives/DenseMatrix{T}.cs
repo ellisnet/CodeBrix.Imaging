@@ -74,8 +74,8 @@ public readonly struct DenseMatrix<T> : IEquatable<DenseMatrix<T>>
     public DenseMatrix(T[,] data)
     {
         Guard.NotNull(data, nameof(data));
-        int rows = data.GetLength(0);
-        int columns = data.GetLength(1);
+        var rows = data.GetLength(0);
+        var columns = data.GetLength(1);
 
         Guard.MustBeGreaterThan(rows, 0, nameof(this.Rows));
         Guard.MustBeGreaterThan(columns, 0, nameof(this.Columns));
@@ -86,11 +86,11 @@ public readonly struct DenseMatrix<T> : IEquatable<DenseMatrix<T>>
         this.Count = this.Columns * this.Rows;
         this.Data = new T[this.Columns * this.Rows];
 
-        for (int y = 0; y < this.Rows; y++)
+        for (var y = 0; y < this.Rows; y++)
         {
-            for (int x = 0; x < this.Columns; x++)
+            for (var x = 0; x < this.Columns; x++)
             {
-                ref T value = ref this[y, x];
+                ref var value = ref this[y, x];
                 value = data[y, x];
             }
         }
@@ -141,11 +141,11 @@ public readonly struct DenseMatrix<T> : IEquatable<DenseMatrix<T>>
     {
         var result = new T[data.Rows, data.Columns];
 
-        for (int y = 0; y < data.Rows; y++)
+        for (var y = 0; y < data.Rows; y++)
         {
-            for (int x = 0; x < data.Columns; x++)
+            for (var x = 0; x < data.Columns; x++)
             {
-                ref T value = ref result[y, x];
+                ref var value = ref result[y, x];
                 value = data[y, x];
             }
         }
@@ -180,11 +180,11 @@ public readonly struct DenseMatrix<T> : IEquatable<DenseMatrix<T>>
     {
         var result = new DenseMatrix<T>(this.Rows, this.Columns);
 
-        for (int y = 0; y < this.Rows; y++)
+        for (var y = 0; y < this.Rows; y++)
         {
-            for (int x = 0; x < this.Columns; x++)
+            for (var x = 0; x < this.Columns; x++)
             {
-                ref T value = ref result[x, y];
+                ref var value = ref result[x, y];
                 value = this[y, x];
             }
         }
@@ -247,8 +247,8 @@ public readonly struct DenseMatrix<T> : IEquatable<DenseMatrix<T>>
         code.Add(this.Columns);
         code.Add(this.Rows);
 
-        Span<T> span = this.Span;
-        for (int i = 0; i < span.Length; i++)
+        var span = this.Span;
+        for (var i = 0; i < span.Length; i++)
         {
             code.Add(span[i]);
         }

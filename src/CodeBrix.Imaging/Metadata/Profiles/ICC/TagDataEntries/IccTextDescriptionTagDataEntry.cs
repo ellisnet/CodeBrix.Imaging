@@ -84,7 +84,7 @@ internal sealed class IccTextDescriptionTagDataEntry : IccTagDataEntry, IEquatab
         IccLocalizedString localString;
         if (!string.IsNullOrEmpty(textEntry.Unicode))
         {
-            CultureInfo culture = GetCulture(textEntry.UnicodeLanguageCode);
+            var culture = GetCulture(textEntry.UnicodeLanguageCode);
             localString = culture != null
                 ? new IccLocalizedString(culture, textEntry.Unicode)
                 : new IccLocalizedString(textEntry.Unicode);
@@ -111,10 +111,10 @@ internal sealed class IccTextDescriptionTagDataEntry : IccTagDataEntry, IEquatab
                 return null;
             }
 
-            byte p1 = (byte)(value >> 24);
-            byte p2 = (byte)(value >> 16);
-            byte p3 = (byte)(value >> 8);
-            byte p4 = (byte)value;
+            var p1 = (byte)(value >> 24);
+            var p2 = (byte)(value >> 16);
+            var p3 = (byte)(value >> 8);
+            var p4 = (byte)value;
 
             // Check if the values are [a-z]{2}[A-Z]{2}
             if (p1 >= 0x61 && p1 <= 0x7A

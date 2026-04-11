@@ -21,7 +21,7 @@ internal unsafe struct MemoryGroupSpanCache
     public static MemoryGroupSpanCache Create<T>(IMemoryOwner<T>[] memoryOwners)
         where T : struct
     {
-        IMemoryOwner<T> owner0 = memoryOwners[0];
+        var owner0 = memoryOwners[0];
         MemoryGroupSpanCache memoryGroupSpanCache = default;
         if (memoryOwners.Length == 1)
         {
@@ -40,7 +40,7 @@ internal unsafe struct MemoryGroupSpanCache
         {
             memoryGroupSpanCache.Mode = SpanCacheMode.MultiPointer;
             memoryGroupSpanCache.MultiPointer = new void*[memoryOwners.Length];
-            for (int i = 0; i < memoryOwners.Length; i++)
+            for (var i = 0; i < memoryOwners.Length; i++)
             {
                 memoryGroupSpanCache.MultiPointer[i] = ((UnmanagedBuffer<T>)memoryOwners[i]).Pointer;
             }

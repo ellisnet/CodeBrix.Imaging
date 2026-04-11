@@ -45,10 +45,10 @@ internal class CropProcessor<TPixel> : TransformProcessor<TPixel>
             return;
         }
 
-        Rectangle bounds = this.cropRectangle;
+        var bounds = this.cropRectangle;
 
         // Copying is cheap, we should process more pixels per task:
-        ParallelExecutionSettings parallelSettings =
+        var parallelSettings =
             ParallelExecutionSettings.FromConfiguration(this.Configuration).MultiplyMinimumPixelsPerTask(4);
 
         var operation = new RowOperation(bounds, source.PixelBuffer, destination.PixelBuffer);
@@ -86,8 +86,8 @@ internal class CropProcessor<TPixel> : TransformProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y)
         {
-            Span<TPixel> sourceRow = this.source.DangerousGetRowSpan(y).Slice(this.bounds.Left);
-            Span<TPixel> targetRow = this.destination.DangerousGetRowSpan(y - this.bounds.Top);
+            var sourceRow = this.source.DangerousGetRowSpan(y).Slice(this.bounds.Left);
+            var targetRow = this.destination.DangerousGetRowSpan(y - this.bounds.Top);
             sourceRow.Slice(0, this.bounds.Width).CopyTo(targetRow);
         }
     }

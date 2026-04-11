@@ -42,14 +42,14 @@ internal sealed class CieXyzToHunterLabConverter : CieXyzAndHunterLabConverterBa
         float x = input.X, y = input.Y, z = input.Z;
         float xn = this.HunterLabWhitePoint.X, yn = this.HunterLabWhitePoint.Y, zn = this.HunterLabWhitePoint.Z;
 
-        float ka = ComputeKa(this.HunterLabWhitePoint);
-        float kb = ComputeKb(this.HunterLabWhitePoint);
+        var ka = ComputeKa(this.HunterLabWhitePoint);
+        var kb = ComputeKb(this.HunterLabWhitePoint);
 
-        float yByYn = y / yn;
-        float sqrtYbyYn = MathF.Sqrt(yByYn);
-        float l = 100 * sqrtYbyYn;
-        float a = ka * (((x / xn) - yByYn) / sqrtYbyYn);
-        float b = kb * ((yByYn - (z / zn)) / sqrtYbyYn);
+        var yByYn = y / yn;
+        var sqrtYbyYn = MathF.Sqrt(yByYn);
+        var l = 100 * sqrtYbyYn;
+        var a = ka * (((x / xn) - yByYn) / sqrtYbyYn);
+        var b = kb * ((yByYn - (z / zn)) / sqrtYbyYn);
 
         if (float.IsNaN(a))
         {

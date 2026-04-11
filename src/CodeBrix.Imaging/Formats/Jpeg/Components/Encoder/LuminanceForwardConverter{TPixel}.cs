@@ -76,8 +76,8 @@ internal ref struct LuminanceForwardConverter<TPixel>
 
         PixelOperations<TPixel>.Instance.ToL8(this.config, this.pixelSpan, this.l8Span);
 
-        ref Block8x8F yBlock = ref this.Y;
-        ref L8 l8Start = ref MemoryMarshal.GetReference(this.l8Span);
+        ref var yBlock = ref this.Y;
+        ref var l8Start = ref MemoryMarshal.GetReference(this.l8Span);
 
         if (RgbToYCbCrConverterVectorized.IsSupported)
         {
@@ -117,9 +117,9 @@ internal ref struct LuminanceForwardConverter<TPixel>
     /// <param name="yBlock">8x8 destination matrix of Luminance(Y) converted data</param>
     private static void ConvertScalar(ref L8 l8Start, ref Block8x8F yBlock)
     {
-        for (int i = 0; i < Block8x8F.Size; i++)
+        for (var i = 0; i < Block8x8F.Size; i++)
         {
-            ref L8 c = ref Unsafe.Add(ref l8Start, i);
+            ref var c = ref Unsafe.Add(ref l8Start, i);
             yBlock[i] = c.PackedValue;
         }
     }

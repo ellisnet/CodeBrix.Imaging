@@ -37,21 +37,21 @@ internal class QuantizeProcessor<TPixel> : ImageProcessor<TPixel>
     {
         var interest = Rectangle.Intersect(source.Bounds(), this.SourceRectangle);
 
-        Configuration configuration = this.Configuration;
-        using IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(configuration);
-        using IndexedImageFrame<TPixel> quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(source, interest);
+        var configuration = this.Configuration;
+        using var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(configuration);
+        using var quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(source, interest);
 
-        ReadOnlySpan<TPixel> paletteSpan = quantized.Palette.Span;
-        int offsetY = interest.Top;
-        int offsetX = interest.Left;
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var paletteSpan = quantized.Palette.Span;
+        var offsetY = interest.Top;
+        var offsetX = interest.Left;
+        var sourceBuffer = source.PixelBuffer;
 
-        for (int y = interest.Y; y < interest.Height; y++)
+        for (var y = interest.Y; y < interest.Height; y++)
         {
-            Span<TPixel> row = sourceBuffer.DangerousGetRowSpan(y);
-            ReadOnlySpan<byte> quantizedRow = quantized.DangerousGetRowSpan(y - offsetY);
+            var row = sourceBuffer.DangerousGetRowSpan(y);
+            var quantizedRow = quantized.DangerousGetRowSpan(y - offsetY);
 
-            for (int x = interest.Left; x < interest.Right; x++)
+            for (var x = interest.Left; x < interest.Right; x++)
             {
                 row[x] = paletteSpan[quantizedRow[x - offsetX]];
             }

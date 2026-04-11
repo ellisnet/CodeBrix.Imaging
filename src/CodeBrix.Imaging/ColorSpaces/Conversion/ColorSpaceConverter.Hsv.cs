@@ -34,15 +34,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLab> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLab sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLab sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -67,15 +67,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLch> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLch sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLch sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -100,15 +100,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLchuv> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLchuv sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLchuv sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -133,15 +133,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLuv> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLuv sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLuv sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -166,15 +166,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieXyy> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieXyy sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieXyy sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -199,15 +199,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieXyz> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieXyz sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieXyz sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -232,15 +232,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Cmyk> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Cmyk sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Cmyk sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -265,15 +265,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Hsl> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Hsl sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Hsl sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -298,15 +298,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<HunterLab> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref HunterLab sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref HunterLab sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -331,15 +331,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<LinearRgb> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref LinearRgb sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref LinearRgb sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -364,15 +364,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Lms> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Lms sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Lms sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -392,15 +392,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Rgb> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Rgb sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Rgb sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }
@@ -425,15 +425,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<YCbCr> source, Span<Hsv> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref YCbCr sourceRef = ref MemoryMarshal.GetReference(source);
-        ref Hsv destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref YCbCr sp = ref Unsafe.Add(ref sourceRef, i);
-            ref Hsv dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToHsv(sp);
         }
     }

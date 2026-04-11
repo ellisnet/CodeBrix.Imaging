@@ -82,7 +82,7 @@ internal readonly struct TolerantMath
     [MethodImpl(InliningOptions.ShortMethod)]
     public double Ceiling(double a)
     {
-        double rem = Math.IEEERemainder(a, 1);
+        var rem = Math.IEEERemainder(a, 1);
         if (this.IsZero(rem))
         {
             return Math.Round(a);
@@ -94,7 +94,7 @@ internal readonly struct TolerantMath
     [MethodImpl(InliningOptions.ShortMethod)]
     public double Floor(double a)
     {
-        double rem = Math.IEEERemainder(a, 1);
+        var rem = Math.IEEERemainder(a, 1);
         if (this.IsZero(rem))
         {
             return Math.Round(a);

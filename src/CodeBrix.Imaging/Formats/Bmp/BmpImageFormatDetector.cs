@@ -24,7 +24,7 @@ public sealed class BmpImageFormatDetector : IImageFormatDetector
     {
         if (header.Length >= this.HeaderSize)
         {
-            short fileTypeMarker = BinaryPrimitives.ReadInt16LittleEndian(header);
+            var fileTypeMarker = BinaryPrimitives.ReadInt16LittleEndian(header);
             return fileTypeMarker == BmpConstants.TypeMarkers.Bitmap || fileTypeMarker == BmpConstants.TypeMarkers.BitmapArray;
         }
 

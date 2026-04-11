@@ -120,7 +120,7 @@ internal class ColrTable : Table
 
     public static ColrTable Load(BigEndianBinaryReader reader)
     {
-        long tableStart = reader.BaseStream.Position;
+        var tableStart = reader.BaseStream.Position;
         
         // HEADER (common to v0 and v1)
         // Type      | Name                   | Description
@@ -207,7 +207,7 @@ internal class ColrTable : Table
     private static Dictionary<ushort, Paint> ReadBaseGlyphList(BigEndianBinaryReader reader, long tableStart)
     {
         var result = new Dictionary<ushort, Paint>();
-        long listStart = reader.BaseStream.Position;
+        var listStart = reader.BaseStream.Position;
         
         var numBaseGlyphPaintRecords = reader.ReadUInt32();
         
@@ -218,7 +218,7 @@ internal class ColrTable : Table
             
             if (paintOffset > 0)
             {
-                long currentPos = reader.BaseStream.Position;
+                var currentPos = reader.BaseStream.Position;
                 reader.BaseStream.Position = listStart + paintOffset;
                 var paint = ReadPaint(reader, tableStart);
                 if (paint != null)
@@ -234,7 +234,7 @@ internal class ColrTable : Table
 
     private static Paint[] ReadLayerList(BigEndianBinaryReader reader, long tableStart)
     {
-        long listStart = reader.BaseStream.Position;
+        var listStart = reader.BaseStream.Position;
         var numLayers = reader.ReadUInt32();
         
         var offsets = new uint[numLayers];
@@ -258,7 +258,7 @@ internal class ColrTable : Table
 
     private static Paint ReadPaint(BigEndianBinaryReader reader, long tableStart)
     {
-        long paintStart = reader.BaseStream.Position;
+        var paintStart = reader.BaseStream.Position;
         var format = (PaintFormat)reader.ReadByte();
 
         switch (format)
@@ -387,7 +387,7 @@ internal class ColrTable : Table
         var numStops = reader.ReadUInt16();
         
         var stops = new ColorStop[numStops];
-        for (int i = 0; i < numStops; i++)
+        for (var i = 0; i < numStops; i++)
         {
             var stopOffset = reader.ReadF2Dot14();
             var paletteIndex = reader.ReadUInt16();
@@ -472,15 +472,15 @@ internal class ColrTable : Table
         
         float scaleX, scaleY, centerX = 0, centerY = 0;
 
-        bool isUniform = format == PaintFormat.PaintScaleUniform || 
-                         format == PaintFormat.PaintVarScaleUniform ||
-                         format == PaintFormat.PaintScaleUniformAroundCenter ||
-                         format == PaintFormat.PaintVarScaleUniformAroundCenter;
+        var isUniform = format == PaintFormat.PaintScaleUniform || 
+                        format == PaintFormat.PaintVarScaleUniform ||
+                        format == PaintFormat.PaintScaleUniformAroundCenter ||
+                        format == PaintFormat.PaintVarScaleUniformAroundCenter;
 
-        bool hasCenter = format == PaintFormat.PaintScaleAroundCenter ||
-                         format == PaintFormat.PaintVarScaleAroundCenter ||
-                         format == PaintFormat.PaintScaleUniformAroundCenter ||
-                         format == PaintFormat.PaintVarScaleUniformAroundCenter;
+        var hasCenter = format == PaintFormat.PaintScaleAroundCenter ||
+                        format == PaintFormat.PaintVarScaleAroundCenter ||
+                        format == PaintFormat.PaintScaleUniformAroundCenter ||
+                        format == PaintFormat.PaintVarScaleUniformAroundCenter;
 
         if (isUniform)
         {
@@ -513,8 +513,8 @@ internal class ColrTable : Table
         var paintOffset = reader.ReadOffset24();
         var angle = reader.ReadF2Dot14() * 180f; // Convert from turns to degrees
 
-        bool hasCenter = format == PaintFormat.PaintRotateAroundCenter ||
-                         format == PaintFormat.PaintVarRotateAroundCenter;
+        var hasCenter = format == PaintFormat.PaintRotateAroundCenter ||
+                        format == PaintFormat.PaintVarRotateAroundCenter;
 
         float centerX = 0, centerY = 0;
         if (hasCenter)
@@ -539,8 +539,8 @@ internal class ColrTable : Table
         var xSkewAngle = reader.ReadF2Dot14() * 180f;
         var ySkewAngle = reader.ReadF2Dot14() * 180f;
 
-        bool hasCenter = format == PaintFormat.PaintSkewAroundCenter ||
-                         format == PaintFormat.PaintVarSkewAroundCenter;
+        var hasCenter = format == PaintFormat.PaintSkewAroundCenter ||
+                        format == PaintFormat.PaintVarSkewAroundCenter;
 
         float centerX = 0, centerY = 0;
         if (hasCenter)

@@ -52,32 +52,32 @@ internal static unsafe class PredictorEncoder
         bool usedSubtractGreen,
         bool lowEffort)
     {
-        int tilesPerRow = LosslessUtils.SubSampleSize(width, bits);
-        int tilesPerCol = LosslessUtils.SubSampleSize(height, bits);
-        int maxQuantization = 1 << LosslessUtils.NearLosslessBits(nearLosslessQuality);
+        var tilesPerRow = LosslessUtils.SubSampleSize(width, bits);
+        var tilesPerCol = LosslessUtils.SubSampleSize(height, bits);
+        var maxQuantization = 1 << LosslessUtils.NearLosslessBits(nearLosslessQuality);
         Span<short> scratch = stackalloc short[8];
 
         // TODO: Can we optimize this?
-        int[][] histo = new int[4][];
-        for (int i = 0; i < 4; i++)
+        var histo = new int[4][];
+        for (var i = 0; i < 4; i++)
         {
             histo[i] = new int[256];
         }
 
         if (lowEffort)
         {
-            for (int i = 0; i < tilesPerRow * tilesPerCol; i++)
+            for (var i = 0; i < tilesPerRow * tilesPerCol; i++)
             {
                 image[i] = WebpConstants.ArgbBlack | (PredLowEffort << 8);
             }
         }
         else
         {
-            for (int tileY = 0; tileY < tilesPerCol; tileY++)
+            for (var tileY = 0; tileY < tilesPerCol; tileY++)
             {
-                for (int tileX = 0; tileX < tilesPerRow; tileX++)
+                for (var tileX = 0; tileX < tilesPerRow; tileX++)
                 {
-                    int pred = GetBestPredictorForTile(
+                    var pred = GetBestPredictorForTile(
                         width,
                         height,
                         tileX,
@@ -116,22 +116,22 @@ internal static unsafe class PredictorEncoder
 
     public static void ColorSpaceTransform(int width, int height, int bits, int quality, Span<uint> bgra, Span<uint> image, Span<int> scratch)
     {
-        int maxTileSize = 1 << bits;
-        int tileXSize = LosslessUtils.SubSampleSize(width, bits);
-        int tileYSize = LosslessUtils.SubSampleSize(height, bits);
-        int[] accumulatedRedHisto = new int[256];
-        int[] accumulatedBlueHisto = new int[256];
+        var maxTileSize = 1 << bits;
+        var tileXSize = LosslessUtils.SubSampleSize(width, bits);
+        var tileYSize = LosslessUtils.SubSampleSize(height, bits);
+        var accumulatedRedHisto = new int[256];
+        var accumulatedBlueHisto = new int[256];
         var prevX = default(Vp8LMultipliers);
         var prevY = default(Vp8LMultipliers);
-        for (int tileY = 0; tileY < tileYSize; tileY++)
+        for (var tileY = 0; tileY < tileYSize; tileY++)
         {
-            for (int tileX = 0; tileX < tileXSize; tileX++)
+            for (var tileX = 0; tileX < tileXSize; tileX++)
             {
-                int tileXOffset = tileX * maxTileSize;
-                int tileYOffset = tileY * maxTileSize;
-                int allXMax = GetMin(tileXOffset + maxTileSize, width);
-                int allYMax = GetMin(tileYOffset + maxTileSize, height);
-                int offset = (tileY * tileXSize) + tileX;
+                var tileXOffset = tileX * maxTileSize;
+                var tileYOffset = tileY * maxTileSize;
+                var allXMax = GetMin(tileXOffset + maxTileSize, width);
+                var allYMax = GetMin(tileYOffset + maxTileSize, height);
+                var offset = (tileY * tileXSize) + tileX;
                 if (tileY != 0)
                 {
                     LosslessUtils.ColorCodeToMultipliers(image[offset - tileXSize], ref prevY);
@@ -155,14 +155,14 @@ internal static unsafe class PredictorEncoder
                 CopyTileWithColorTransform(width, height, tileXOffset, tileYOffset, maxTileSize, prevX, bgra);
 
                 // Gather accumulated histogram data.
-                for (int y = tileYOffset; y < allYMax; y++)
+                for (var y = tileYOffset; y < allYMax; y++)
                 {
-                    int ix = (y * width) + tileXOffset;
-                    int ixEnd = ix + allXMax - tileXOffset;
+                    var ix = (y * width) + tileXOffset;
+                    var ixEnd = ix + allXMax - tileXOffset;
 
                     for (; ix < ixEnd; ix++)
                     {
-                        uint pix = bgra[ix];
+                        var pix = bgra[ix];
                         if (ix >= 2 && pix == bgra[ix - 2] && pix == bgra[ix - 1])
                         {
                             continue;  // Repeated pixels are handled by backward references.
@@ -208,40 +208,40 @@ internal static unsafe class PredictorEncoder
         Span<short> scratch)
     {
         const int numPredModes = 14;
-        int startX = tileX << bits;
-        int startY = tileY << bits;
-        int tileSize = 1 << bits;
-        int maxY = GetMin(tileSize, height - startY);
-        int maxX = GetMin(tileSize, width - startX);
+        var startX = tileX << bits;
+        var startY = tileY << bits;
+        var tileSize = 1 << bits;
+        var maxY = GetMin(tileSize, height - startY);
+        var maxX = GetMin(tileSize, width - startX);
 
         // Whether there exist columns just outside the tile.
-        int haveLeft = startX > 0 ? 1 : 0;
+        var haveLeft = startX > 0 ? 1 : 0;
 
         // Position and size of the strip covering the tile and adjacent columns if they exist.
-        int contextStartX = startX - haveLeft;
-        int contextWidth = maxX + haveLeft + (maxX < width ? 1 : 0) - startX;
-        int tilesPerRow = LosslessUtils.SubSampleSize(width, bits);
+        var contextStartX = startX - haveLeft;
+        var contextWidth = maxX + haveLeft + (maxX < width ? 1 : 0) - startX;
+        var tilesPerRow = LosslessUtils.SubSampleSize(width, bits);
 
         // Prediction modes of the left and above neighbor tiles.
-        int leftMode = (int)(tileX > 0 ? (modes[(tileY * tilesPerRow) + tileX - 1] >> 8) & 0xff : 0xff);
-        int aboveMode = (int)(tileY > 0 ? (modes[((tileY - 1) * tilesPerRow) + tileX] >> 8) & 0xff : 0xff);
+        var leftMode = (int)(tileX > 0 ? (modes[(tileY * tilesPerRow) + tileX - 1] >> 8) & 0xff : 0xff);
+        var aboveMode = (int)(tileY > 0 ? (modes[((tileY - 1) * tilesPerRow) + tileX] >> 8) & 0xff : 0xff);
 
         // The width of upper_row and current_row is one pixel larger than image width
         // to allow the top right pixel to point to the leftmost pixel of the next row
         // when at the right edge.
-        Span<uint> upperRow = argbScratch;
-        Span<uint> currentRow = upperRow.Slice(width + 1);
-        Span<byte> maxDiffs = MemoryMarshal.Cast<uint, byte>(currentRow.Slice(width + 1));
-        float bestDiff = MaxDiffCost;
-        int bestMode = 0;
-        uint[] residuals = new uint[1 << WebpConstants.MaxTransformBits];
-        for (int i = 0; i < 4; i++)
+        var upperRow = argbScratch;
+        var currentRow = upperRow.Slice(width + 1);
+        var maxDiffs = MemoryMarshal.Cast<uint, byte>(currentRow.Slice(width + 1));
+        var bestDiff = MaxDiffCost;
+        var bestMode = 0;
+        var residuals = new uint[1 << WebpConstants.MaxTransformBits];
+        for (var i = 0; i < 4; i++)
         {
             histoArgb[i].AsSpan().Clear();
             bestHisto[i].AsSpan().Clear();
         }
 
-        for (int mode = 0; mode < numPredModes; mode++)
+        for (var mode = 0; mode < numPredModes; mode++)
         {
             if (startY > 0)
             {
@@ -249,15 +249,15 @@ internal static unsafe class PredictorEncoder
                 // Include a pixel to the left if it exists; include a pixel to the right
                 // in all cases (wrapping to the leftmost pixel of the next row if it does
                 // not exist).
-                Span<uint> src = argb.Slice(((startY - 1) * width) + contextStartX, maxX + haveLeft + 1);
-                Span<uint> dst = currentRow.Slice(contextStartX);
+                var src = argb.Slice(((startY - 1) * width) + contextStartX, maxX + haveLeft + 1);
+                var dst = currentRow.Slice(contextStartX);
                 src.CopyTo(dst);
             }
 
-            for (int relativeY = 0; relativeY < maxY; relativeY++)
+            for (var relativeY = 0; relativeY < maxY; relativeY++)
             {
-                int y = startY + relativeY;
-                Span<uint> tmp = upperRow;
+                var y = startY + relativeY;
+                var tmp = upperRow;
                 upperRow = currentRow;
                 currentRow = tmp;
 
@@ -265,9 +265,9 @@ internal static unsafe class PredictorEncoder
                 // pixel to the right in all cases except at the bottom right corner of
                 // the image (wrapping to the leftmost pixel of the next row if it does
                 // not exist in the currentRow).
-                int offset = (y * width) + contextStartX;
-                Span<uint> src = argb.Slice(offset, maxX + haveLeft + (y + 1 < height ? 1 : 0));
-                Span<uint> dst = currentRow.Slice(contextStartX);
+                var offset = (y * width) + contextStartX;
+                var src = argb.Slice(offset, maxX + haveLeft + (y + 1 < height ? 1 : 0));
+                var dst = currentRow.Slice(contextStartX);
                 src.CopyTo(dst);
 
                 if (nearLossless)
@@ -279,13 +279,13 @@ internal static unsafe class PredictorEncoder
                 }
 
                 GetResidual(width, height, upperRow, currentRow, maxDiffs, mode, startX, startX + maxX, y, maxQuantization, transparentColorMode, usedSubtractGreen, nearLossless, residuals, scratch);
-                for (int relativeX = 0; relativeX < maxX; ++relativeX)
+                for (var relativeX = 0; relativeX < maxX; ++relativeX)
                 {
                     UpdateHisto(histoArgb, residuals[relativeX]);
                 }
             }
 
-            float curDiff = PredictionCostSpatialHistogram(accumulated, histoArgb);
+            var curDiff = PredictionCostSpatialHistogram(accumulated, histoArgb);
 
             // Favor keeping the areas locally similar.
             if (mode == leftMode)
@@ -300,22 +300,22 @@ internal static unsafe class PredictorEncoder
 
             if (curDiff < bestDiff)
             {
-                int[][] tmp = histoArgb;
+                var tmp = histoArgb;
                 histoArgb = bestHisto;
                 bestHisto = tmp;
                 bestDiff = curDiff;
                 bestMode = mode;
             }
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 histoArgb[i].AsSpan().Clear();
             }
         }
 
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
-            for (int j = 0; j < 256; j++)
+            for (var j = 0; j < 256; j++)
             {
                 accumulated[i][j] += bestHisto[i][j];
             }
@@ -357,7 +357,7 @@ internal static unsafe class PredictorEncoder
             fixed (uint* currentRow = currentRowSpan)
             fixed (uint* upperRow = upperRowSpan)
             {
-                for (int x = xStart; x < xEnd; x++)
+                for (var x = xStart; x < xEnd; x++)
                 {
                     uint predict = 0;
                     uint residual;
@@ -486,7 +486,7 @@ internal static unsafe class PredictorEncoder
             return LosslessUtils.SubPixels(value, predict);
         }
 
-        int quantization = maxQuantization;
+        var quantization = maxQuantization;
         while (quantization >= maxDiff)
         {
             quantization >>= 1;
@@ -502,7 +502,7 @@ internal static unsafe class PredictorEncoder
             a = NearLosslessComponent((byte)(value >> 24), (byte)(predict >> 24), 0xff, quantization);
         }
 
-        byte g = NearLosslessComponent((byte)((value >> 8) & 0xff), (byte)((predict >> 8) & 0xff), 0xff, quantization);
+        var g = NearLosslessComponent((byte)((value >> 8) & 0xff), (byte)((predict >> 8) & 0xff), 0xff, quantization);
 
         if (usedSubtractGreen)
         {
@@ -516,8 +516,8 @@ internal static unsafe class PredictorEncoder
             greenDiff = NearLosslessDiff(newGreen, (byte)((value >> 8) & 0xff));
         }
 
-        byte r = NearLosslessComponent(NearLosslessDiff((byte)((value >> 16) & 0xff), greenDiff), (byte)((predict >> 16) & 0xff), (byte)(0xff - newGreen), quantization);
-        byte b = NearLosslessComponent(NearLosslessDiff((byte)(value & 0xff), greenDiff), (byte)(predict & 0xff), (byte)(0xff - newGreen), quantization);
+        var r = NearLosslessComponent(NearLosslessDiff((byte)((value >> 16) & 0xff), greenDiff), (byte)((predict >> 16) & 0xff), (byte)(0xff - newGreen), quantization);
+        var b = NearLosslessComponent(NearLosslessDiff((byte)(value & 0xff), greenDiff), (byte)(predict & 0xff), (byte)(0xff - newGreen), quantization);
 
         return ((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b;
     }
@@ -529,14 +529,14 @@ internal static unsafe class PredictorEncoder
     /// </summary>
     private static byte NearLosslessComponent(byte value, byte predict, byte boundary, int quantization)
     {
-        int residual = (value - predict) & 0xff;
-        int boundaryResidual = (boundary - predict) & 0xff;
-        int lower = residual & ~(quantization - 1);
-        int upper = lower + quantization;
+        var residual = (value - predict) & 0xff;
+        var boundaryResidual = (boundary - predict) & 0xff;
+        var lower = residual & ~(quantization - 1);
+        var upper = lower + quantization;
 
         // Resolve ties towards a value closer to the prediction (i.e. towards lower
         // if value comes after prediction and towards upper otherwise).
-        int bias = ((boundary - value) & 0xff) < boundaryResidual ? 1 : 0;
+        var bias = ((boundary - value) & 0xff) < boundaryResidual ? 1 : 0;
 
         if (residual - lower < upper - residual + bias)
         {
@@ -583,23 +583,23 @@ internal static unsafe class PredictorEncoder
         bool nearLossless,
         bool lowEffort)
     {
-        int tilesPerRow = LosslessUtils.SubSampleSize(width, bits);
+        var tilesPerRow = LosslessUtils.SubSampleSize(width, bits);
 
         // The width of upperRow and currentRow is one pixel larger than image width
         // to allow the top right pixel to point to the leftmost pixel of the next row
         // when at the right edge.
-        Span<uint> upperRow = argbScratch;
-        Span<uint> currentRow = upperRow.Slice(width + 1);
-        Span<byte> currentMaxDiffs = MemoryMarshal.Cast<uint, byte>(currentRow.Slice(width + 1));
+        var upperRow = argbScratch;
+        var currentRow = upperRow.Slice(width + 1);
+        var currentMaxDiffs = MemoryMarshal.Cast<uint, byte>(currentRow.Slice(width + 1));
 
-        Span<byte> lowerMaxDiffs = currentMaxDiffs.Slice(width);
+        var lowerMaxDiffs = currentMaxDiffs.Slice(width);
         Span<short> scratch = stackalloc short[8];
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            Span<uint> tmp32 = upperRow;
+            var tmp32 = upperRow;
             upperRow = currentRow;
             currentRow = tmp32;
-            Span<uint> src = argb.Slice(y * width, width + (y + 1 < height ? 1 : 0));
+            var src = argb.Slice(y * width, width + (y + 1 < height ? 1 : 0));
             src.CopyTo(currentRow);
 
             if (lowEffort)
@@ -613,7 +613,7 @@ internal static unsafe class PredictorEncoder
                     // Compute maxDiffs for the lower row now, because that needs the
                     // contents of bgra for the current row, which we will overwrite with
                     // residuals before proceeding with the next row.
-                    Span<byte> tmp8 = currentMaxDiffs;
+                    var tmp8 = currentMaxDiffs;
                     currentMaxDiffs = lowerMaxDiffs;
                     lowerMaxDiffs = tmp8;
                     if (y + 2 < height)
@@ -622,10 +622,10 @@ internal static unsafe class PredictorEncoder
                     }
                 }
 
-                for (int x = 0; x < width;)
+                for (var x = 0; x < width;)
                 {
-                    int mode = (int)((modes[((y >> bits) * tilesPerRow) + (x >> bits)] >> 8) & 0xff);
-                    int xEnd = x + (1 << bits);
+                    var mode = (int)((modes[((y >> bits) * tilesPerRow) + (x >> bits)] >> 8) & 0xff);
+                    var xEnd = x + (1 << bits);
                     if (xEnd > width)
                     {
                         xEnd = width;
@@ -669,7 +669,7 @@ internal static unsafe class PredictorEncoder
         fixed (uint* upper = upperSpan)
         fixed (uint* outputFixed = outputSpan)
         {
-            uint* output = outputFixed;
+            var output = outputFixed;
             if (xStart == 0)
             {
                 if (y == 0)
@@ -752,19 +752,19 @@ internal static unsafe class PredictorEncoder
             return;
         }
 
-        uint current = argb[offset];
-        uint right = argb[offset + 1];
+        var current = argb[offset];
+        var right = argb[offset + 1];
         if (usedSubtractGreen)
         {
             current = AddGreenToBlueAndRed(current);
             right = AddGreenToBlueAndRed(right);
         }
 
-        for (int x = 1; x < width - 1; x++)
+        for (var x = 1; x < width - 1; x++)
         {
-            uint up = argb[offset - stride + x];
-            uint down = argb[offset + stride + x];
-            uint left = current;
+            var up = argb[offset - stride + x];
+            var down = argb[offset + stride + x];
+            var left = current;
             current = right;
             right = argb[offset + x + 1];
             if (usedSubtractGreen)
@@ -781,20 +781,20 @@ internal static unsafe class PredictorEncoder
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int MaxDiffBetweenPixels(uint p1, uint p2)
     {
-        int diffA = Math.Abs((int)(p1 >> 24) - (int)(p2 >> 24));
-        int diffR = Math.Abs((int)((p1 >> 16) & 0xff) - (int)((p2 >> 16) & 0xff));
-        int diffG = Math.Abs((int)((p1 >> 8) & 0xff) - (int)((p2 >> 8) & 0xff));
-        int diffB = Math.Abs((int)(p1 & 0xff) - (int)(p2 & 0xff));
+        var diffA = Math.Abs((int)(p1 >> 24) - (int)(p2 >> 24));
+        var diffR = Math.Abs((int)((p1 >> 16) & 0xff) - (int)((p2 >> 16) & 0xff));
+        var diffG = Math.Abs((int)((p1 >> 8) & 0xff) - (int)((p2 >> 8) & 0xff));
+        var diffB = Math.Abs((int)(p1 & 0xff) - (int)(p2 & 0xff));
         return GetMax(GetMax(diffA, diffR), GetMax(diffG, diffB));
     }
 
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int MaxDiffAroundPixel(uint current, uint up, uint down, uint left, uint right)
     {
-        int diffUp = MaxDiffBetweenPixels(current, up);
-        int diffDown = MaxDiffBetweenPixels(current, down);
-        int diffLeft = MaxDiffBetweenPixels(current, left);
-        int diffRight = MaxDiffBetweenPixels(current, right);
+        var diffUp = MaxDiffBetweenPixels(current, up);
+        var diffDown = MaxDiffBetweenPixels(current, down);
+        var diffLeft = MaxDiffBetweenPixels(current, left);
+        var diffRight = MaxDiffBetweenPixels(current, right);
         return GetMax(GetMax(diffUp, diffDown), GetMax(diffLeft, diffRight));
     }
 
@@ -809,8 +809,8 @@ internal static unsafe class PredictorEncoder
 
     private static uint AddGreenToBlueAndRed(uint argb)
     {
-        uint green = (argb >> 8) & 0xff;
-        uint redBlue = argb & 0x00ff00ffu;
+        var green = (argb >> 8) & 0xff;
+        var redBlue = argb & 0x00ff00ffu;
         redBlue += (green << 16) | green;
         redBlue &= 0x00ff00ffu;
         return (argb & 0xff00ff00u) | redBlue;
@@ -818,8 +818,8 @@ internal static unsafe class PredictorEncoder
 
     private static void CopyTileWithColorTransform(int xSize, int ySize, int tileX, int tileY, int maxTileSize, Vp8LMultipliers colorTransform, Span<uint> argb)
     {
-        int xScan = GetMin(maxTileSize, xSize - tileX);
-        int yScan = GetMin(maxTileSize, ySize - tileY);
+        var xScan = GetMin(maxTileSize, xSize - tileX);
+        var yScan = GetMin(maxTileSize, ySize - tileY);
         argb = argb.Slice((tileY * xSize) + tileX);
         while (yScan-- > 0)
         {
@@ -846,14 +846,14 @@ internal static unsafe class PredictorEncoder
         Span<uint> argb,
         Span<int> scratch)
     {
-        int maxTileSize = 1 << bits;
-        int tileYOffset = tileY * maxTileSize;
-        int tileXOffset = tileX * maxTileSize;
-        int allXMax = GetMin(tileXOffset + maxTileSize, xSize);
-        int allYMax = GetMin(tileYOffset + maxTileSize, ySize);
-        int tileWidth = allXMax - tileXOffset;
-        int tileHeight = allYMax - tileYOffset;
-        Span<uint> tileArgb = argb.Slice((tileYOffset * xSize) + tileXOffset);
+        var maxTileSize = 1 << bits;
+        var tileYOffset = tileY * maxTileSize;
+        var tileXOffset = tileX * maxTileSize;
+        var allXMax = GetMin(tileXOffset + maxTileSize, xSize);
+        var allYMax = GetMin(tileYOffset + maxTileSize, ySize);
+        var tileWidth = allXMax - tileXOffset;
+        var tileHeight = allYMax - tileYOffset;
+        var tileArgb = argb.Slice((tileYOffset * xSize) + tileXOffset);
 
         var bestTx = default(Vp8LMultipliers);
 
@@ -876,21 +876,21 @@ internal static unsafe class PredictorEncoder
         int[] accumulatedRedHisto,
         ref Vp8LMultipliers bestTx)
     {
-        int maxIters = 4 + ((7 * quality) >> 8);  // in range [4..6]
-        int greenToRedBest = 0;
-        double bestDiff = GetPredictionCostCrossColorRed(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToRedBest, accumulatedRedHisto);
-        for (int iter = 0; iter < maxIters; iter++)
+        var maxIters = 4 + ((7 * quality) >> 8);  // in range [4..6]
+        var greenToRedBest = 0;
+        var bestDiff = GetPredictionCostCrossColorRed(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToRedBest, accumulatedRedHisto);
+        for (var iter = 0; iter < maxIters; iter++)
         {
             // ColorTransformDelta is a 3.5 bit fixed point, so 32 is equal to
             // one in color computation. Having initial delta here as 1 is sufficient
             // to explore the range of (-2, 2).
-            int delta = 32 >> iter;
+            var delta = 32 >> iter;
 
             // Try a negative and a positive delta from the best known value.
-            for (int offset = -delta; offset <= delta; offset += 2 * delta)
+            for (var offset = -delta; offset <= delta; offset += 2 * delta)
             {
-                int greenToRedCur = offset + greenToRedBest;
-                double curDiff = GetPredictionCostCrossColorRed(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToRedCur, accumulatedRedHisto);
+                var greenToRedCur = offset + greenToRedBest;
+                var curDiff = GetPredictionCostCrossColorRed(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToRedCur, accumulatedRedHisto);
                 if (curDiff < bestDiff)
                 {
                     bestDiff = curDiff;
@@ -904,20 +904,20 @@ internal static unsafe class PredictorEncoder
 
     private static void GetBestGreenRedToBlue(Span<uint> argb, int stride, Span<int> scratch, int tileWidth, int tileHeight, Vp8LMultipliers prevX, Vp8LMultipliers prevY, int quality, int[] accumulatedBlueHisto, ref Vp8LMultipliers bestTx)
     {
-        int iters = (quality < 25) ? 1 : (quality > 50) ? GreenRedToBlueMaxIters : 4;
-        int greenToBlueBest = 0;
-        int redToBlueBest = 0;
+        var iters = (quality < 25) ? 1 : (quality > 50) ? GreenRedToBlueMaxIters : 4;
+        var greenToBlueBest = 0;
+        var redToBlueBest = 0;
 
         // Initial value at origin:
-        double bestDiff = GetPredictionCostCrossColorBlue(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToBlueBest, redToBlueBest, accumulatedBlueHisto);
-        for (int iter = 0; iter < iters; iter++)
+        var bestDiff = GetPredictionCostCrossColorBlue(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToBlueBest, redToBlueBest, accumulatedBlueHisto);
+        for (var iter = 0; iter < iters; iter++)
         {
             int delta = DeltaLut[iter];
-            for (int axis = 0; axis < GreenRedToBlueNumAxis; axis++)
+            for (var axis = 0; axis < GreenRedToBlueNumAxis; axis++)
             {
-                int greenToBlueCur = (Offset[axis][0] * delta) + greenToBlueBest;
-                int redToBlueCur = (Offset[axis][1] * delta) + redToBlueBest;
-                double curDiff = GetPredictionCostCrossColorBlue(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToBlueCur, redToBlueCur, accumulatedBlueHisto);
+                var greenToBlueCur = (Offset[axis][0] * delta) + greenToBlueBest;
+                var redToBlueCur = (Offset[axis][1] * delta) + redToBlueBest;
+                var curDiff = GetPredictionCostCrossColorBlue(argb, stride, scratch, tileWidth, tileHeight, prevX, prevY, greenToBlueCur, redToBlueCur, accumulatedBlueHisto);
                 if (curDiff < bestDiff)
                 {
                     bestDiff = curDiff;
@@ -954,11 +954,11 @@ internal static unsafe class PredictorEncoder
         int greenToRed,
         int[] accumulatedRedHisto)
     {
-        Span<int> histo = scratch.Slice(0, 256);
+        var histo = scratch.Slice(0, 256);
         histo.Clear();
 
         ColorSpaceTransformUtils.CollectColorRedTransforms(argb, stride, tileWidth, tileHeight, greenToRed, histo);
-        double curDiff = PredictionCostCrossColor(accumulatedRedHisto, histo);
+        var curDiff = PredictionCostCrossColor(accumulatedRedHisto, histo);
 
         if ((byte)greenToRed == prevX.GreenToRed)
         {
@@ -992,11 +992,11 @@ internal static unsafe class PredictorEncoder
         int redToBlue,
         int[] accumulatedBlueHisto)
     {
-        Span<int> histo = scratch.Slice(0, 256);
+        var histo = scratch.Slice(0, 256);
         histo.Clear();
 
         ColorSpaceTransformUtils.CollectColorBlueTransforms(argb, stride, tileWidth, tileHeight, greenToBlue, redToBlue, histo);
-        double curDiff = PredictionCostCrossColor(accumulatedBlueHisto, histo);
+        var curDiff = PredictionCostCrossColor(accumulatedBlueHisto, histo);
         if ((byte)greenToBlue == prevX.GreenToBlue)
         {
             // Favor keeping the areas locally similar.
@@ -1036,10 +1036,10 @@ internal static unsafe class PredictorEncoder
 
     private static float PredictionCostSpatialHistogram(int[][] accumulated, int[][] tile)
     {
-        double retVal = 0.0d;
-        for (int i = 0; i < 4; i++)
+        var retVal = 0.0d;
+        for (var i = 0; i < 4; i++)
         {
-            double kExpValue = 0.94;
+            var kExpValue = 0.94;
             retVal += PredictionCostSpatial(tile[i], 1, kExpValue);
             retVal += LosslessUtils.CombinedShannonEntropy(tile[i], accumulated[i]);
         }
@@ -1059,10 +1059,10 @@ internal static unsafe class PredictorEncoder
     [MethodImpl(InliningOptions.ShortMethod)]
     private static float PredictionCostSpatial(Span<int> counts, int weight0, double expVal)
     {
-        int significantSymbols = 256 >> 4;
-        double expDecayFactor = 0.6;
+        var significantSymbols = 256 >> 4;
+        var expDecayFactor = 0.6;
         double bits = weight0 * counts[0];
-        for (int i = 1; i < significantSymbols; i++)
+        for (var i = 1; i < significantSymbols; i++)
         {
             bits += expVal * (counts[i] + counts[256 - i]);
             expVal *= expDecayFactor;

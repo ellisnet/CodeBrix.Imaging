@@ -50,22 +50,22 @@ internal static unsafe class QuantEnc
     public static void PickBestIntra16(Vp8EncIterator it, ref Vp8ModeScore rd, Vp8SegmentInfo[] segmentInfos, Vp8EncProba proba)
     {
         const int numBlocks = 16;
-        Vp8SegmentInfo dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
-        int lambda = dqm.LambdaI16;
-        int tlambda = dqm.TLambda;
-        Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
+        var dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
+        var lambda = dqm.LambdaI16;
+        var tlambda = dqm.TLambda;
+        var src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
         Span<int> scratch = it.Scratch3;
         var rdTmp = new Vp8ModeScore();
         var res = new Vp8Residual();
-        Vp8ModeScore rdCur = rdTmp;
-        Vp8ModeScore rdBest = rd;
+        var rdCur = rdTmp;
+        var rdBest = rd;
         int mode;
-        bool isFlat = IsFlatSource16(src);
+        var isFlat = IsFlatSource16(src);
         rd.ModeI16 = -1;
         for (mode = 0; mode < WebpConstants.NumPredModes; ++mode)
         {
             // Scratch buffer.
-            Span<byte> tmpDst = it.YuvOut2.AsSpan(Vp8EncIterator.YOffEnc);
+            var tmpDst = it.YuvOut2.AsSpan(Vp8EncIterator.YOffEnc);
             rdCur.ModeI16 = mode;
 
             // Reconstruct.
@@ -94,7 +94,7 @@ internal static unsafe class QuantEnc
 
             if (mode == 0 || rdCur.Score < rdBest.Score)
             {
-                Vp8ModeScore tmp = rdCur;
+                var tmp = rdCur;
                 rdCur = rdBest;
                 rdBest = tmp;
                 it.SwapOut();
@@ -121,13 +121,13 @@ internal static unsafe class QuantEnc
 
     public static bool PickBestIntra4(Vp8EncIterator it, ref Vp8ModeScore rd, Vp8SegmentInfo[] segmentInfos, Vp8EncProba proba, int maxI4HeaderBits)
     {
-        Vp8SegmentInfo dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
-        int lambda = dqm.LambdaI4;
-        int tlambda = dqm.TLambda;
-        Span<byte> src0 = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
-        Span<byte> bestBlocks = it.YuvOut2.AsSpan(Vp8EncIterator.YOffEnc);
+        var dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
+        var lambda = dqm.LambdaI4;
+        var tlambda = dqm.TLambda;
+        var src0 = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
+        var bestBlocks = it.YuvOut2.AsSpan(Vp8EncIterator.YOffEnc);
         Span<int> scratch = it.Scratch3;
-        int totalHeaderBits = 0;
+        var totalHeaderBits = 0;
         var rdBest = new Vp8ModeScore();
 
         if (maxI4HeaderBits == 0)
@@ -145,14 +145,14 @@ internal static unsafe class QuantEnc
         Span<short> tmpLevels = new short[16];
         do
         {
-            int numBlocks = 1;
+            var numBlocks = 1;
             rdi4.Clear();
             int mode;
-            int bestMode = -1;
-            Span<byte> src = src0.Slice(WebpLookupTables.Vp8Scan[it.I4]);
-            short[] modeCosts = it.GetCostModeI4(rd.ModesI4);
-            Span<byte> bestBlock = bestBlocks.Slice(WebpLookupTables.Vp8Scan[it.I4]);
-            Span<byte> tmpDst = it.Scratch.AsSpan();
+            var bestMode = -1;
+            var src = src0.Slice(WebpLookupTables.Vp8Scan[it.I4]);
+            var modeCosts = it.GetCostModeI4(rd.ModesI4);
+            var bestBlock = bestBlocks.Slice(WebpLookupTables.Vp8Scan[it.I4]);
+            var tmpDst = it.Scratch.AsSpan();
             tmpDst.Clear();
 
             rdi4.InitScore();
@@ -195,7 +195,7 @@ internal static unsafe class QuantEnc
                 {
                     rdi4.CopyScore(rdTmp);
                     bestMode = mode;
-                    Span<byte> tmp = tmpDst;
+                    var tmp = tmpDst;
                     tmpDst = bestBlock;
                     bestBlock = tmp;
                     tmpLevels.CopyTo(rdBest.YAcLevels.AsSpan(it.I4 * 16, 16));
@@ -236,12 +236,12 @@ internal static unsafe class QuantEnc
     public static void PickBestUv(Vp8EncIterator it, ref Vp8ModeScore rd, Vp8SegmentInfo[] segmentInfos, Vp8EncProba proba)
     {
         const int numBlocks = 8;
-        Vp8SegmentInfo dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
-        int lambda = dqm.LambdaUv;
-        Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.UOffEnc);
-        Span<byte> tmpDst = it.YuvOut2.AsSpan(Vp8EncIterator.UOffEnc);
-        Span<byte> dst0 = it.YuvOut.AsSpan(Vp8EncIterator.UOffEnc);
-        Span<byte> dst = dst0;
+        var dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
+        var lambda = dqm.LambdaUv;
+        var src = it.YuvIn.AsSpan(Vp8EncIterator.UOffEnc);
+        var tmpDst = it.YuvOut2.AsSpan(Vp8EncIterator.UOffEnc);
+        var dst0 = it.YuvOut.AsSpan(Vp8EncIterator.UOffEnc);
+        var dst = dst0;
         var rdBest = new Vp8ModeScore();
         var rdUv = new Vp8ModeScore();
         var res = new Vp8Residual();
@@ -272,14 +272,14 @@ internal static unsafe class QuantEnc
                 rdBest.CopyScore(rdUv);
                 rd.ModeUv = mode;
                 rdUv.UvLevels.CopyTo(rd.UvLevels.AsSpan());
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     rd.Derr[i, 0] = rdUv.Derr[i, 0];
                     rd.Derr[i, 1] = rdUv.Derr[i, 1];
                     rd.Derr[i, 2] = rdUv.Derr[i, 2];
                 }
 
-                Span<byte> tmp = dst;
+                var tmp = dst;
                 dst = tmpDst;
                 tmpDst = tmp;
             }
@@ -299,16 +299,16 @@ internal static unsafe class QuantEnc
 
     public static int ReconstructIntra16(Vp8EncIterator it, Vp8SegmentInfo dqm, Vp8ModeScore rd, Span<byte> yuvOut, int mode)
     {
-        Span<byte> reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I16ModeOffsets[mode]);
-        Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
-        int nz = 0;
+        var reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I16ModeOffsets[mode]);
+        var src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
+        var nz = 0;
         int n;
-        Span<short> shortScratchSpan = it.Scratch2.AsSpan();
-        Span<int> scratch = it.Scratch3.AsSpan(0, 16);
+        var shortScratchSpan = it.Scratch2.AsSpan();
+        var scratch = it.Scratch3.AsSpan(0, 16);
         shortScratchSpan.Clear();
         scratch.Clear();
-        Span<short> dcTmp = shortScratchSpan.Slice(0, 16);
-        Span<short> tmp = shortScratchSpan.Slice(16, 16 * 16);
+        var dcTmp = shortScratchSpan.Slice(0, 16);
+        var tmp = shortScratchSpan.Slice(16, 16 * 16);
 
         for (n = 0; n < 16; n += 2)
         {
@@ -343,11 +343,11 @@ internal static unsafe class QuantEnc
 
     public static int ReconstructIntra4(Vp8EncIterator it, Vp8SegmentInfo dqm, Span<short> levels, Span<byte> src, Span<byte> yuvOut, int mode)
     {
-        Span<byte> reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I4ModeOffsets[mode]);
-        Span<short> tmp = it.Scratch2.AsSpan(0, 16);
-        Span<int> scratch = it.Scratch3.AsSpan(0, 16);
+        var reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I4ModeOffsets[mode]);
+        var tmp = it.Scratch2.AsSpan(0, 16);
+        var scratch = it.Scratch3.AsSpan(0, 16);
         Vp8Encoding.FTransform(src, reference, tmp, scratch);
-        int nz = QuantizeBlock(tmp, levels, ref dqm.Y1);
+        var nz = QuantizeBlock(tmp, levels, ref dqm.Y1);
         Vp8Encoding.ITransformOne(reference, tmp, yuvOut, scratch);
 
         return nz;
@@ -355,12 +355,12 @@ internal static unsafe class QuantEnc
 
     public static int ReconstructUv(Vp8EncIterator it, Vp8SegmentInfo dqm, Vp8ModeScore rd, Span<byte> yuvOut, int mode)
     {
-        Span<byte> reference = it.YuvP.AsSpan(Vp8Encoding.Vp8UvModeOffsets[mode]);
-        Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.UOffEnc);
-        int nz = 0;
+        var reference = it.YuvP.AsSpan(Vp8Encoding.Vp8UvModeOffsets[mode]);
+        var src = it.YuvIn.AsSpan(Vp8EncIterator.UOffEnc);
+        var nz = 0;
         int n;
-        Span<short> tmp = it.Scratch2.AsSpan(0, 8 * 16);
-        Span<int> scratch = it.Scratch3.AsSpan(0, 16);
+        var tmp = it.Scratch2.AsSpan(0, 8 * 16);
+        var scratch = it.Scratch3.AsSpan(0, 16);
 
         for (n = 0; n < 8; n += 2)
         {
@@ -390,29 +390,29 @@ internal static unsafe class QuantEnc
     // Refine intra16/intra4 sub-modes based on distortion only (not rate).
     public static void RefineUsingDistortion(Vp8EncIterator it, Vp8SegmentInfo[] segmentInfos, Vp8ModeScore rd, bool tryBothModes, bool refineUvMode, int mbHeaderLimit)
     {
-        long bestScore = Vp8ModeScore.MaxCost;
-        int nz = 0;
+        var bestScore = Vp8ModeScore.MaxCost;
+        var nz = 0;
         int mode;
-        bool isI16 = tryBothModes || it.CurrentMacroBlockInfo.MacroBlockType == Vp8MacroBlockType.I16X16;
-        Vp8SegmentInfo dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
+        var isI16 = tryBothModes || it.CurrentMacroBlockInfo.MacroBlockType == Vp8MacroBlockType.I16X16;
+        var dqm = segmentInfos[it.CurrentMacroBlockInfo.Segment];
 
         // Some empiric constants, of approximate order of magnitude.
         const int lambdaDi16 = 106;
         const int lambdaDi4 = 11;
         const int lambdaDuv = 120;
-        long scoreI4 = dqm.I4Penalty;
+        var scoreI4 = dqm.I4Penalty;
         long i4BitSum = 0;
-        long bitLimit = tryBothModes
+        var bitLimit = tryBothModes
             ? mbHeaderLimit
             : Vp8ModeScore.MaxCost; // no early-out allowed.
 
         if (isI16)
         {
-            int bestMode = -1;
-            Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
+            var bestMode = -1;
+            var src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc);
             for (mode = 0; mode < WebpConstants.NumPredModes; ++mode)
             {
-                Span<byte> reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I16ModeOffsets[mode]);
+                var reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I16ModeOffsets[mode]);
                 long score = (LossyUtils.Vp8_Sse16X16(src, reference) * WebpConstants.RdDistoMult) + (WebpConstants.Vp8FixedCostsI16[mode] * lambdaDi16);
 
                 if (mode > 0 && WebpConstants.Vp8FixedCostsI16[mode] > bitLimit)
@@ -451,15 +451,15 @@ internal static unsafe class QuantEnc
             it.StartI4();
             do
             {
-                int bestI4Mode = -1;
-                long bestI4Score = Vp8ModeScore.MaxCost;
-                Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc + WebpLookupTables.Vp8Scan[it.I4]);
-                short[] modeCosts = it.GetCostModeI4(rd.ModesI4);
+                var bestI4Mode = -1;
+                var bestI4Score = Vp8ModeScore.MaxCost;
+                var src = it.YuvIn.AsSpan(Vp8EncIterator.YOffEnc + WebpLookupTables.Vp8Scan[it.I4]);
+                var modeCosts = it.GetCostModeI4(rd.ModesI4);
 
                 it.MakeIntra4Preds();
                 for (mode = 0; mode < WebpConstants.NumBModes; ++mode)
                 {
-                    Span<byte> reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I4ModeOffsets[mode]);
+                    var reference = it.YuvP.AsSpan(Vp8Encoding.Vp8I4ModeOffsets[mode]);
                     long score = (LossyUtils.Vp8_Sse4X4(src, reference) * WebpConstants.RdDistoMult) + (modeCosts[mode] * lambdaDi4);
                     if (score < bestI4Score)
                     {
@@ -480,7 +480,7 @@ internal static unsafe class QuantEnc
                 else
                 {
                     // Reconstruct partial block inside YuvOut2 buffer
-                    Span<byte> tmpDst = it.YuvOut2.AsSpan(Vp8EncIterator.YOffEnc + WebpLookupTables.Vp8Scan[it.I4]);
+                    var tmpDst = it.YuvOut2.AsSpan(Vp8EncIterator.YOffEnc + WebpLookupTables.Vp8Scan[it.I4]);
                     nz |= ReconstructIntra4(it, dqm, rd.YAcLevels.AsSpan(it.I4 * 16, 16), src, tmpDst, bestI4Mode) << it.I4;
                 }
             }
@@ -503,12 +503,12 @@ internal static unsafe class QuantEnc
         // ... and UV!
         if (refineUvMode)
         {
-            int bestMode = -1;
-            long bestUvScore = Vp8ModeScore.MaxCost;
-            Span<byte> src = it.YuvIn.AsSpan(Vp8EncIterator.UOffEnc);
+            var bestMode = -1;
+            var bestUvScore = Vp8ModeScore.MaxCost;
+            var src = it.YuvIn.AsSpan(Vp8EncIterator.UOffEnc);
             for (mode = 0; mode < WebpConstants.NumPredModes; ++mode)
             {
-                Span<byte> reference = it.YuvP.AsSpan(Vp8Encoding.Vp8UvModeOffsets[mode]);
+                var reference = it.YuvP.AsSpan(Vp8Encoding.Vp8UvModeOffsets[mode]);
                 long score = (LossyUtils.Vp8_Sse16X8(src, reference) * WebpConstants.RdDistoMult) + (WebpConstants.Vp8FixedCostsUv[mode] * lambdaDuv);
                 if (score < bestUvScore)
                 {
@@ -529,7 +529,7 @@ internal static unsafe class QuantEnc
     [MethodImpl(InliningOptions.ShortMethod)]
     public static int Quantize2Blocks(Span<short> input, Span<short> output, ref Vp8Matrix mtx)
     {
-        int nz = QuantizeBlock(input.Slice(0, 16), output.Slice(0, 16), ref mtx) << 0;
+        var nz = QuantizeBlock(input.Slice(0, 16), output.Slice(0, 16), ref mtx) << 0;
         nz |= QuantizeBlock(input.Slice(1 * 16, 16), output.Slice(1 * 16, 16), ref mtx) << 1;
         return nz;
     }
@@ -695,19 +695,19 @@ internal static unsafe class QuantEnc
             else
 #endif
         {
-            int last = -1;
+            var last = -1;
             int n;
             for (n = 0; n < 16; ++n)
             {
                 int j = Zigzag[n];
-                bool sign = input[j] < 0;
-                uint coeff = (uint)((sign ? -input[j] : input[j]) + mtx.Sharpen[j]);
+                var sign = input[j] < 0;
+                var coeff = (uint)((sign ? -input[j] : input[j]) + mtx.Sharpen[j]);
                 if (coeff > mtx.ZThresh[j])
                 {
                     uint q = mtx.Q[j];
                     uint iQ = mtx.IQ[j];
-                    uint b = mtx.Bias[j];
-                    int level = QuantDiv(coeff, iQ, b);
+                    var b = mtx.Bias[j];
+                    var level = QuantDiv(coeff, iQ, b);
                     if (level > MaxLevel)
                     {
                         level = MaxLevel;
@@ -741,7 +741,7 @@ internal static unsafe class QuantEnc
     public static int QuantizeSingle(Span<short> v, ref Vp8Matrix mtx)
     {
         int v0 = v[0];
-        bool sign = v0 < 0;
+        var sign = v0 < 0;
         if (sign)
         {
             v0 = -v0;
@@ -749,8 +749,8 @@ internal static unsafe class QuantEnc
 
         if (v0 > (int)mtx.ZThresh[0])
         {
-            int qV = QuantDiv((uint)v0, mtx.IQ[0], mtx.Bias[0]) * mtx.Q[0];
-            int err = v0 - qV;
+            var qV = QuantDiv((uint)v0, mtx.IQ[0], mtx.Bias[0]) * mtx.Q[0];
+            var err = v0 - qV;
             v[0] = (short)(sign ? -qV : qV);
             return (sign ? -err : err) >> DSCALE;
         }
@@ -770,19 +770,19 @@ internal static unsafe class QuantEnc
         // Final errors {err1,err2,err3} are preserved and later restored
         // as top[]/left[] on the next block.
 #pragma warning restore SA1005 // Single line comments should begin with single space
-        for (int ch = 0; ch <= 1; ++ch)
+        for (var ch = 0; ch <= 1; ++ch)
         {
-            Span<sbyte> top = it.TopDerr.AsSpan((it.X * 4) + ch, 2);
-            Span<sbyte> left = it.LeftDerr.AsSpan(ch, 2);
-            Span<short> c = tmp.Slice(ch * 4 * 16, 4 * 16);
+            var top = it.TopDerr.AsSpan((it.X * 4) + ch, 2);
+            var left = it.LeftDerr.AsSpan(ch, 2);
+            var c = tmp.Slice(ch * 4 * 16, 4 * 16);
             c[0] += (short)(((C1 * top[0]) + (C2 * left[0])) >> (DSHIFT - DSCALE));
-            int err0 = QuantizeSingle(c, ref mtx);
+            var err0 = QuantizeSingle(c, ref mtx);
             c[1 * 16] += (short)(((C1 * top[1]) + (C2 * err0)) >> (DSHIFT - DSCALE));
-            int err1 = QuantizeSingle(c.Slice(1 * 16), ref mtx);
+            var err1 = QuantizeSingle(c.Slice(1 * 16), ref mtx);
             c[2 * 16] += (short)(((C1 * err0) + (C2 * left[1])) >> (DSHIFT - DSCALE));
-            int err2 = QuantizeSingle(c.Slice(2 * 16), ref mtx);
+            var err2 = QuantizeSingle(c.Slice(2 * 16), ref mtx);
             c[3 * 16] += (short)(((C1 * err1) + (C2 * err2)) >> (DSHIFT - DSCALE));
-            int err3 = QuantizeSingle(c.Slice(3 * 16), ref mtx);
+            var err3 = QuantizeSingle(c.Slice(3 * 16), ref mtx);
 
             rd.Derr[ch, 0] = err1;
             rd.Derr[ch, 1] = err2;
@@ -793,8 +793,8 @@ internal static unsafe class QuantEnc
     [MethodImpl(InliningOptions.ShortMethod)]
     private static bool IsFlatSource16(Span<byte> src)
     {
-        uint v = src[0] * 0x01010101u;
-        Span<byte> vSpan = BitConverter.GetBytes(v).AsSpan();
+        var v = src[0] * 0x01010101u;
+        var vSpan = BitConverter.GetBytes(v).AsSpan();
         for (nint i = 0; i < 16; i++)
         {
             if (!src.Slice(0, 4).SequenceEqual(vSpan) || !src.Slice(4, 4).SequenceEqual(vSpan) ||
@@ -812,9 +812,9 @@ internal static unsafe class QuantEnc
     [MethodImpl(InliningOptions.ShortMethod)]
     private static bool IsFlat(Span<short> levels, int numBlocks, int thresh)
     {
-        int score = 0;
-        ref short levelsRef = ref MemoryMarshal.GetReference(levels);
-        int offset = 0;
+        var score = 0;
+        ref var levelsRef = ref MemoryMarshal.GetReference(levels);
+        var offset = 0;
         while (numBlocks-- > 0)
         {
             for (nint i = 1; i < 16; i++)

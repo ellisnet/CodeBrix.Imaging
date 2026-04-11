@@ -77,9 +77,9 @@ internal sealed class SystemFontCollection : IReadOnlySystemFontCollection, IRea
         IEnumerable<string> paths;
         MacSystemFontsEnumerator nativeEnumerator = null;
 
-        bool forceDirectoryEnumeration =
+        var forceDirectoryEnumeration =
             AppContext.TryGetSwitch("Switch.CodeBrix.Imaging.Fonts.DoNotUseNativeSystemFontsEnumeration",
-                out bool isEnabled) && isEnabled;
+                out var isEnabled) && isEnabled;
         if (!forceDirectoryEnumeration && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             nativeEnumerator = new MacSystemFontsEnumerator();
@@ -91,8 +91,8 @@ internal sealed class SystemFontCollection : IReadOnlySystemFontCollection, IRea
         }
         else
         {
-            string[] expanded = StandardFontLocations.Select(x => Environment.ExpandEnvironmentVariables(x)).ToArray();
-            string[] existingDirectories = expanded.Where(x => Directory.Exists(x)).ToArray();
+            var expanded = StandardFontLocations.Select(x => Environment.ExpandEnvironmentVariables(x)).ToArray();
+            var existingDirectories = expanded.Where(x => Directory.Exists(x)).ToArray();
 
             // We do this to provide a consistent experience with case sensitive file systems.
             paths = existingDirectories
@@ -155,7 +155,7 @@ internal sealed class SystemFontCollection : IReadOnlySystemFontCollection, IRea
     {
         var collection = new FontCollection(searchDirectories);
 
-        foreach (string path in paths)
+        foreach (var path in paths)
         {
             try
             {

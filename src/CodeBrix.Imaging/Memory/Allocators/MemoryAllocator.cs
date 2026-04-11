@@ -98,7 +98,7 @@ public abstract class MemoryAllocator
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of negative length={totalLength}.");
         }
 
-        ulong totalLengthInBytes = (ulong)totalLength * (ulong)Unsafe.SizeOf<T>();
+        var totalLengthInBytes = (ulong)totalLength * (ulong)Unsafe.SizeOf<T>();
         if (totalLengthInBytes > (ulong)this.MemoryGroupAllocationLimitBytes)
         {
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of length={totalLengthInBytes} that exceeded the limit {this.MemoryGroupAllocationLimitBytes}.");

@@ -67,7 +67,7 @@ public partial struct L8 : IPixel<L8>, IPackedVector<byte>
     [MethodImpl(InliningOptions.ShortMethod)]
     public readonly Vector4 ToVector4()
     {
-        float rgb = this.PackedValue / 255F;
+        var rgb = this.PackedValue / 255F;
         return new Vector4(rgb, rgb, rgb, 1F);
     }
 

@@ -67,7 +67,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
     /// </summary>
     public UnmanagedMemoryHandle Rent()
     {
-        UnmanagedMemoryHandle[] buffersLocal = this.buffers;
+        var buffersLocal = this.buffers;
 
         // Avoid taking the lock if the pool is is over it's limit:
         if (this.index == buffersLocal.Length || this.Finalized)
@@ -101,7 +101,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
     /// </summary>
     public UnmanagedMemoryHandle[] Rent(int bufferCount)
     {
-        UnmanagedMemoryHandle[] buffersLocal = this.buffers;
+        var buffersLocal = this.buffers;
 
         // Avoid taking the lock if the pool is is over it's limit:
         if (this.index + bufferCount >= buffersLocal.Length + 1 || this.Finalized)
@@ -119,14 +119,14 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
             }
 
             result = new UnmanagedMemoryHandle[bufferCount];
-            for (int i = 0; i < bufferCount; i++)
+            for (var i = 0; i < bufferCount; i++)
             {
                 result[i] = buffersLocal[this.index];
                 buffersLocal[this.index++] = UnmanagedMemoryHandle.NullHandle;
             }
         }
 
-        for (int i = 0; i < result.Length; i++)
+        for (var i = 0; i < result.Length; i++)
         {
             if (result[i].IsInvalid)
             {
@@ -171,9 +171,9 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
                 return false;
             }
 
-            for (int i = bufferHandles.Length - 1; i >= 0; i--)
+            for (var i = bufferHandles.Length - 1; i >= 0; i--)
             {
-                ref UnmanagedMemoryHandle h = ref bufferHandles[i];
+                ref var h = ref bufferHandles[i];
                 Guard.IsTrue(h.IsValid, nameof(bufferHandles), "Returning NullHandle to the pool is not allowed.");
                 this.buffers[--this.index] = h;
             }
@@ -186,9 +186,9 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
     {
         lock (this.buffers)
         {
-            for (int i = this.index; i < this.buffers.Length; i++)
+            for (var i = this.index; i < this.buffers.Length; i++)
             {
-                ref UnmanagedMemoryHandle buffer = ref this.buffers[i];
+                ref var buffer = ref this.buffers[i];
                 if (buffer.IsInvalid)
                 {
                     break;
@@ -221,7 +221,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
 
             // Invoke the timer callback more frequently, than trimSettings.TrimPeriodMilliseconds.
             // We are checking in the callback if enough time passed since the last trimming. If not, we do nothing.
-            int period = settings.TrimPeriodMilliseconds / 4;
+            var period = settings.TrimPeriodMilliseconds / 4;
             if (trimTimer == null)
             {
                 trimTimer = new Timer(_ => TimerCallback(), null, period, period);
@@ -240,7 +240,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
         lock (AllPools)
         {
             // Remove lost references from the list:
-            for (int i = AllPools.Count - 1; i >= 0; i--)
+            for (var i = AllPools.Count - 1; i >= 0; i--)
             {
                 if (!AllPools[i].TryGetTarget(out _))
                 {
@@ -248,9 +248,9 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
                 }
             }
 
-            foreach (WeakReference<UniformUnmanagedMemoryPool> weakPoolRef in AllPools)
+            foreach (var weakPoolRef in AllPools)
             {
-                if (weakPoolRef.TryGetTarget(out UniformUnmanagedMemoryPool pool))
+                if (weakPoolRef.TryGetTarget(out var pool))
                 {
                     pool.Trim();
                 }
@@ -265,9 +265,9 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
             return false;
         }
 
-        UnmanagedMemoryHandle[] buffersLocal = this.buffers;
+        var buffersLocal = this.buffers;
 
-        bool isHighPressure = this.IsHighMemoryPressure();
+        var isHighPressure = this.IsHighMemoryPressure();
 
         if (isHighPressure)
         {
@@ -275,7 +275,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
             return true;
         }
 
-        long millisecondsSinceLastTrim = Stopwatch.ElapsedMilliseconds - this.lastTrimTimestamp;
+        var millisecondsSinceLastTrim = Stopwatch.ElapsedMilliseconds - this.lastTrimTimestamp;
         if (millisecondsSinceLastTrim > this.trimSettings.TrimPeriodMilliseconds)
         {
             return this.TrimLowPressure(buffersLocal);
@@ -289,7 +289,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
         lock (buffersLocal)
         {
             // Trim all:
-            for (int i = this.index; i < buffersLocal.Length && buffersLocal[i].IsValid; i++)
+            for (var i = this.index; i < buffersLocal.Length && buffersLocal[i].IsValid; i++)
             {
                 buffersLocal[i].Free();
             }
@@ -301,17 +301,17 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
         lock (buffersLocal)
         {
             // Count the buffers in the pool:
-            int retainedCount = 0;
-            for (int i = this.index; i < buffersLocal.Length && buffersLocal[i].IsValid; i++)
+            var retainedCount = 0;
+            for (var i = this.index; i < buffersLocal.Length && buffersLocal[i].IsValid; i++)
             {
                 retainedCount++;
             }
 
             // Trim 'trimRate' of 'retainedCount':
-            int trimCount = (int)Math.Ceiling(retainedCount * this.trimSettings.Rate);
-            int trimStart = this.index + retainedCount - 1;
-            int trimStop = this.index + retainedCount - trimCount;
-            for (int i = trimStart; i >= trimStop; i--)
+            var trimCount = (int)Math.Ceiling(retainedCount * this.trimSettings.Rate);
+            var trimStart = this.index + retainedCount - 1;
+            var trimStop = this.index + retainedCount - trimCount;
+            for (var i = trimStart; i >= trimStop; i--)
             {
                 buffersLocal[i].Free();
             }
@@ -324,7 +324,7 @@ internal partial class UniformUnmanagedMemoryPool : System.Runtime.ConstrainedEx
 
     private bool IsHighMemoryPressure()
     {
-        GCMemoryInfo memoryInfo = GC.GetGCMemoryInfo();
+        var memoryInfo = GC.GetGCMemoryInfo();
         return memoryInfo.MemoryLoadBytes >= memoryInfo.HighMemoryLoadThresholdBytes * this.trimSettings.HighPressureThresholdRate;
     }
 

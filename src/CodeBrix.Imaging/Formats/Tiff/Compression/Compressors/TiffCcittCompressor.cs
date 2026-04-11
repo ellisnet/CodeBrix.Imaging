@@ -394,7 +394,7 @@ internal abstract class TiffCcittCompressor : TiffBaseCompressor
     {
         DebugGuard.MustBeGreaterThanOrEqualTo(runLength, MakeupRunLength[0], nameof(runLength));
 
-        for (int i = 0; i < MakeupRunLength.Length - 1; i++)
+        for (var i = 0; i < MakeupRunLength.Length - 1; i++)
         {
             if (MakeupRunLength[i] <= runLength && MakeupRunLength[i + 1] > runLength)
             {
@@ -469,8 +469,8 @@ internal abstract class TiffCcittCompressor : TiffBaseCompressor
     {
         while (codeLength > 0)
         {
-            int bitNumber = (int)codeLength;
-            bool bit = (code & (1 << (bitNumber - 1))) != 0;
+            var bitNumber = (int)codeLength;
+            var bit = (code & (1 << (bitNumber - 1))) != 0;
             if (bit)
             {
                 BitWriterUtils.WriteBit(compressedData, this.bytePosition, this.bitPosition);
@@ -502,7 +502,7 @@ internal abstract class TiffCcittCompressor : TiffBaseCompressor
         DebugGuard.IsTrue(pixelsAsGray.Length % height == 0, "Values must be equals");
 
         this.compressedDataBuffer.Clear();
-        Span<byte> compressedData = this.compressedDataBuffer.GetSpan();
+        var compressedData = this.compressedDataBuffer.GetSpan();
 
         this.bytePosition = 0;
         this.bitPosition = 0;
@@ -510,7 +510,7 @@ internal abstract class TiffCcittCompressor : TiffBaseCompressor
         this.CompressStrip(pixelsAsGray, height, compressedData);
 
         // Write the compressed data to the stream.
-        int bytesToWrite = this.bitPosition != 0 ? this.bytePosition + 1 : this.bytePosition;
+        var bytesToWrite = this.bitPosition != 0 ? this.bytePosition + 1 : this.bytePosition;
         this.Output.Write(compressedData.Slice(0, bytesToWrite));
     }
 
@@ -529,7 +529,7 @@ internal abstract class TiffCcittCompressor : TiffBaseCompressor
     public override void Initialize(int rowsPerStrip)
     {
         // This is too much memory allocated, but just 1 bit per pixel will not do, if the compression rate is not good.
-        int maxNeededBytes = this.Width * rowsPerStrip;
+        var maxNeededBytes = this.Width * rowsPerStrip;
         this.compressedDataBuffer = this.Allocator.Allocate<byte>(maxNeededBytes);
     }
 }

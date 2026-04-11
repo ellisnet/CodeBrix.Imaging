@@ -69,7 +69,7 @@ internal abstract partial class MemoryGroup<T>
             AllocationOptions options)
         {
             var result = new IMemoryOwner<T>[pooledBuffers.Length];
-            for (int i = 0; i < pooledBuffers.Length - 1; i++)
+            for (var i = 0; i < pooledBuffers.Length - 1; i++)
             {
                 var currentBuffer = ObservedBuffer.Create(pooledBuffers[i], bufferLength, options);
                 result[i] = currentBuffer;
@@ -94,7 +94,7 @@ internal abstract partial class MemoryGroup<T>
             }
             else
             {
-                foreach (IMemoryOwner<T> memoryOwner in this.memoryOwners)
+                foreach (var memoryOwner in this.memoryOwners)
                 {
                     if (memoryOwner is IRefCounted unmanagedBuffer)
                     {
@@ -113,7 +113,7 @@ internal abstract partial class MemoryGroup<T>
             }
             else
             {
-                foreach (IMemoryOwner<T> memoryOwner in this.memoryOwners)
+                foreach (var memoryOwner in this.memoryOwners)
                 {
                     if (memoryOwner is IRefCounted unmanagedBuffer)
                     {
@@ -151,7 +151,7 @@ internal abstract partial class MemoryGroup<T>
             }
             else
             {
-                foreach (IMemoryOwner<T> memoryOwner in this.memoryOwners)
+                foreach (var memoryOwner in this.memoryOwners)
                 {
                     memoryOwner.Dispose();
                 }
@@ -211,7 +211,7 @@ internal abstract partial class MemoryGroup<T>
 
             public override unsafe MemoryHandle Pin(int elementIndex = 0)
             {
-                void* pbData = Unsafe.Add<T>(this.handle.Pointer, elementIndex);
+                var pbData = Unsafe.Add<T>(this.handle.Pointer, elementIndex);
                 return new MemoryHandle(pbData);
             }
 

@@ -44,7 +44,7 @@ internal static class EnumerableExtensions
     /// </returns>
     private static IEnumerable<int> RangeIterator(int fromInclusive, Func<int, bool> toDelegate, int step)
     {
-        int i = fromInclusive;
+        var i = fromInclusive;
         while (toDelegate(i))
         {
             yield return i;

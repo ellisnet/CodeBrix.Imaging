@@ -42,10 +42,10 @@ public class ImageSecurityTests
     public void LoadPixelData_WithRgba32Array_CreatesImageWithCorrectDimensions()
     {
         // Arrange
-        int width = 4;
-        int height = 3;
+        var width = 4;
+        var height = 3;
         var pixels = new Rgba32[width * height];
-        for (int i = 0; i < pixels.Length; i++)
+        for (var i = 0; i < pixels.Length; i++)
         {
             pixels[i] = new Rgba32(255, 0, 0, 255); // Red
         }
@@ -63,8 +63,8 @@ public class ImageSecurityTests
     public void LoadPixelData_WithRgba32Array_PreservesPixelValues()
     {
         // Arrange
-        int width = 3;
-        int height = 2;
+        var width = 3;
+        var height = 2;
         var pixels = new Rgba32[width * height];
         pixels[0] = new Rgba32(255, 0, 0, 255);   // Red
         pixels[1] = new Rgba32(0, 255, 0, 255);   // Green
@@ -90,17 +90,17 @@ public class ImageSecurityTests
     public void LoadPixelData_WithByteArray_CreatesImageWithCorrectDimensions()
     {
         // Arrange - Rgba32 is 4 bytes per pixel
-        int width = 5;
-        int height = 4;
-        int bytesPerPixel = 4; // Rgba32
+        var width = 5;
+        var height = 4;
+        var bytesPerPixel = 4; // Rgba32
         var data = new byte[width * height * bytesPerPixel];
 
         // Fill with a pattern: each pixel gets (R=x, G=y, B=128, A=255)
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int offset = (y * width + x) * bytesPerPixel;
+                var offset = (y * width + x) * bytesPerPixel;
                 data[offset + 0] = (byte)(x * 50);  // R
                 data[offset + 1] = (byte)(y * 80);  // G
                 data[offset + 2] = 128;              // B
@@ -121,9 +121,9 @@ public class ImageSecurityTests
     public void LoadPixelData_WithByteArray_PreservesPixelValues()
     {
         // Arrange - Rgba32 is 4 bytes per pixel (R, G, B, A order in memory)
-        int width = 2;
-        int height = 2;
-        int bytesPerPixel = 4;
+        var width = 2;
+        var height = 2;
+        var bytesPerPixel = 4;
         var data = new byte[width * height * bytesPerPixel];
 
         // Pixel (0,0) = Red
@@ -150,15 +150,15 @@ public class ImageSecurityTests
     public void LoadPixelData_WithReadOnlySpan_CreatesImageWithCorrectDimensions()
     {
         // Arrange
-        int width = 3;
-        int height = 3;
+        var width = 3;
+        var height = 3;
         var pixels = new Rgba32[width * height];
-        for (int i = 0; i < pixels.Length; i++)
+        for (var i = 0; i < pixels.Length; i++)
         {
             pixels[i] = new Rgba32(100, 150, 200, 255);
         }
 
-        ReadOnlySpan<Rgba32> span = new ReadOnlySpan<Rgba32>(pixels);
+        var span = new ReadOnlySpan<Rgba32>(pixels);
 
         // Act
         using var image = Image.LoadPixelData<Rgba32>(span, width, height, PngFormat.Instance);
@@ -174,11 +174,11 @@ public class ImageSecurityTests
     public void LoadPixelData_WithConfiguration_CreatesImageWithCorrectDimensions()
     {
         // Arrange
-        int width = 6;
-        int height = 4;
+        var width = 6;
+        var height = 4;
         var config = Configuration.Default;
         var pixels = new Rgba32[width * height];
-        for (int i = 0; i < pixels.Length; i++)
+        for (var i = 0; i < pixels.Length; i++)
         {
             pixels[i] = new Rgba32(50, 100, 150, 200);
         }
@@ -197,15 +197,15 @@ public class ImageSecurityTests
     public void LoadPixelData_WithExtraData_UsesOnlyRequiredPixels()
     {
         // Arrange - provide more data than needed
-        int width = 2;
-        int height = 2;
+        var width = 2;
+        var height = 2;
         var pixels = new Rgba32[width * height + 10]; // Extra pixels
         pixels[0] = new Rgba32(255, 0, 0, 255);
         pixels[1] = new Rgba32(0, 255, 0, 255);
         pixels[2] = new Rgba32(0, 0, 255, 255);
         pixels[3] = new Rgba32(255, 255, 255, 255);
         // Extra pixels should be ignored
-        for (int i = 4; i < pixels.Length; i++)
+        for (var i = 4; i < pixels.Length; i++)
         {
             pixels[i] = new Rgba32(99, 99, 99, 99);
         }
@@ -243,8 +243,8 @@ public class ImageSecurityTests
     public void LoadPixelData_WithBgra32_PreservesPixelValues()
     {
         // Arrange
-        int width = 2;
-        int height = 2;
+        var width = 2;
+        var height = 2;
         var pixels = new Bgra32[width * height];
         pixels[0] = new Bgra32(255, 0, 0, 255);   // Red
         pixels[1] = new Bgra32(0, 255, 0, 255);   // Green
@@ -268,8 +268,8 @@ public class ImageSecurityTests
     public void LoadPixelData_WithModerateDimensions_CreatesImageSuccessfully()
     {
         // Arrange - moderate size that exercises the width * height calculation
-        int width = 1000;
-        int height = 1000;
+        var width = 1000;
+        var height = 1000;
         var pixels = new Rgba32[width * height];
         var cornerPixel = new Rgba32(200, 100, 50, 255);
         pixels[0] = cornerPixel;
@@ -290,8 +290,8 @@ public class ImageSecurityTests
     public void LoadPixelData_WithInsufficientData_ThrowsArgumentException()
     {
         // Arrange - provide fewer pixels than width * height
-        int width = 10;
-        int height = 10;
+        var width = 10;
+        var height = 10;
         var pixels = new Rgba32[50]; // Only 50 pixels, need 100
 
         // Act & Assert
@@ -304,8 +304,8 @@ public class ImageSecurityTests
     public void LoadPixelData_SetsExpectedFormat()
     {
         // Arrange
-        int width = 2;
-        int height = 2;
+        var width = 2;
+        var height = 2;
         var pixels = new Rgba32[width * height];
 
         // Act - test with different formats
@@ -428,9 +428,9 @@ public class ImageSecurityTests
         using var image = new Image<Rgba32>(3, 3, backgroundColor);
 
         // Assert - all pixels should have the background color
-        for (int y = 0; y < 3; y++)
+        for (var y = 0; y < 3; y++)
         {
-            for (int x = 0; x < 3; x++)
+            for (var x = 0; x < 3; x++)
             {
                 Assert.Equal(backgroundColor, image[x, y]);
             }
@@ -692,8 +692,8 @@ public class ImageSecurityTests
     public void PngRoundtrip_PreservesExactPixelValues_SolidColor()
     {
         // Arrange - create an image with a known solid color
-        int width = 50;
-        int height = 50;
+        var width = 50;
+        var height = 50;
         var expectedColor = new Rgba32(42, 84, 126, 255);
         using var original = new Image<Rgba32>(width, height, expectedColor);
 
@@ -707,9 +707,9 @@ public class ImageSecurityTests
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Assert.Equal(expectedColor, decoded[x, y]);
             }
@@ -722,13 +722,13 @@ public class ImageSecurityTests
     public void PngRoundtrip_PreservesExactPixelValues_Gradient()
     {
         // Arrange - create a gradient image with unique pixel values
-        int width = 100;
-        int height = 50;
+        var width = 100;
+        var height = 50;
         using var original = new Image<Rgba32>(width, height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 original[x, y] = new Rgba32(
                     (byte)(x * 255 / (width - 1)),
@@ -748,9 +748,9 @@ public class ImageSecurityTests
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 var expected = original[x, y];
                 var actual = decoded[x, y];
@@ -766,14 +766,14 @@ public class ImageSecurityTests
     public void PngRoundtrip_PreservesExactPixelValues_RandomPattern()
     {
         // Arrange - create an image with a pseudo-random pattern to stress the deflate engine
-        int width = 64;
-        int height = 64;
+        var width = 64;
+        var height = 64;
         using var original = new Image<Rgba32>(width, height);
         var rng = new Random(12345); // Fixed seed for reproducibility
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 original[x, y] = new Rgba32(
                     (byte)rng.Next(256),
@@ -794,9 +794,9 @@ public class ImageSecurityTests
         Assert.Equal(height, decoded.Height);
 
         var rng2 = new Random(12345); // Same seed for verification
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 var expected = new Rgba32(
                     (byte)rng2.Next(256),
@@ -815,15 +815,15 @@ public class ImageSecurityTests
     public void PngRoundtrip_PreservesTransparency()
     {
         // Arrange - create an image with varying alpha values
-        int width = 20;
-        int height = 20;
+        var width = 20;
+        var height = 20;
         using var original = new Image<Rgba32>(width, height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                byte alpha = (byte)(x * 255 / (width - 1));
+                var alpha = (byte)(x * 255 / (width - 1));
                 original[x, y] = new Rgba32(200, 100, 50, alpha);
             }
         }
@@ -835,9 +835,9 @@ public class ImageSecurityTests
         using var decoded = Image.Load<Rgba32>(stream);
 
         // Assert
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Assert.Equal(original[x, y], decoded[x, y]);
             }
@@ -850,16 +850,16 @@ public class ImageSecurityTests
     public void PngRoundtrip_LargerImage_PreservesPixelIntegrity()
     {
         // Arrange - larger image to exercise deflate with multiple compression blocks
-        int width = 256;
-        int height = 256;
+        var width = 256;
+        var height = 256;
         using var original = new Image<Rgba32>(width, height);
 
         // Create a checkerboard pattern
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                bool isWhite = ((x / 8) + (y / 8)) % 2 == 0;
+                var isWhite = ((x / 8) + (y / 8)) % 2 == 0;
                 original[x, y] = isWhite
                     ? new Rgba32(255, 255, 255, 255)
                     : new Rgba32(0, 0, 0, 255);
@@ -876,9 +876,9 @@ public class ImageSecurityTests
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Assert.Equal(original[x, y], decoded[x, y]);
             }
@@ -906,10 +906,10 @@ public class ImageSecurityTests
         Assert.Equal(originalTyped.Height, decoded.Height);
 
         // Verify pixel-by-pixel that re-encoding a PNG preserves the data
-        int mismatchCount = 0;
-        for (int y = 0; y < decoded.Height; y++)
+        var mismatchCount = 0;
+        for (var y = 0; y < decoded.Height; y++)
         {
-            for (int x = 0; x < decoded.Width; x++)
+            for (var x = 0; x < decoded.Width; x++)
             {
                 if (!originalTyped[x, y].Equals(decoded[x, y]))
                 {
@@ -936,12 +936,12 @@ public class ImageSecurityTests
     public void LosslessFormat_Roundtrip_PreservesPixelValues(string formatName)
     {
         // Arrange - create a small image with known pixel values
-        int width = 10;
-        int height = 10;
+        var width = 10;
+        var height = 10;
         using var original = new Image<Rgba32>(width, height);
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 original[x, y] = new Rgba32(
                     (byte)(x * 25),
@@ -971,9 +971,9 @@ public class ImageSecurityTests
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Assert.Equal(original[x, y], decoded[x, y]);
             }
@@ -986,8 +986,8 @@ public class ImageSecurityTests
     public void GifRoundtrip_PreservesImageDimensions()
     {
         // Arrange
-        int width = 20;
-        int height = 15;
+        var width = 20;
+        var height = 15;
         using var original = new Image<Rgba32>(width, height, new Rgba32(100, 100, 100, 255));
 
         // Act
@@ -1006,8 +1006,8 @@ public class ImageSecurityTests
     public void JpegRoundtrip_PreservesImageDimensions()
     {
         // Arrange
-        int width = 30;
-        int height = 20;
+        var width = 30;
+        var height = 20;
         using var original = new Image<Rgba32>(width, height, new Rgba32(100, 150, 200, 255));
 
         // Act
@@ -1026,8 +1026,8 @@ public class ImageSecurityTests
     public void WebpRoundtrip_PreservesImageDimensions()
     {
         // Arrange
-        int width = 25;
-        int height = 20;
+        var width = 25;
+        var height = 20;
         using var original = new Image<Rgba32>(width, height, new Rgba32(80, 120, 160, 255));
 
         // Act
@@ -1050,12 +1050,12 @@ public class ImageSecurityTests
     public void LoadPixelData_then_PngSave_then_Load_PreservesPixels()
     {
         // Arrange - create image from raw pixel data
-        int width = 8;
-        int height = 8;
+        var width = 8;
+        var height = 8;
         var pixels = new Rgba32[width * height];
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 pixels[y * width + x] = new Rgba32(
                     (byte)(x * 32),
@@ -1076,9 +1076,9 @@ public class ImageSecurityTests
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 var expected = pixels[y * width + x];
                 Assert.Equal(expected, decoded[x, y]);
@@ -1096,10 +1096,10 @@ public class ImageSecurityTests
 
         try
         {
-            int width = 5;
-            int height = 5;
+            var width = 5;
+            var height = 5;
             var pixels = new Rgba32[width * height];
-            for (int i = 0; i < pixels.Length; i++)
+            for (var i = 0; i < pixels.Length; i++)
             {
                 pixels[i] = new Rgba32((byte)(i * 10), (byte)(i * 5), (byte)(255 - i * 10), 255);
             }
@@ -1114,10 +1114,10 @@ public class ImageSecurityTests
             Assert.Equal(width, loaded.Width);
             Assert.Equal(height, loaded.Height);
 
-            for (int i = 0; i < pixels.Length; i++)
+            for (var i = 0; i < pixels.Length; i++)
             {
-                int x = i % width;
-                int y = i / width;
+                var x = i % width;
+                var y = i / width;
                 Assert.Equal(pixels[i], loaded[x, y]);
             }
 
@@ -1137,8 +1137,8 @@ public class ImageSecurityTests
     public void LoadPixelDataFromBgra_WithByteArray_CorrectlyConvertsToRgba()
     {
         // Arrange - BGRA byte data (B, G, R, A order per pixel)
-        int width = 2;
-        int height = 2;
+        var width = 2;
+        var height = 2;
         var bgraData = new byte[width * height * 4];
 
         // Pixel (0,0) = Red in BGRA: B=0, G=0, R=255, A=255
@@ -1167,8 +1167,8 @@ public class ImageSecurityTests
     public void LoadPixelDataFromBgra_SetsExpectedFormat()
     {
         // Arrange
-        int width = 2;
-        int height = 2;
+        var width = 2;
+        var height = 2;
         var bgraData = new byte[width * height * 4];
 
         // Act
@@ -1183,8 +1183,8 @@ public class ImageSecurityTests
     public void LoadPixelDataFromBgra_WithConfiguration_CreatesImageWithCorrectDimensions()
     {
         // Arrange
-        int width = 50;
-        int height = 30;
+        var width = 50;
+        var height = 30;
         var bgraData = new byte[width * height * 4];
 
         // Act
@@ -1201,8 +1201,8 @@ public class ImageSecurityTests
     public void LoadPixelDataFromBgra_WithInsufficientData_ThrowsArgumentException()
     {
         // Arrange - provide fewer bytes than width * height * 4
-        int width = 10;
-        int height = 10;
+        var width = 10;
+        var height = 10;
         var bgraData = new byte[100]; // Only 100 bytes, need 400
 
         // Act & Assert
@@ -1215,18 +1215,18 @@ public class ImageSecurityTests
     public void LoadPixelDataFromBgra_then_PngSave_then_Load_PreservesPixels()
     {
         // Arrange - create BGRA data with a known gradient pattern
-        int width = 8;
-        int height = 8;
+        var width = 8;
+        var height = 8;
         var bgraData = new byte[width * height * 4];
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int i = (y * width + x) * 4;
-                byte r = (byte)(x * 32);
-                byte g = (byte)(y * 32);
-                byte b = (byte)((x + y) * 16);
+                var i = (y * width + x) * 4;
+                var r = (byte)(x * 32);
+                var g = (byte)(y * 32);
+                var b = (byte)((x + y) * 16);
                 byte a = 255;
 
                 // Write in BGRA order
@@ -1248,9 +1248,9 @@ public class ImageSecurityTests
         Assert.Equal(width, decoded.Width);
         Assert.Equal(height, decoded.Height);
 
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 var expected = new Rgba32(
                     (byte)(x * 32),
@@ -1269,21 +1269,21 @@ public class ImageSecurityTests
     {
         // Arrange - verify that LoadPixelDataFromBgra produces the same result
         // as manually converting BGRA to RGBA and calling LoadPixelData<Rgba32>
-        int width = 16;
-        int height = 16;
+        var width = 16;
+        var height = 16;
         var bgraData = new byte[width * height * 4];
         var random = new Random(42); // Fixed seed for reproducibility
         random.NextBytes(bgraData);
 
         // Ensure alpha values are non-zero for meaningful comparison
-        for (int i = 3; i < bgraData.Length; i += 4)
+        for (var i = 3; i < bgraData.Length; i += 4)
         {
             bgraData[i] = 255;
         }
 
         // Manual BGRA->RGBA conversion
         var rgbaData = new byte[bgraData.Length];
-        for (int i = 0; i < bgraData.Length; i += 4)
+        for (var i = 0; i < bgraData.Length; i += 4)
         {
             rgbaData[i] = bgraData[i + 2];     // R from BGRA offset 2
             rgbaData[i + 1] = bgraData[i + 1]; // G stays
@@ -1296,9 +1296,9 @@ public class ImageSecurityTests
         using var fromManual = Image.LoadPixelData<Rgba32>(rgbaData, width, height, PngFormat.Instance);
 
         // Assert - both images should have identical pixels
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Assert.Equal(fromManual[x, y], fromBgra[x, y]);
             }
@@ -1339,8 +1339,8 @@ public class ImageSecurityTests
     public void PixelAccess_AtMaxValidIndex_Succeeds()
     {
         // Arrange
-        int width = 15;
-        int height = 20;
+        var width = 15;
+        var height = 20;
         using var image = new Image<Rgba32>(width, height, new Rgba32(42, 42, 42, 255));
 
         // Act & Assert - accessing last valid pixel should work

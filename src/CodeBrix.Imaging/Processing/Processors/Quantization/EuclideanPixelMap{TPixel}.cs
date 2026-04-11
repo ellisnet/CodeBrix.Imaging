@@ -64,12 +64,12 @@ internal sealed class EuclideanPixelMap<TPixel> : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     public int GetClosestColor(TPixel color, out TPixel match)
     {
-        ref TPixel paletteRef = ref MemoryMarshal.GetReference(this.Palette.Span);
+        ref var paletteRef = ref MemoryMarshal.GetReference(this.Palette.Span);
         Unsafe.SkipInit(out Rgba32 rgba);
         color.ToRgba32(ref rgba);
 
         // Check if the color is in the lookup table
-        if (!this.cache.TryGetValue(rgba, out short index))
+        if (!this.cache.TryGetValue(rgba, out var index))
         {
             return this.GetClosestColorSlow(rgba, ref paletteRef, out match);
         }
@@ -94,12 +94,12 @@ internal sealed class EuclideanPixelMap<TPixel> : IDisposable
     private int GetClosestColorSlow(Rgba32 rgba, ref TPixel paletteRef, out TPixel match)
     {
         // Loop through the palette and find the nearest match.
-        int index = 0;
-        float leastDistance = float.MaxValue;
-        for (int i = 0; i < this.rgbaPalette.Length; i++)
+        var index = 0;
+        var leastDistance = float.MaxValue;
+        for (var i = 0; i < this.rgbaPalette.Length; i++)
         {
-            Rgba32 candidate = this.rgbaPalette[i];
-            int distance = DistanceSquared(rgba, candidate);
+            var candidate = this.rgbaPalette[i];
+            var distance = DistanceSquared(rgba, candidate);
 
             // If it's an exact match, exit the loop
             if (distance == 0)
@@ -131,10 +131,10 @@ internal sealed class EuclideanPixelMap<TPixel> : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int DistanceSquared(Rgba32 a, Rgba32 b)
     {
-        int deltaR = a.R - b.R;
-        int deltaG = a.G - b.G;
-        int deltaB = a.B - b.B;
-        int deltaA = a.A - b.A;
+        var deltaR = a.R - b.R;
+        var deltaG = a.G - b.G;
+        var deltaB = a.B - b.B;
+        var deltaA = a.A - b.A;
         return (deltaR * deltaR) + (deltaG * deltaG) + (deltaB * deltaB) + (deltaA * deltaA);
     }
 
@@ -175,22 +175,22 @@ internal sealed class EuclideanPixelMap<TPixel> : IDisposable
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Add(Rgba32 rgba, byte index)
         {
-            int r = rgba.R >> RgbShift;
-            int g = rgba.G >> RgbShift;
-            int b = rgba.B >> RgbShift;
-            int a = rgba.A >> AlphaShift;
-            int idx = GetPaletteIndex(r, g, b, a);
+            var r = rgba.R >> RgbShift;
+            var g = rgba.G >> RgbShift;
+            var b = rgba.B >> RgbShift;
+            var a = rgba.A >> AlphaShift;
+            var idx = GetPaletteIndex(r, g, b, a);
             this.tablePointer[idx] = index;
         }
 
         [MethodImpl(InliningOptions.ShortMethod)]
         public bool TryGetValue(Rgba32 rgba, out short match)
         {
-            int r = rgba.R >> RgbShift;
-            int g = rgba.G >> RgbShift;
-            int b = rgba.B >> RgbShift;
-            int a = rgba.A >> AlphaShift;
-            int idx = GetPaletteIndex(r, g, b, a);
+            var r = rgba.R >> RgbShift;
+            var g = rgba.G >> RgbShift;
+            var b = rgba.B >> RgbShift;
+            var a = rgba.A >> AlphaShift;
+            var idx = GetPaletteIndex(r, g, b, a);
             match = this.tablePointer[idx];
             return match > -1;
         }

@@ -71,21 +71,21 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
     /// <inheritdoc/>
     public void AddPaletteColors(Buffer2DRegion<TPixel> pixelRegion)
     {
-        Rectangle bounds = pixelRegion.Rectangle;
-        Buffer2D<TPixel> source = pixelRegion.Buffer;
-        using (IMemoryOwner<Rgba32> buffer = this.Configuration.MemoryAllocator.Allocate<Rgba32>(bounds.Width))
+        var bounds = pixelRegion.Rectangle;
+        var source = pixelRegion.Buffer;
+        using (var buffer = this.Configuration.MemoryAllocator.Allocate<Rgba32>(bounds.Width))
         {
-            Span<Rgba32> bufferSpan = buffer.GetSpan();
+            var bufferSpan = buffer.GetSpan();
 
             // Loop through each row
-            for (int y = bounds.Top; y < bounds.Bottom; y++)
+            for (var y = bounds.Top; y < bounds.Bottom; y++)
             {
-                Span<TPixel> row = source.DangerousGetRowSpan(y).Slice(bounds.Left, bounds.Width);
+                var row = source.DangerousGetRowSpan(y).Slice(bounds.Left, bounds.Width);
                 PixelOperations<TPixel>.Instance.ToRgba32(this.Configuration, row, bufferSpan);
 
-                for (int x = 0; x < bufferSpan.Length; x++)
+                for (var x = 0; x < bufferSpan.Length; x++)
                 {
-                    Rgba32 rgba = bufferSpan[x];
+                    var rgba = bufferSpan[x];
 
                     // Add the color to the Octree
                     this.octree.AddColor(rgba);
@@ -93,15 +93,15 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
             }
         }
 
-        int paletteIndex = 0;
-        Span<TPixel> paletteSpan = this.paletteOwner.GetSpan();
+        var paletteIndex = 0;
+        var paletteSpan = this.paletteOwner.GetSpan();
 
         // On very rare occasions, (blur.png), the quantizer does not preserve a
         // transparent entry when palletizing the captured colors.
         // To workaround this we ensure the palette ends with the default color
         // for higher bit depths. Lower bit depths will correctly reduce the palette.
         // TODO: Investigate more evenly reduced palette reduction.
-        int max = this.maxColors;
+        var max = this.maxColors;
         if (this.bitDepth == 8)
         {
             max--;
@@ -141,8 +141,8 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
             return (byte)this.pixelMap.GetClosestColor(color, out match);
         }
 
-        ref TPixel paletteRef = ref MemoryMarshal.GetReference(this.palette.Span);
-        byte index = (byte)this.octree.GetPaletteIndex(color);
+        ref var paletteRef = ref MemoryMarshal.GetReference(this.palette.Span);
+        var index = (byte)this.octree.GetPaletteIndex(color);
         match = Unsafe.Add(ref paletteRef, index);
         return index;
     }
@@ -299,14 +299,14 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
         private void Reduce()
         {
             // Find the deepest level containing at least one reducible node
-            int index = this.maxColorBits - 1;
+            var index = this.maxColorBits - 1;
             while ((index > 0) && (this.ReducibleNodes[index] is null))
             {
                 index--;
             }
 
             // Reduce the node most recently added to the list at level 'index'
-            OctreeNode node = this.ReducibleNodes[index];
+            var node = this.ReducibleNodes[index];
             this.ReducibleNodes[index] = node.NextReducible;
 
             // Decrement the leaf count after reducing the node
@@ -416,9 +416,9 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
                 else
                 {
                     // Go to the next level down in the tree
-                    int index = GetColorIndex(ref color, level);
+                    var index = GetColorIndex(ref color, level);
 
-                    OctreeNode child = this.children[index];
+                    var child = this.children[index];
                     if (child is null)
                     {
                         // Create a new child node and store it in the array
@@ -438,12 +438,12 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
             public int Reduce()
             {
                 this.red = this.green = this.blue = 0;
-                int childNodes = 0;
+                var childNodes = 0;
 
                 // Loop through all children and add their information to this node
-                for (int index = 0; index < 8; index++)
+                for (var index = 0; index < 8; index++)
                 {
-                    OctreeNode child = this.children[index];
+                    var child = this.children[index];
                     if (child != null)
                     {
                         this.red += child.red;
@@ -488,7 +488,7 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
                 else
                 {
                     // Loop through children looking for leaves
-                    for (int i = 0; i < 8; i++)
+                    for (var i = 0; i < 8; i++)
                     {
                         this.children[i]?.ConstructPalette(palette, ref index);
                     }
@@ -511,10 +511,10 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
                     return this.paletteIndex;
                 }
 
-                int colorIndex = GetColorIndex(ref pixel, level);
-                OctreeNode child = this.children[colorIndex];
+                var colorIndex = GetColorIndex(ref pixel, level);
+                var child = this.children[colorIndex];
 
-                int index = 0;
+                var index = 0;
                 if (child != null)
                 {
                     index = child.GetPaletteIndex(ref pixel, level + 1);
@@ -522,12 +522,12 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
                 else
                 {
                     // Check other children.
-                    for (int i = 0; i < this.children.Length; i++)
+                    for (var i = 0; i < this.children.Length; i++)
                     {
                         child = this.children[i];
                         if (child != null)
                         {
-                            int childIndex = child.GetPaletteIndex(ref pixel, level + 1);
+                            var childIndex = child.GetPaletteIndex(ref pixel, level + 1);
                             if (childIndex != 0)
                             {
                                 return childIndex;
@@ -548,8 +548,8 @@ public struct OctreeQuantizer<TPixel> : IQuantizer<TPixel>
             [MethodImpl(InliningOptions.ShortMethod)]
             private static int GetColorIndex(ref Rgba32 color, int level)
             {
-                int shift = 7 - level;
-                byte mask = (byte)(1 << shift);
+                var shift = 7 - level;
+                var mask = (byte)(1 << shift);
 
                 return ((color.R & mask) >> shift)
                        | (((color.G & mask) >> shift) << 1)

@@ -119,25 +119,25 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     /// <inheritdoc/>
     public void AddPaletteColors(Buffer2DRegion<TPixel> pixelRegion)
     {
-        Rectangle bounds = pixelRegion.Rectangle;
-        Buffer2D<TPixel> source = pixelRegion.Buffer;
+        var bounds = pixelRegion.Rectangle;
+        var source = pixelRegion.Buffer;
 
         this.Build3DHistogram(source, bounds);
         this.Get3DMoments(this.memoryAllocator);
         this.BuildCube();
 
         // Slice again since maxColors has been updated since the buffer was created.
-        Span<TPixel> paletteSpan = this.paletteOwner.GetSpan().Slice(0, this.maxColors);
+        var paletteSpan = this.paletteOwner.GetSpan().Slice(0, this.maxColors);
         ReadOnlySpan<Moment> momentsSpan = this.momentsOwner.GetSpan();
-        for (int k = 0; k < paletteSpan.Length; k++)
+        for (var k = 0; k < paletteSpan.Length; k++)
         {
             this.Mark(ref this.colorCube[k], (byte)k);
 
-            Moment moment = Volume(ref this.colorCube[k], momentsSpan);
+            var moment = Volume(ref this.colorCube[k], momentsSpan);
 
             if (moment.Weight > 0)
             {
-                ref TPixel color = ref paletteSpan[k];
+                ref var color = ref paletteSpan[k];
                 color.FromScaledVector4(moment.Normalize());
             }
         }
@@ -177,14 +177,14 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
         color.ToRgba32(ref rgba);
 
         const int shift = 8 - IndexBits;
-        int r = rgba.R >> shift;
-        int g = rgba.G >> shift;
-        int b = rgba.B >> shift;
-        int a = rgba.A >> (8 - IndexAlphaBits);
+        var r = rgba.R >> shift;
+        var g = rgba.G >> shift;
+        var b = rgba.B >> shift;
+        var a = rgba.A >> (8 - IndexAlphaBits);
 
         ReadOnlySpan<byte> tagSpan = this.tagsOwner.GetSpan();
-        byte index = tagSpan[GetPaletteIndex(r + 1, g + 1, b + 1, a + 1)];
-        ref TPixel paletteRef = ref MemoryMarshal.GetReference(this.palette.Span);
+        var index = tagSpan[GetPaletteIndex(r + 1, g + 1, b + 1, a + 1)];
+        ref var paletteRef = ref MemoryMarshal.GetReference(this.palette.Span);
         match = Unsafe.Add(ref paletteRef, index);
         return index;
     }
@@ -377,25 +377,25 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     /// <param name="bounds">The bounds within the source image to quantize.</param>
     private void Build3DHistogram(Buffer2D<TPixel> source, Rectangle bounds)
     {
-        Span<Moment> momentSpan = this.momentsOwner.GetSpan();
+        var momentSpan = this.momentsOwner.GetSpan();
 
         // Build up the 3-D color histogram
-        using IMemoryOwner<Rgba32> buffer = this.memoryAllocator.Allocate<Rgba32>(bounds.Width);
-        Span<Rgba32> bufferSpan = buffer.GetSpan();
+        using var buffer = this.memoryAllocator.Allocate<Rgba32>(bounds.Width);
+        var bufferSpan = buffer.GetSpan();
 
-        for (int y = bounds.Top; y < bounds.Bottom; y++)
+        for (var y = bounds.Top; y < bounds.Bottom; y++)
         {
-            Span<TPixel> row = source.DangerousGetRowSpan(y).Slice(bounds.Left, bounds.Width);
+            var row = source.DangerousGetRowSpan(y).Slice(bounds.Left, bounds.Width);
             PixelOperations<TPixel>.Instance.ToRgba32(this.Configuration, row, bufferSpan);
 
-            for (int x = 0; x < bufferSpan.Length; x++)
+            for (var x = 0; x < bufferSpan.Length; x++)
             {
-                Rgba32 rgba = bufferSpan[x];
+                var rgba = bufferSpan[x];
 
-                int r = (rgba.R >> (8 - IndexBits)) + 1;
-                int g = (rgba.G >> (8 - IndexBits)) + 1;
-                int b = (rgba.B >> (8 - IndexBits)) + 1;
-                int a = (rgba.A >> (8 - IndexAlphaBits)) + 1;
+                var r = (rgba.R >> (8 - IndexBits)) + 1;
+                var g = (rgba.G >> (8 - IndexBits)) + 1;
+                var b = (rgba.B >> (8 - IndexBits)) + 1;
+                var a = (rgba.A >> (8 - IndexAlphaBits)) + 1;
 
                 momentSpan[GetPaletteIndex(r, g, b, a)] += rgba;
             }
@@ -408,24 +408,24 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     /// <param name="allocator">The memory allocator used for allocating buffers.</param>
     private void Get3DMoments(MemoryAllocator allocator)
     {
-        using IMemoryOwner<Moment> volume = allocator.Allocate<Moment>(IndexCount * IndexAlphaCount);
-        using IMemoryOwner<Moment> area = allocator.Allocate<Moment>(IndexAlphaCount);
+        using var volume = allocator.Allocate<Moment>(IndexCount * IndexAlphaCount);
+        using var area = allocator.Allocate<Moment>(IndexAlphaCount);
 
-        Span<Moment> momentSpan = this.momentsOwner.GetSpan();
-        Span<Moment> volumeSpan = volume.GetSpan();
-        Span<Moment> areaSpan = area.GetSpan();
+        var momentSpan = this.momentsOwner.GetSpan();
+        var volumeSpan = volume.GetSpan();
+        var areaSpan = area.GetSpan();
         const int indexBits2 = IndexBits * 2;
         const int indexAndAlphaBits = IndexBits + IndexAlphaBits;
         const int indexBitsAndAlphaBits1 = IndexBits + IndexAlphaBits + 1;
-        int baseIndex = GetPaletteIndex(1, 0, 0, 0);
+        var baseIndex = GetPaletteIndex(1, 0, 0, 0);
 
-        for (int r = 1; r < IndexCount; r++)
+        for (var r = 1; r < IndexCount; r++)
         {
             // Currently, RyuJIT hoists the invariants of multi-level nested loop only to the
             // immediate outer loop. See https://github.com/dotnet/runtime/issues/61420
             // To ensure the calculation doesn't happen repeatedly, hoist some of the calculations
             // in the form of ind1* manually.
-            int ind1R = (r << (indexBits2 + IndexAlphaBits)) +
+            var ind1R = (r << (indexBits2 + IndexAlphaBits)) +
                         (r << indexBitsAndAlphaBits1) +
                         (r << indexBits2) +
                         (r << (IndexBits + 1)) +
@@ -433,36 +433,36 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
 
             volumeSpan.Clear();
 
-            for (int g = 1; g < IndexCount; g++)
+            for (var g = 1; g < IndexCount; g++)
             {
-                int ind1G = ind1R +
+                var ind1G = ind1R +
                             (g << indexAndAlphaBits) +
                             (g << IndexBits) +
                             g;
-                int r_g = r + g;
+                var r_g = r + g;
 
                 areaSpan.Clear();
 
-                for (int b = 1; b < IndexCount; b++)
+                for (var b = 1; b < IndexCount; b++)
                 {
-                    int ind1B = ind1G +
+                    var ind1B = ind1G +
                                 ((r_g + b) << IndexAlphaBits) +
                                 b;
 
                     Moment line = default;
-                    int bIndexAlphaOffset = b * IndexAlphaCount;
-                    for (int a = 1; a < IndexAlphaCount; a++)
+                    var bIndexAlphaOffset = b * IndexAlphaCount;
+                    for (var a = 1; a < IndexAlphaCount; a++)
                     {
-                        int ind1 = ind1B + a;
+                        var ind1 = ind1B + a;
 
                         line += momentSpan[ind1];
 
                         areaSpan[a] += line;
 
-                        int inv = bIndexAlphaOffset + a;
+                        var inv = bIndexAlphaOffset + a;
                         volumeSpan[inv] += areaSpan[a];
 
-                        int ind2 = ind1 - baseIndex;
+                        var ind2 = ind1 - baseIndex;
                         momentSpan[ind1] = momentSpan[ind2] + volumeSpan[inv];
                     }
                 }
@@ -479,8 +479,8 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     {
         ReadOnlySpan<Moment> momentSpan = this.momentsOwner.GetSpan();
 
-        Moment volume = Volume(ref cube, momentSpan);
-        Moment variance =
+        var volume = Volume(ref cube, momentSpan);
+        var variance =
             momentSpan[GetPaletteIndex(cube.RMax, cube.GMax, cube.BMax, cube.AMax)]
             - momentSpan[GetPaletteIndex(cube.RMax, cube.GMax, cube.BMax, cube.AMin)]
             - momentSpan[GetPaletteIndex(cube.RMax, cube.GMax, cube.BMin, cube.AMax)]
@@ -519,14 +519,14 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     private float Maximize(ref Box cube, int direction, int first, int last, out int cut, Moment whole)
     {
         ReadOnlySpan<Moment> momentSpan = this.momentsOwner.GetSpan();
-        Moment bottom = Bottom(ref cube, direction, momentSpan);
+        var bottom = Bottom(ref cube, direction, momentSpan);
 
-        float max = 0F;
+        var max = 0F;
         cut = -1;
 
-        for (int i = first; i < last; i++)
+        for (var i = first; i < last; i++)
         {
-            Moment half = bottom + Top(ref cube, direction, i, momentSpan);
+            var half = bottom + Top(ref cube, direction, i, momentSpan);
 
             if (half.Weight == 0)
             {
@@ -534,7 +534,7 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
             }
 
             var vector = new Vector4(half.R, half.G, half.B, half.A);
-            float temp = Vector4.Dot(vector, vector) / half.Weight;
+            var temp = Vector4.Dot(vector, vector) / half.Weight;
 
             half = whole - half;
 
@@ -565,12 +565,12 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     private bool Cut(ref Box set1, ref Box set2)
     {
         ReadOnlySpan<Moment> momentSpan = this.momentsOwner.GetSpan();
-        Moment whole = Volume(ref set1, momentSpan);
+        var whole = Volume(ref set1, momentSpan);
 
-        float maxR = this.Maximize(ref set1, 3, set1.RMin + 1, set1.RMax, out int cutR, whole);
-        float maxG = this.Maximize(ref set1, 2, set1.GMin + 1, set1.GMax, out int cutG, whole);
-        float maxB = this.Maximize(ref set1, 1, set1.BMin + 1, set1.BMax, out int cutB, whole);
-        float maxA = this.Maximize(ref set1, 0, set1.AMin + 1, set1.AMax, out int cutA, whole);
+        var maxR = this.Maximize(ref set1, 3, set1.RMin + 1, set1.RMax, out var cutR, whole);
+        var maxG = this.Maximize(ref set1, 2, set1.GMin + 1, set1.GMax, out var cutG, whole);
+        var maxB = this.Maximize(ref set1, 1, set1.BMin + 1, set1.BMax, out var cutB, whole);
+        var maxA = this.Maximize(ref set1, 0, set1.AMin + 1, set1.AMax, out var cutA, whole);
 
         int dir;
 
@@ -649,37 +649,37 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     /// <param name="label">A label.</param>
     private void Mark(ref Box cube, byte label)
     {
-        Span<byte> tagSpan = this.tagsOwner.GetSpan();
+        var tagSpan = this.tagsOwner.GetSpan();
 
-        for (int r = cube.RMin + 1; r <= cube.RMax; r++)
+        for (var r = cube.RMin + 1; r <= cube.RMax; r++)
         {
             // Currently, RyuJIT hoists the invariants of multi-level nested loop only to the
             // immediate outer loop. See https://github.com/dotnet/runtime/issues/61420
             // To ensure the calculation doesn't happen repeatedly, hoist some of the calculations
             // in the form of ind1* manually.
-            int ind1R = (r << ((IndexBits * 2) + IndexAlphaBits)) +
+            var ind1R = (r << ((IndexBits * 2) + IndexAlphaBits)) +
                         (r << (IndexBits + IndexAlphaBits + 1)) +
                         (r << (IndexBits * 2)) +
                         (r << (IndexBits + 1)) +
                         r;
 
-            for (int g = cube.GMin + 1; g <= cube.GMax; g++)
+            for (var g = cube.GMin + 1; g <= cube.GMax; g++)
             {
-                int ind1G = ind1R +
+                var ind1G = ind1R +
                             (g << (IndexBits + IndexAlphaBits)) +
                             (g << IndexBits) +
                             g;
-                int r_g = r + g;
+                var r_g = r + g;
 
-                for (int b = cube.BMin + 1; b <= cube.BMax; b++)
+                for (var b = cube.BMin + 1; b <= cube.BMax; b++)
                 {
-                    int ind1B = ind1G +
+                    var ind1B = ind1G +
                                 ((r_g + b) << IndexAlphaBits) +
                                 b;
 
-                    for (int a = cube.AMin + 1; a <= cube.AMax; a++)
+                    for (var a = cube.AMin + 1; a <= cube.AMax; a++)
                     {
-                        int index = ind1B + a;
+                        var index = ind1B + a;
 
                         tagSpan[index] = label;
                     }
@@ -694,20 +694,20 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
     private void BuildCube()
     {
         // Store the volume variance.
-        using IMemoryOwner<double> vvOwner = this.Configuration.MemoryAllocator.Allocate<double>(this.maxColors);
-        Span<double> vv = vvOwner.GetSpan();
+        using var vvOwner = this.Configuration.MemoryAllocator.Allocate<double>(this.maxColors);
+        var vv = vvOwner.GetSpan();
 
-        ref Box cube = ref this.colorCube[0];
+        ref var cube = ref this.colorCube[0];
         cube.RMin = cube.GMin = cube.BMin = cube.AMin = 0;
         cube.RMax = cube.GMax = cube.BMax = IndexCount - 1;
         cube.AMax = IndexAlphaCount - 1;
 
-        int next = 0;
+        var next = 0;
 
-        for (int i = 1; i < this.maxColors; i++)
+        for (var i = 1; i < this.maxColors; i++)
         {
-            ref Box nextCube = ref this.colorCube[next];
-            ref Box currentCube = ref this.colorCube[i];
+            ref var nextCube = ref this.colorCube[next];
+            ref var currentCube = ref this.colorCube[i];
             if (this.Cut(ref nextCube, ref currentCube))
             {
                 vv[next] = nextCube.Volume > 1 ? this.Variance(ref nextCube) : 0D;
@@ -721,8 +721,8 @@ internal struct WuQuantizer<TPixel> : IQuantizer<TPixel>
 
             next = 0;
 
-            double temp = vv[0];
-            for (int k = 1; k <= i; k++)
+            var temp = vv[0];
+            for (var k = 1; k <= i; k++)
             {
                 if (vv[k] > temp)
                 {

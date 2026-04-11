@@ -109,7 +109,7 @@ internal class Vp8LBitWriter : BitWriterBase
 
     public Vp8LBitWriter Clone()
     {
-        byte[] clonedBuffer = new byte[this.Buffer.Length];
+        var clonedBuffer = new byte[this.Buffer.Length];
         System.Buffer.BlockCopy(this.Buffer, 0, clonedBuffer, 0, this.cur);
         return new Vp8LBitWriter(clonedBuffer, this.bits, this.used, this.cur);
     }
@@ -139,7 +139,7 @@ internal class Vp8LBitWriter : BitWriterBase
     /// <param name="hasAlpha">Flag indicating, if a alpha channel is present.</param>
     public void WriteEncodedImageToStream(Stream stream, ExifProfile exifProfile, XmpProfile xmpProfile, uint width, uint height, bool hasAlpha)
     {
-        bool isVp8X = false;
+        var isVp8X = false;
         byte[] exifBytes = null;
         byte[] xmpBytes = null;
         uint riffSize = 0;
@@ -160,11 +160,11 @@ internal class Vp8LBitWriter : BitWriterBase
         }
 
         this.Finish();
-        uint size = (uint)this.NumBytes();
+        var size = (uint)this.NumBytes();
         size++; // One byte extra for the VP8L signature.
 
         // Write RIFF header.
-        uint pad = size & 1;
+        var pad = size & 1;
         riffSize += WebpConstants.TagSize + WebpConstants.ChunkHeaderSize + size + pad;
         this.WriteRiffHeader(stream, riffSize);
 
@@ -208,7 +208,7 @@ internal class Vp8LBitWriter : BitWriterBase
         // If needed, make some room by flushing some bits out.
         if (this.cur + WriterBytes > this.Buffer.Length)
         {
-            int extraSize = this.Buffer.Length - this.cur + MinExtraSize;
+            var extraSize = this.Buffer.Length - this.cur + MinExtraSize;
             this.BitWriterResize(extraSize);
         }
 
@@ -226,8 +226,8 @@ internal class Vp8LBitWriter : BitWriterBase
     /// <param name="extraSize">The extra size in bytes needed.</param>
     public override void BitWriterResize(int extraSize)
     {
-        int maxBytes = this.Buffer.Length + this.Buffer.Length;
-        int sizeRequired = this.cur + extraSize;
+        var maxBytes = this.Buffer.Length + this.Buffer.Length;
+        var sizeRequired = this.cur + extraSize;
         this.ResizeBuffer(maxBytes, sizeRequired);
     }
 }

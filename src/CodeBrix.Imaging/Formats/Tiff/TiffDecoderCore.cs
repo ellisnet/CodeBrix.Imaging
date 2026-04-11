@@ -163,14 +163,14 @@ internal class TiffDecoderCore : IImageDecoderInternals
             this.inputStream = stream;
             var reader = new DirectoryReader(stream, this.Configuration.MemoryAllocator);
 
-            IEnumerable<ExifProfile> directories = reader.Read();
+            var directories = reader.Read();
             this.byteOrder = reader.ByteOrder;
             this.isBigTiff = reader.IsBigTiff;
 
-            foreach (ExifProfile ifd in directories)
+            foreach (var ifd in directories)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                ImageFrame<TPixel> frame = this.DecodeFrame<TPixel>(ifd, cancellationToken);
+                var frame = this.DecodeFrame<TPixel>(ifd, cancellationToken);
                 frames.Add(frame);
 
                 if (this.decodingMode is FrameDecodingMode.First)
@@ -179,12 +179,12 @@ internal class TiffDecoderCore : IImageDecoderInternals
                 }
             }
 
-            ImageMetadata metadata = TiffDecoderMetadataCreator.Create(frames, this.ignoreMetadata, reader.ByteOrder, reader.IsBigTiff);
+            var metadata = TiffDecoderMetadataCreator.Create(frames, this.ignoreMetadata, reader.ByteOrder, reader.IsBigTiff);
 
             // TODO: Tiff frames can have different sizes.
-            ImageFrame<TPixel> root = frames[0];
+            var root = frames[0];
             this.Dimensions = root.Size();
-            foreach (ImageFrame<TPixel> frame in frames)
+            foreach (var frame in frames)
             {
                 if (frame.Size() != root.Size())
                 {
@@ -196,7 +196,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
         }
         catch
         {
-            foreach (ImageFrame<TPixel> f in frames)
+            foreach (var f in frames)
             {
                 f.Dispose();
             }
@@ -210,14 +210,14 @@ internal class TiffDecoderCore : IImageDecoderInternals
     {
         this.inputStream = stream;
         var reader = new DirectoryReader(stream, this.Configuration.MemoryAllocator);
-        IEnumerable<ExifProfile> directories = reader.Read();
+        var directories = reader.Read();
 
-        ExifProfile rootFrameExifProfile = directories.First();
+        var rootFrameExifProfile = directories.First();
         var rootMetadata = TiffFrameMetadata.Parse(rootFrameExifProfile);
 
-        ImageMetadata metadata = TiffDecoderMetadataCreator.Create(reader.ByteOrder, reader.IsBigTiff, rootFrameExifProfile);
-        int width = GetImageWidth(rootFrameExifProfile);
-        int height = GetImageHeight(rootFrameExifProfile);
+        var metadata = TiffDecoderMetadataCreator.Create(reader.ByteOrder, reader.IsBigTiff, rootFrameExifProfile);
+        var width = GetImageWidth(rootFrameExifProfile);
+        var height = GetImageHeight(rootFrameExifProfile);
 
         return new ImageInfo(
             new PixelTypeInfo((int)rootMetadata.BitsPerPixel), 
@@ -243,22 +243,22 @@ internal class TiffDecoderCore : IImageDecoderInternals
             imageFrameMetaData.ExifProfile = tags;
         }
 
-        TiffFrameMetadata tiffFrameMetaData = imageFrameMetaData.GetTiffMetadata();
+        var tiffFrameMetaData = imageFrameMetaData.GetTiffMetadata();
         TiffFrameMetadata.Parse(tiffFrameMetaData, tags);
 
         this.VerifyAndParse(tags, tiffFrameMetaData);
 
-        int width = GetImageWidth(tags);
-        int height = GetImageHeight(tags);
+        var width = GetImageWidth(tags);
+        var height = GetImageHeight(tags);
         var frame = new ImageFrame<TPixel>(this.Configuration, width, height, imageFrameMetaData);
 
-        int rowsPerStrip = tags.GetValue(ExifTag.RowsPerStrip) != null ? (int)tags.GetValue(ExifTag.RowsPerStrip).Value : TiffConstants.RowsPerStripInfinity;
+        var rowsPerStrip = tags.GetValue(ExifTag.RowsPerStrip) != null ? (int)tags.GetValue(ExifTag.RowsPerStrip).Value : TiffConstants.RowsPerStripInfinity;
 
         var stripOffsetsArray = (Array)tags.GetValueInternal(ExifTag.StripOffsets).GetValue();
         var stripByteCountsArray = (Array)tags.GetValueInternal(ExifTag.StripByteCounts).GetValue();
 
-        using IMemoryOwner<ulong> stripOffsetsMemory = this.ConvertNumbers(stripOffsetsArray, out Span<ulong> stripOffsets);
-        using IMemoryOwner<ulong> stripByteCountsMemory = this.ConvertNumbers(stripByteCountsArray, out Span<ulong> stripByteCounts);
+        using var stripOffsetsMemory = this.ConvertNumbers(stripOffsetsArray, out var stripOffsets);
+        using var stripByteCountsMemory = this.ConvertNumbers(stripByteCountsArray, out var stripByteCounts);
 
         if (this.PlanarConfiguration == TiffPlanarConfiguration.Planar)
         {
@@ -286,9 +286,9 @@ internal class TiffDecoderCore : IImageDecoderInternals
     {
         if (array is Number[] numbers)
         {
-            IMemoryOwner<ulong> memory = this.memoryAllocator.Allocate<ulong>(numbers.Length);
+            var memory = this.memoryAllocator.Allocate<ulong>(numbers.Length);
             span = memory.GetSpan();
-            for (int i = 0; i < numbers.Length; i++)
+            for (var i = 0; i < numbers.Length; i++)
             {
                 span[i] = (uint)numbers[i];
             }
@@ -312,7 +312,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
     {
         DebugGuard.MustBeLessThanOrEqualTo(plane, 3, nameof(plane));
 
-        int bitsPerPixel = 0;
+        var bitsPerPixel = 0;
 
         if (this.PlanarConfiguration == TiffPlanarConfiguration.Chunky)
         {
@@ -341,7 +341,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
             }
         }
 
-        int bytesPerRow = ((width * bitsPerPixel) + 7) / 8;
+        var bytesPerRow = ((width * bitsPerPixel) + 7) / 8;
         return bytesPerRow * height;
     }
 
@@ -358,22 +358,22 @@ internal class TiffDecoderCore : IImageDecoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         int stripsPerPixel = this.BitsPerSample.Channels;
-        int stripsPerPlane = stripOffsets.Length / stripsPerPixel;
-        int bitsPerPixel = this.BitsPerPixel;
+        var stripsPerPlane = stripOffsets.Length / stripsPerPixel;
+        var bitsPerPixel = this.BitsPerPixel;
 
-        Buffer2D<TPixel> pixels = frame.PixelBuffer;
+        var pixels = frame.PixelBuffer;
 
         var stripBuffers = new IMemoryOwner<byte>[stripsPerPixel];
 
         try
         {
-            for (int stripIndex = 0; stripIndex < stripBuffers.Length; stripIndex++)
+            for (var stripIndex = 0; stripIndex < stripBuffers.Length; stripIndex++)
             {
-                int uncompressedStripSize = this.CalculateStripBufferSize(frame.Width, rowsPerStrip, stripIndex);
+                var uncompressedStripSize = this.CalculateStripBufferSize(frame.Width, rowsPerStrip, stripIndex);
                 stripBuffers[stripIndex] = this.memoryAllocator.Allocate<byte>(uncompressedStripSize);
             }
 
-            using TiffBaseDecompressor decompressor = TiffDecompressorsFactory.Create(
+            using var decompressor = TiffDecompressorsFactory.Create(
                 this.Configuration,
                 this.CompressionType,
                 this.memoryAllocator,
@@ -387,7 +387,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
                 this.FillOrder,
                 this.byteOrder);
 
-            TiffBasePlanarColorDecoder<TPixel> colorDecoder = TiffColorDecoderFactory<TPixel>.CreatePlanar(
+            var colorDecoder = TiffColorDecoderFactory<TPixel>.CreatePlanar(
                 this.ColorType,
                 this.BitsPerSample,
                 this.ExtraSamplesType,
@@ -397,14 +397,14 @@ internal class TiffDecoderCore : IImageDecoderInternals
                 this.YcbcrSubSampling,
                 this.byteOrder);
 
-            for (int i = 0; i < stripsPerPlane; i++)
+            for (var i = 0; i < stripsPerPlane; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                int stripHeight = i < stripsPerPlane - 1 || frame.Height % rowsPerStrip == 0 ? rowsPerStrip : frame.Height % rowsPerStrip;
+                var stripHeight = i < stripsPerPlane - 1 || frame.Height % rowsPerStrip == 0 ? rowsPerStrip : frame.Height % rowsPerStrip;
 
-                int stripIndex = i;
-                for (int planeIndex = 0; planeIndex < stripsPerPixel; planeIndex++)
+                var stripIndex = i;
+                for (var planeIndex = 0; planeIndex < stripsPerPixel; planeIndex++)
                 {
                     decompressor.Decompress(
                         this.inputStream,
@@ -421,7 +421,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
         }
         finally
         {
-            foreach (IMemoryOwner<byte> buf in stripBuffers)
+            foreach (var buf in stripBuffers)
             {
                 buf?.Dispose();
             }
@@ -446,14 +446,14 @@ internal class TiffDecoderCore : IImageDecoderInternals
             rowsPerStrip = frame.Height;
         }
 
-        int uncompressedStripSize = this.CalculateStripBufferSize(frame.Width, rowsPerStrip);
-        int bitsPerPixel = this.BitsPerPixel;
+        var uncompressedStripSize = this.CalculateStripBufferSize(frame.Width, rowsPerStrip);
+        var bitsPerPixel = this.BitsPerPixel;
 
-        using IMemoryOwner<byte> stripBuffer = this.memoryAllocator.Allocate<byte>(uncompressedStripSize, AllocationOptions.Clean);
-        Span<byte> stripBufferSpan = stripBuffer.GetSpan();
-        Buffer2D<TPixel> pixels = frame.PixelBuffer;
+        using var stripBuffer = this.memoryAllocator.Allocate<byte>(uncompressedStripSize, AllocationOptions.Clean);
+        var stripBufferSpan = stripBuffer.GetSpan();
+        var pixels = frame.PixelBuffer;
 
-        using TiffBaseDecompressor decompressor = TiffDecompressorsFactory.Create(
+        using var decompressor = TiffDecompressorsFactory.Create(
             this.Configuration,
             this.CompressionType,
             this.memoryAllocator,
@@ -467,7 +467,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
             this.FillOrder,
             this.byteOrder);
 
-        TiffBaseColorDecoder<TPixel> colorDecoder = TiffColorDecoderFactory<TPixel>.Create(
+        var colorDecoder = TiffColorDecoderFactory<TPixel>.Create(
             this.Configuration,
             this.memoryAllocator,
             this.ColorType,
@@ -479,15 +479,15 @@ internal class TiffDecoderCore : IImageDecoderInternals
             this.YcbcrSubSampling,
             this.byteOrder);
 
-        for (int stripIndex = 0; stripIndex < stripOffsets.Length; stripIndex++)
+        for (var stripIndex = 0; stripIndex < stripOffsets.Length; stripIndex++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            int stripHeight = stripIndex < stripOffsets.Length - 1 || frame.Height % rowsPerStrip == 0
+            var stripHeight = stripIndex < stripOffsets.Length - 1 || frame.Height % rowsPerStrip == 0
                 ? rowsPerStrip
                 : frame.Height % rowsPerStrip;
 
-            int top = rowsPerStrip * stripIndex;
+            var top = rowsPerStrip * stripIndex;
             if (top + stripHeight > frame.Height)
             {
                 // Make sure we ignore any strips that are not needed for the image (if too many are present).
@@ -512,7 +512,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
     /// <returns>The image width.</returns>
     private static int GetImageWidth(ExifProfile exifProfile)
     {
-        IExifValue<Number> width = exifProfile.GetValue(ExifTag.ImageWidth);
+        var width = exifProfile.GetValue(ExifTag.ImageWidth);
         if (width == null)
         {
             TiffThrowHelper.ThrowImageFormatException("The TIFF image frame is missing the ImageWidth");
@@ -530,7 +530,7 @@ internal class TiffDecoderCore : IImageDecoderInternals
     /// <returns>The image height.</returns>
     private static int GetImageHeight(ExifProfile exifProfile)
     {
-        IExifValue<Number> height = exifProfile.GetValue(ExifTag.ImageLength);
+        var height = exifProfile.GetValue(ExifTag.ImageLength);
         if (height == null)
         {
             TiffThrowHelper.ThrowImageFormatException("The TIFF image frame is missing the ImageLength");

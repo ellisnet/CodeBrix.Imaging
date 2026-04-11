@@ -46,14 +46,14 @@ internal sealed class ExifWriter
     {
         const uint startIndex = 0;
 
-        IExifValue exifOffset = GetOffsetValue(this.ifdValues, this.exifValues, ExifTag.SubIFDOffset);
-        IExifValue gpsOffset = GetOffsetValue(this.ifdValues, this.gpsValues, ExifTag.GPSIFDOffset);
+        var exifOffset = GetOffsetValue(this.ifdValues, this.exifValues, ExifTag.SubIFDOffset);
+        var gpsOffset = GetOffsetValue(this.ifdValues, this.gpsValues, ExifTag.GPSIFDOffset);
 
-        uint ifdLength = this.GetLength(this.ifdValues);
-        uint exifLength = this.GetLength(this.exifValues);
-        uint gpsLength = this.GetLength(this.gpsValues);
+        var ifdLength = this.GetLength(this.ifdValues);
+        var exifLength = this.GetLength(this.exifValues);
+        var gpsLength = this.GetLength(this.gpsValues);
 
-        uint length = ifdLength + exifLength + gpsLength;
+        var length = ifdLength + exifLength + gpsLength;
 
         if (length == 0)
         {
@@ -66,15 +66,15 @@ internal sealed class ExifWriter
         // first IFD offset
         length += 4;
 
-        byte[] result = new byte[length];
+        var result = new byte[length];
 
-        int i = 0;
+        var i = 0;
 
         // The byte order marker for little-endian, followed by the number 42 and a 0
         ExifConstants.LittleEndianByteOrderMarker.CopyTo(result.AsSpan(start: i));
         i += ExifConstants.LittleEndianByteOrderMarker.Length;
 
-        uint ifdOffset = (uint)i - startIndex + 4U;
+        var ifdOffset = (uint)i - startIndex + 4U;
 
         exifOffset?.TrySetValue(ifdOffset + ifdLength);
         gpsOffset?.TrySetValue(ifdOffset + ifdLength + exifLength);
@@ -163,9 +163,9 @@ internal sealed class ExifWriter
 
     private static IExifValue GetOffsetValue(List<IExifValue> ifdValues, List<IExifValue> values, ExifTag offset)
     {
-        int index = -1;
+        var index = -1;
 
-        for (int i = 0; i < ifdValues.Count; i++)
+        for (var i = 0; i < ifdValues.Count; i++)
         {
             if (ifdValues[i].Tag == offset)
             {
@@ -180,7 +180,7 @@ internal sealed class ExifWriter
                 return ifdValues[index];
             }
 
-            ExifValue result = ExifValues.Create(offset);
+            var result = ExifValues.Create(offset);
             ifdValues.Add(result);
 
             return result;
@@ -202,7 +202,7 @@ internal sealed class ExifWriter
             return result;
         }
 
-        foreach (IExifValue value in this.values)
+        foreach (var value in this.values)
         {
             if (!HasValue(value))
             {
@@ -220,7 +220,7 @@ internal sealed class ExifWriter
 
     private static bool HasValue(IExifValue exifValue)
     {
-        object value = exifValue.GetValue();
+        var value = exifValue.GetValue();
         if (value is null)
         {
             return false;
@@ -228,7 +228,7 @@ internal sealed class ExifWriter
 
         if (exifValue.DataType == ExifDataType.Ascii)
         {
-            string stringValue = (string)value;
+            var stringValue = (string)value;
             return stringValue.Length > 0;
         }
 
@@ -249,9 +249,9 @@ internal sealed class ExifWriter
 
         uint length = 2;
 
-        foreach (IExifValue value in values)
+        foreach (var value in values)
         {
-            uint valueLength = GetLength(value);
+            var valueLength = GetLength(value);
 
             length += 12;
 
@@ -271,7 +271,7 @@ internal sealed class ExifWriter
 
     internal static uint GetNumberOfComponents(IExifValue exifValue)
     {
-        object value = exifValue.GetValue();
+        var value = exifValue.GetValue();
 
         if (ExifUcs2StringHelpers.IsUcs2Tag((ExifTagValue)(ushort)exifValue.Tag))
         {
@@ -298,8 +298,8 @@ internal sealed class ExifWriter
 
     private static int WriteArray(IExifValue value, Span<byte> destination, int offset)
     {
-        int newOffset = offset;
-        foreach (object obj in (Array)value.GetValue())
+        var newOffset = offset;
+        foreach (var obj in (Array)value.GetValue())
         {
             newOffset = WriteValue(value.DataType, obj, destination, newOffset);
         }
@@ -314,10 +314,10 @@ internal sealed class ExifWriter
             return offset;
         }
 
-        int newOffset = offset;
+        var newOffset = offset;
 
-        int i = 0;
-        foreach (IExifValue value in values)
+        var i = 0;
+        foreach (var value in values)
         {
             if (GetLength(value) > 4)
             {
@@ -333,20 +333,20 @@ internal sealed class ExifWriter
     {
         this.dataOffsets = new List<int>();
 
-        int newOffset = WriteUInt16((ushort)values.Count, destination, offset);
+        var newOffset = WriteUInt16((ushort)values.Count, destination, offset);
 
         if (values.Count == 0)
         {
             return newOffset;
         }
 
-        foreach (IExifValue value in values)
+        foreach (var value in values)
         {
             newOffset = WriteUInt16((ushort)value.Tag, destination, newOffset);
             newOffset = WriteUInt16((ushort)value.DataType, destination, newOffset);
             newOffset = WriteUInt32(GetNumberOfComponents(value), destination, newOffset);
 
-            uint length = GetLength(value);
+            var length = GetLength(value);
             if (length > 4)
             {
                 this.dataOffsets.Add(newOffset);
@@ -431,7 +431,7 @@ internal sealed class ExifWriter
 
     internal static int WriteValue(IExifValue exifValue, Span<byte> destination, int offset)
     {
-        object value = exifValue.GetValue();
+        var value = exifValue.GetValue();
 
         if (ExifUcs2StringHelpers.IsUcs2Tag((ExifTagValue)(ushort)exifValue.Tag))
         {

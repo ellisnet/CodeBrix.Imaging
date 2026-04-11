@@ -30,13 +30,13 @@ public static class AdvancedImageExtensions
     {
         Guard.NotNull(filePath, nameof(filePath));
 
-        string ext = Path.GetExtension(filePath);
-        IImageFormat format = source.GetConfiguration().ImageFormatsManager.FindFormatByFileExtension(ext);
+        var ext = Path.GetExtension(filePath);
+        var format = source.GetConfiguration().ImageFormatsManager.FindFormatByFileExtension(ext);
         if (format is null)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"No encoder was found for extension '{ext}'. Registered encoders include:");
-            foreach (IImageFormat fmt in source.GetConfiguration().ImageFormats)
+            foreach (var fmt in source.GetConfiguration().ImageFormats)
             {
                 sb.AppendFormat(" - {0} : {1}{2}", fmt.Name, string.Join(", ", fmt.FileExtensions), Environment.NewLine);
             }
@@ -44,13 +44,13 @@ public static class AdvancedImageExtensions
             throw new NotSupportedException(sb.ToString());
         }
 
-        IImageEncoder encoder = source.GetConfiguration().ImageFormatsManager.FindEncoder(format);
+        var encoder = source.GetConfiguration().ImageFormatsManager.FindEncoder(format);
 
         if (encoder is null)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"No encoder was found for extension '{ext}' using image format '{format.Name}'. Registered encoders include:");
-            foreach (KeyValuePair<IImageFormat, IImageEncoder> enc in source.GetConfiguration().ImageFormatsManager.ImageEncoders)
+            foreach (var enc in source.GetConfiguration().ImageFormatsManager.ImageEncoders)
             {
                 sb.AppendFormat(" - {0} : {1}{2}", enc.Key, enc.Value.GetType().Name, Environment.NewLine);
             }

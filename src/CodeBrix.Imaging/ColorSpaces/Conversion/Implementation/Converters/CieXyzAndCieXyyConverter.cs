@@ -20,8 +20,8 @@ internal sealed class CieXyzAndCieXyyConverter
     [MethodImpl(InliningOptions.ShortMethod)]
     public CieXyy Convert(in CieXyz input)
     {
-        float x = input.X / (input.X + input.Y + input.Z);
-        float y = input.Y / (input.X + input.Y + input.Z);
+        var x = input.X / (input.X + input.Y + input.Z);
+        var y = input.Y / (input.X + input.Y + input.Z);
 
         if (float.IsNaN(x) || float.IsNaN(y))
         {
@@ -44,9 +44,9 @@ internal sealed class CieXyzAndCieXyyConverter
             return new CieXyz(0, 0, input.Yl);
         }
 
-        float x = (input.X * input.Yl) / input.Y;
-        float y = input.Yl;
-        float z = ((1 - input.X - input.Y) * y) / input.Y;
+        var x = (input.X * input.Yl) / input.Y;
+        var y = input.Yl;
+        var z = ((1 - input.X - input.Y) * y) / input.Y;
 
         return new CieXyz(x, y, z);
     }

@@ -27,12 +27,12 @@ public sealed class PngDecoder : IImageDecoder, IPngDecoderOptions, IImageInfoDe
     public Image Decode(Configuration configuration, Stream stream, CancellationToken cancellationToken)
     {
         PngDecoderCore decoder = new(configuration, true);
-        IImageInfo info = decoder.Identify(configuration, stream, cancellationToken);
+        var info = decoder.Identify(configuration, stream, cancellationToken);
         stream.Position = 0;
 
-        PngMetadata meta = info.Metadata.GetPngMetadata();
-        PngColorType color = meta.ColorType.GetValueOrDefault();
-        PngBitDepth bits = meta.BitDepth.GetValueOrDefault();
+        var meta = info.Metadata.GetPngMetadata();
+        var color = meta.ColorType.GetValueOrDefault();
+        var bits = meta.BitDepth.GetValueOrDefault();
         switch (color)
         {
             case PngColorType.Grayscale:

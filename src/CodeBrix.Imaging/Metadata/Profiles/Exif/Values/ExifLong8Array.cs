@@ -23,7 +23,7 @@ internal sealed class ExifLong8Array : ExifArrayValue<ulong>
         {
             if (this.Value is not null)
             {
-                foreach (ulong value in this.Value)
+                foreach (var value in this.Value)
                 {
                     if (value > uint.MaxValue)
                     {
@@ -105,7 +105,7 @@ internal sealed class ExifLong8Array : ExifArrayValue<ulong>
     private bool SetArray(long[] values)
     {
         var numbers = new ulong[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             numbers[i] = (ulong)(values[i] < 0 ? 0 : values[i]);
         }
@@ -123,7 +123,7 @@ internal sealed class ExifLong8Array : ExifArrayValue<ulong>
     private bool SetArray(int[] values)
     {
         var numbers = new ulong[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             numbers[i] = (ulong)Numerics.Clamp(values[i], 0, int.MaxValue);
         }
@@ -135,7 +135,7 @@ internal sealed class ExifLong8Array : ExifArrayValue<ulong>
     private bool SetArray(uint[] values)
     {
         var numbers = new ulong[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             numbers[i] = (ulong)values[i];
         }
@@ -147,7 +147,7 @@ internal sealed class ExifLong8Array : ExifArrayValue<ulong>
     private bool SetArray(short[] values)
     {
         var numbers = new ulong[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             numbers[i] = (ulong)Numerics.Clamp(values[i], 0, short.MaxValue);
         }
@@ -159,7 +159,7 @@ internal sealed class ExifLong8Array : ExifArrayValue<ulong>
     private bool SetArray(ushort[] values)
     {
         var numbers = new ulong[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             numbers[i] = (ulong)values[i];
         }

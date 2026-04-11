@@ -85,7 +85,7 @@ public class Rgba32Tests
     public void Constructor_with_packed_value_creates_pixel()
     {
         //Arrange
-        uint packed = 0xFF8040FF; // RGBA order
+        var packed = 0xFF8040FF; // RGBA order
 
         //Act
         var pixel = new Rgba32(packed);

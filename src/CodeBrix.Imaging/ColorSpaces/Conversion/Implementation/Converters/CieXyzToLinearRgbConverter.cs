@@ -30,7 +30,7 @@ internal sealed class CieXyzToLinearRgbConverter : LinearRgbAndCieXyzConverterBa
         this.TargetWorkingSpace = workingSpace;
 
         // Gets the inverted Rgb -> Xyz matrix
-        Matrix4x4.Invert(GetRgbToCieXyzMatrix(workingSpace), out Matrix4x4 inverted);
+        Matrix4x4.Invert(GetRgbToCieXyzMatrix(workingSpace), out var inverted);
 
         this.conversionMatrix = inverted;
     }

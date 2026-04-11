@@ -29,10 +29,10 @@ internal static class TiffDecoderOptionsParser
             TiffThrowHelper.ThrowNotSupported("Tiled images are not supported.");
         }
 
-        IExifValue extraSamplesExifValue = exifProfile.GetValueInternal(ExifTag.ExtraSamples);
+        var extraSamplesExifValue = exifProfile.GetValueInternal(ExifTag.ExtraSamples);
         if (extraSamplesExifValue is not null)
         {
-            short[] extraSamples = (short[])extraSamplesExifValue.GetValue();
+            var extraSamples = (short[])extraSamplesExifValue.GetValue();
             if (extraSamples.Length != 1)
             {
                 TiffThrowHelper.ThrowNotSupported("ExtraSamples is only supported with one extra sample for alpha data.");
@@ -46,7 +46,7 @@ internal static class TiffDecoderOptionsParser
             }
         }
 
-        TiffFillOrder fillOrder = (TiffFillOrder?)exifProfile.GetValue(ExifTag.FillOrder)?.Value ?? TiffFillOrder.MostSignificantBitFirst;
+        var fillOrder = (TiffFillOrder?)exifProfile.GetValue(ExifTag.FillOrder)?.Value ?? TiffFillOrder.MostSignificantBitFirst;
         if (fillOrder == TiffFillOrder.LeastSignificantBitFirst && frameMetadata.BitsPerPixel != TiffBitsPerPixel.Bit1)
         {
             TiffThrowHelper.ThrowNotSupported("The lower-order bits of the byte FillOrder is only supported in combination with 1bit per pixel bicolor tiff's.");
@@ -57,12 +57,12 @@ internal static class TiffDecoderOptionsParser
             TiffThrowHelper.ThrowNotSupported("TIFF images with FloatingPoint horizontal predictor are not supported.");
         }
 
-        TiffSampleFormat[] sampleFormats = exifProfile.GetValue(ExifTag.SampleFormat)?.Value?.Select(a => (TiffSampleFormat)a).ToArray();
+        var sampleFormats = exifProfile.GetValue(ExifTag.SampleFormat)?.Value?.Select(a => (TiffSampleFormat)a).ToArray();
         TiffSampleFormat? sampleFormat = null;
         if (sampleFormats != null)
         {
             sampleFormat = sampleFormats[0];
-            foreach (TiffSampleFormat format in sampleFormats)
+            foreach (var format in sampleFormats)
             {
                 if (format is not TiffSampleFormat.UnsignedInteger and not TiffSampleFormat.Float)
                 {
@@ -71,7 +71,7 @@ internal static class TiffDecoderOptionsParser
             }
         }
 
-        ushort[] ycbcrSubSampling = exifProfile.GetValue(ExifTag.YCbCrSubsampling)?.Value;
+        var ycbcrSubSampling = exifProfile.GetValue(ExifTag.YCbCrSubsampling)?.Value;
         if (ycbcrSubSampling != null && ycbcrSubSampling.Length != 2)
         {
             TiffThrowHelper.ThrowImageFormatException("Invalid YCbCrSubsampling, expected 2 values.");
@@ -134,7 +134,7 @@ internal static class TiffDecoderOptionsParser
                     TiffThrowHelper.ThrowNotSupported("The number of samples in the TIFF BitsPerSample entry is not supported.");
                 }
 
-                ushort bitsPerChannel = options.BitsPerSample.Channel0;
+                var bitsPerChannel = options.BitsPerSample.Channel0;
                 if (bitsPerChannel > 32)
                 {
                     TiffThrowHelper.ThrowNotSupported("Bits per sample is not supported.");
@@ -201,7 +201,7 @@ internal static class TiffDecoderOptionsParser
                     TiffThrowHelper.ThrowNotSupported("The number of samples in the TIFF BitsPerSample entry is not supported.");
                 }
 
-                ushort bitsPerChannel = options.BitsPerSample.Channel0;
+                var bitsPerChannel = options.BitsPerSample.Channel0;
                 if (bitsPerChannel > 32)
                 {
                     TiffThrowHelper.ThrowNotSupported("Bits per sample is not supported.");
@@ -263,7 +263,7 @@ internal static class TiffDecoderOptionsParser
 
             case TiffPhotometricInterpretation.Rgb:
             {
-                TiffBitsPerSample bitsPerSample = options.BitsPerSample;
+                var bitsPerSample = options.BitsPerSample;
                 if (bitsPerSample.Channels is not (3 or 4))
                 {
                     TiffThrowHelper.ThrowNotSupported("The number of samples in the TIFF BitsPerSample entry is not supported.");
@@ -277,7 +277,7 @@ internal static class TiffDecoderOptionsParser
 
                 if (options.PlanarConfiguration == TiffPlanarConfiguration.Chunky)
                 {
-                    ushort bitsPerChannel = options.BitsPerSample.Channel0;
+                    var bitsPerChannel = options.BitsPerSample.Channel0;
                     switch (bitsPerChannel)
                     {
                         case 32:
@@ -335,7 +335,7 @@ internal static class TiffDecoderOptionsParser
                 }
                 else
                 {
-                    ushort bitsPerChannel = options.BitsPerSample.Channel0;
+                    var bitsPerChannel = options.BitsPerSample.Channel0;
                     switch (bitsPerChannel)
                     {
                         case 32:
@@ -384,7 +384,7 @@ internal static class TiffDecoderOptionsParser
                     TiffThrowHelper.ThrowNotSupported("The number of samples in the TIFF BitsPerSample entry is not supported.");
                 }
 
-                ushort bitsPerChannel = options.BitsPerSample.Channel0;
+                var bitsPerChannel = options.BitsPerSample.Channel0;
                 if (bitsPerChannel != 8)
                 {
                     TiffThrowHelper.ThrowNotSupported("Only 8 bits per channel is supported for YCbCr images.");

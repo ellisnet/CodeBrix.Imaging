@@ -30,9 +30,9 @@ internal static class HalfTypeHelper
     /// <returns>The <see cref="ushort"/></returns>
     internal static ushort Pack(int value)
     {
-        int s = (value >> 16) & 0x00008000;
-        int e = ((value >> 23) & 0x000000ff) - (127 - 15);
-        int m = value & 0x007fffff;
+        var s = (value >> 16) & 0x00008000;
+        var e = ((value >> 23) & 0x000000ff) - (127 - 15);
+        var m = value & 0x007fffff;
 
         if (e <= 0)
         {
@@ -43,9 +43,9 @@ internal static class HalfTypeHelper
 
             m |= 0x00800000;
 
-            int t = 14 - e;
-            int a = (1 << (t - 1)) - 1;
-            int b = (m >> t) & 1;
+            var t = 14 - e;
+            var a = (1 << (t - 1)) - 1;
+            var b = (m >> t) & 1;
 
             m = (m + a + b) >> t;
 
@@ -87,8 +87,8 @@ internal static class HalfTypeHelper
     internal static float Unpack(ushort value)
     {
         uint result;
-        uint mantissa = (uint)(value & 1023);
-        uint exponent = 0xfffffff2;
+        var mantissa = (uint)(value & 1023);
+        var exponent = 0xfffffff2;
 
         if ((value & -33792) == 0)
         {

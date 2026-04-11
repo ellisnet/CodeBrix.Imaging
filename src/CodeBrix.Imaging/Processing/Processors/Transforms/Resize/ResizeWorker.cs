@@ -70,11 +70,11 @@ internal sealed class ResizeWorker<TPixel> : IDisposable
         this.windowBandHeight = verticalKernelMap.MaxDiameter;
 
         // We need to make sure the working buffer is contiguous:
-        int workingBufferLimitHintInBytes = Math.Min(
+        var workingBufferLimitHintInBytes = Math.Min(
             configuration.WorkingBufferSizeHintInBytes,
             configuration.MemoryAllocator.GetBufferCapacityInBytes());
 
-        int numberOfWindowBands = ResizeHelper.CalculateResizeWorkerHeightInWindowBands(
+        var numberOfWindowBands = ResizeHelper.CalculateResizeWorkerHeightInWindowBands(
             this.windowBandHeight,
             targetWorkingRect.Width,
             workingBufferLimitHintInBytes);
@@ -109,39 +109,39 @@ internal sealed class ResizeWorker<TPixel> : IDisposable
 
     public void FillDestinationPixels(RowInterval rowInterval, Buffer2D<TPixel> destination)
     {
-        Span<Vector4> tempColSpan = this.tempColumnBuffer.GetSpan();
+        var tempColSpan = this.tempColumnBuffer.GetSpan();
 
         // When creating transposedFirstPassBuffer, we made sure it's contiguous:
-        Span<Vector4> transposedFirstPassBufferSpan = this.transposedFirstPassBuffer.DangerousGetSingleSpan();
+        var transposedFirstPassBufferSpan = this.transposedFirstPassBuffer.DangerousGetSingleSpan();
 
-        int left = this.targetWorkingRect.Left;
-        int right = this.targetWorkingRect.Right;
-        int width = this.targetWorkingRect.Width;
-        for (int y = rowInterval.Min; y < rowInterval.Max; y++)
+        var left = this.targetWorkingRect.Left;
+        var right = this.targetWorkingRect.Right;
+        var width = this.targetWorkingRect.Width;
+        for (var y = rowInterval.Min; y < rowInterval.Max; y++)
         {
             // Ensure offsets are normalized for cropping and padding.
-            ResizeKernel kernel = this.verticalKernelMap.GetKernel(y - this.targetOrigin.Y);
+            var kernel = this.verticalKernelMap.GetKernel(y - this.targetOrigin.Y);
 
             while (kernel.StartIndex + kernel.Length > this.currentWindow.Max)
             {
                 this.Slide();
             }
 
-            ref Vector4 tempRowBase = ref MemoryMarshal.GetReference(tempColSpan);
+            ref var tempRowBase = ref MemoryMarshal.GetReference(tempColSpan);
 
-            int top = kernel.StartIndex - this.currentWindow.Min;
+            var top = kernel.StartIndex - this.currentWindow.Min;
 
-            ref Vector4 fpBase = ref transposedFirstPassBufferSpan[top];
+            ref var fpBase = ref transposedFirstPassBufferSpan[top];
 
             for (nint x = 0; x < (right - left); x++)
             {
-                ref Vector4 firstPassColumnBase = ref Unsafe.Add(ref fpBase, x * this.workerHeight);
+                ref var firstPassColumnBase = ref Unsafe.Add(ref fpBase, x * this.workerHeight);
 
                 // Destination color components
                 Unsafe.Add(ref tempRowBase, x) = kernel.ConvolveCore(ref firstPassColumnBase);
             }
 
-            Span<TPixel> targetRowSpan = destination.DangerousGetRowSpan(y).Slice(left, width);
+            var targetRowSpan = destination.DangerousGetRowSpan(y).Slice(left, width);
 
             PixelOperations<TPixel>.Instance.FromVector4Destructive(this.configuration, tempColSpan, targetRowSpan, this.conversionModifiers);
         }
@@ -149,8 +149,8 @@ internal sealed class ResizeWorker<TPixel> : IDisposable
 
     private void Slide()
     {
-        int minY = this.currentWindow.Max - this.windowBandHeight;
-        int maxY = Math.Min(minY + this.workerHeight, this.sourceRectangle.Height);
+        var minY = this.currentWindow.Max - this.windowBandHeight;
+        var maxY = Math.Min(minY + this.workerHeight, this.sourceRectangle.Height);
 
         // Copy previous bottom band to the new top:
         // (rows <--> columns, because the buffer is transposed)
@@ -167,15 +167,15 @@ internal sealed class ResizeWorker<TPixel> : IDisposable
 
     private void CalculateFirstPassValues(RowInterval calculationInterval)
     {
-        Span<Vector4> tempRowSpan = this.tempRowBuffer.GetSpan();
-        Span<Vector4> transposedFirstPassBufferSpan = this.transposedFirstPassBuffer.DangerousGetSingleSpan();
+        var tempRowSpan = this.tempRowBuffer.GetSpan();
+        var transposedFirstPassBufferSpan = this.transposedFirstPassBuffer.DangerousGetSingleSpan();
 
-        int left = this.targetWorkingRect.Left;
-        int right = this.targetWorkingRect.Right;
-        int targetOriginX = this.targetOrigin.X;
-        for (int y = calculationInterval.Min; y < calculationInterval.Max; y++)
+        var left = this.targetWorkingRect.Left;
+        var right = this.targetWorkingRect.Right;
+        var targetOriginX = this.targetOrigin.X;
+        for (var y = calculationInterval.Min; y < calculationInterval.Max; y++)
         {
-            Span<TPixel> sourceRow = this.source.DangerousGetRowSpan(y);
+            var sourceRow = this.source.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToVector4(
                 this.configuration,
@@ -185,11 +185,11 @@ internal sealed class ResizeWorker<TPixel> : IDisposable
 
             // optimization for:
             // Span<Vector4> firstPassSpan = transposedFirstPassBufferSpan.Slice(y - this.currentWindow.Min);
-            ref Vector4 firstPassBaseRef = ref transposedFirstPassBufferSpan[y - this.currentWindow.Min];
+            ref var firstPassBaseRef = ref transposedFirstPassBufferSpan[y - this.currentWindow.Min];
 
             for (nint x = left, z = 0; x < right; x++, z++)
             {
-                ResizeKernel kernel = this.horizontalKernelMap.GetKernel(x - targetOriginX);
+                var kernel = this.horizontalKernelMap.GetKernel(x - targetOriginX);
 
                 // optimization for:
                 // firstPassSpan[x * this.workerHeight] = kernel.Convolve(tempRowSpan);

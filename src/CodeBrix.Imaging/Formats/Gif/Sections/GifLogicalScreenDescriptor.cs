@@ -85,14 +85,14 @@ internal readonly struct GifLogicalScreenDescriptor
 
     public void WriteTo(Span<byte> buffer)
     {
-        ref GifLogicalScreenDescriptor dest = ref Unsafe.As<byte, GifLogicalScreenDescriptor>(ref MemoryMarshal.GetReference(buffer));
+        ref var dest = ref Unsafe.As<byte, GifLogicalScreenDescriptor>(ref MemoryMarshal.GetReference(buffer));
 
         dest = this;
     }
 
     public static GifLogicalScreenDescriptor Parse(ReadOnlySpan<byte> buffer)
     {
-        GifLogicalScreenDescriptor result = MemoryMarshal.Cast<byte, GifLogicalScreenDescriptor>(buffer)[0];
+        var result = MemoryMarshal.Cast<byte, GifLogicalScreenDescriptor>(buffer)[0];
 
         if (result.GlobalColorTableSize > 255 * 4)
         {

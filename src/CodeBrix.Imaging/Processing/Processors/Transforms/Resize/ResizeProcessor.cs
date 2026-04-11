@@ -19,7 +19,7 @@ public class ResizeProcessor : CloningImageProcessor
         Guard.NotNull(options.Sampler, nameof(options.Sampler));
         Guard.MustBeValueType(options.Sampler, nameof(options.Sampler));
 
-        (Size size, Rectangle rectangle) = ResizeHelper.CalculateTargetLocationAndBounds(sourceSize, options);
+        (var size, var rectangle) = ResizeHelper.CalculateTargetLocationAndBounds(sourceSize, options);
 
         this.Options = options;
         this.DestinationWidth = size.Width;

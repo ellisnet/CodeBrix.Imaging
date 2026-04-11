@@ -23,7 +23,7 @@ public sealed class SimpleGcMemoryAllocator : MemoryAllocator
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of negative length={length}.");
         }
 
-        ulong lengthInBytes = (ulong)length * (ulong)Unsafe.SizeOf<T>();
+        var lengthInBytes = (ulong)length * (ulong)Unsafe.SizeOf<T>();
         if (lengthInBytes > (ulong)this.SingleBufferAllocationLimitBytes)
         {
             throw new InvalidMemoryOperationException($"Attempted to allocate a buffer of length={lengthInBytes} that exceeded the limit {this.SingleBufferAllocationLimitBytes}.");

@@ -29,7 +29,7 @@ internal abstract class BitReaderBase : IDisposable
     protected void ReadImageDataFromStream(Stream input, int bytesToRead, MemoryAllocator memoryAllocator)
     {
         this.Data = memoryAllocator.Allocate<byte>(bytesToRead);
-        Span<byte> dataSpan = this.Data.Memory.Span;
+        var dataSpan = this.Data.Memory.Span;
         input.Read(dataSpan.Slice(0, bytesToRead), 0, bytesToRead);
     }
 

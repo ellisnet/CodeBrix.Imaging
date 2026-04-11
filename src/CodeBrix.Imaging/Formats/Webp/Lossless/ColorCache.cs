@@ -33,7 +33,7 @@ internal class ColorCache
     /// <param name="hashBits">The hashBits determine the size of cache. It will be 1 left shifted by hashBits.</param>
     public void Init(int hashBits)
     {
-        int hashSize = 1 << hashBits;
+        var hashSize = 1 << hashBits;
         this.Colors = new uint[hashSize];
         this.HashBits = hashBits;
         this.HashShift = 32 - hashBits;
@@ -46,7 +46,7 @@ internal class ColorCache
     [MethodImpl(InliningOptions.ShortMethod)]
     public void Insert(uint bgra)
     {
-        int key = HashPix(bgra, this.HashShift);
+        var key = HashPix(bgra, this.HashShift);
         this.Colors[key] = bgra;
     }
 
@@ -66,7 +66,7 @@ internal class ColorCache
     [MethodImpl(InliningOptions.ShortMethod)]
     public int Contains(uint bgra)
     {
-        int key = HashPix(bgra, this.HashShift);
+        var key = HashPix(bgra, this.HashShift);
         return (this.Colors[key] == bgra) ? key : -1;
     }
 

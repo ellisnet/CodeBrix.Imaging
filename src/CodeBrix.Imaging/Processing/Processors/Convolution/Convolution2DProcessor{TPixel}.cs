@@ -57,8 +57,8 @@ internal class Convolution2DProcessor<TPixel> : ImageProcessor<TPixel>
     /// <inheritdoc/>
     protected override void OnFrameApply(ImageFrame<TPixel> source)
     {
-        MemoryAllocator allocator = this.Configuration.MemoryAllocator;
-        using Buffer2D<TPixel> targetPixels = allocator.Allocate2D<TPixel>(source.Width, source.Height);
+        var allocator = this.Configuration.MemoryAllocator;
+        using var targetPixels = allocator.Allocate2D<TPixel>(source.Width, source.Height);
 
         source.CopyTo(targetPixels);
 

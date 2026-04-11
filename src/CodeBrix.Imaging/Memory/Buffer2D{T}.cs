@@ -110,9 +110,9 @@ public sealed class Buffer2D<T> : IDisposable
         DebugGuard.MustBeGreaterThanOrEqualTo(y, 0, nameof(y));
         DebugGuard.MustBeLessThan(y, this.Height, nameof(y));
 
-        int stride = this.Width + padding;
+        var stride = this.Width + padding;
 
-        Span<T> slice = this.FastMemoryGroup.GetRemainingSliceOfBuffer(y * (long)this.Width);
+        var slice = this.FastMemoryGroup.GetRemainingSliceOfBuffer(y * (long)this.Width);
 
         if (slice.Length < stride)
         {
@@ -127,7 +127,7 @@ public sealed class Buffer2D<T> : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     internal ref T GetElementUnsafe(int x, int y)
     {
-        Span<T> span = this.FastMemoryGroup.GetRowSpanCoreUnsafe(y, this.Width);
+        var span = this.FastMemoryGroup.GetRowSpanCoreUnsafe(y, this.Width);
         return ref span[x];
     }
 
@@ -172,7 +172,7 @@ public sealed class Buffer2D<T> : IDisposable
     /// </summary>
     internal static bool SwapOrCopyContent(Buffer2D<T> destination, Buffer2D<T> source)
     {
-        bool swapped = false;
+        var swapped = false;
         if (MemoryGroup<T>.CanSwapContent(destination.FastMemoryGroup, source.FastMemoryGroup))
         {
             (destination.FastMemoryGroup, source.FastMemoryGroup) =

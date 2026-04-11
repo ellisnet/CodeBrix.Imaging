@@ -115,17 +115,17 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
         Guard.NotNull(stream, nameof(stream));
 
         this.configuration = image.GetConfiguration();
-        ImageMetadata metadata = image.Metadata;
-        BmpMetadata bmpMetadata = metadata.GetBmpMetadata();
+        var metadata = image.Metadata;
+        var bmpMetadata = metadata.GetBmpMetadata();
         this.bitsPerPixel ??= bmpMetadata.BitsPerPixel;
 
-        short bpp = (short)this.bitsPerPixel;
-        int bytesPerLine = 4 * (((image.Width * bpp) + 31) / 32);
+        var bpp = (short)this.bitsPerPixel;
+        var bytesPerLine = 4 * (((image.Width * bpp) + 31) / 32);
         this.padding = bytesPerLine - (int)(image.Width * (bpp / 8F));
 
         // Set Resolution.
-        int hResolution = 0;
-        int vResolution = 0;
+        var hResolution = 0;
+        var vResolution = 0;
 
         if (metadata.ResolutionUnits != PixelResolutionUnit.AspectRatio)
         {
@@ -154,7 +154,7 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
             }
         }
 
-        int infoHeaderSize = this.writeV4Header ? BmpInfoHeader.SizeV4 : BmpInfoHeader.SizeV3;
+        var infoHeaderSize = this.writeV4Header ? BmpInfoHeader.SizeV4 : BmpInfoHeader.SizeV3;
         var infoHeader = new BmpInfoHeader(
             headerSize: infoHeaderSize,
             height: image.Height,
@@ -176,7 +176,7 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
             infoHeader.Compression = BmpCompression.BitFields;
         }
 
-        int colorPaletteSize = 0;
+        var colorPaletteSize = 0;
         if (this.bitsPerPixel == BmpBitsPerPixel.Pixel8)
         {
             colorPaletteSize = ColorPaletteSize8Bit;
@@ -228,7 +228,7 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void WriteImage<TPixel>(Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Buffer2D<TPixel> pixels = image.PixelBuffer;
+        var pixels = image.PixelBuffer;
         switch (this.bitsPerPixel)
         {
             case BmpBitsPerPixel.Pixel32:
@@ -269,12 +269,12 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write32Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IMemoryOwner<byte> row = this.AllocateRow(pixels.Width, 4);
-        Span<byte> rowSpan = row.GetSpan();
+        using var row = this.AllocateRow(pixels.Width, 4);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToBgra32Bytes(
                 this.configuration,
                 pixelSpan,
@@ -293,14 +293,14 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write24Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int rowBytesWithoutPadding = width * 3;
-        using IMemoryOwner<byte> row = this.AllocateRow(width, 3);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var rowBytesWithoutPadding = width * 3;
+        using var row = this.AllocateRow(width, 3);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToBgr24Bytes(
                 this.configuration,
                 pixelSpan,
@@ -319,14 +319,14 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write16Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int width = pixels.Width;
-        int rowBytesWithoutPadding = width * 2;
-        using IMemoryOwner<byte> row = this.AllocateRow(width, 2);
-        Span<byte> rowSpan = row.GetSpan();
+        var width = pixels.Width;
+        var rowBytesWithoutPadding = width * 2;
+        using var row = this.AllocateRow(width, 2);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
 
             PixelOperations<TPixel>.Instance.ToBgra5551Bytes(
                 this.configuration,
@@ -347,9 +347,9 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write8Bit<TPixel>(Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        bool isL8 = typeof(TPixel) == typeof(L8);
-        using IMemoryOwner<byte> colorPaletteBuffer = this.memoryAllocator.Allocate<byte>(ColorPaletteSize8Bit, AllocationOptions.Clean);
-        Span<byte> colorPalette = colorPaletteBuffer.GetSpan();
+        var isL8 = typeof(TPixel) == typeof(L8);
+        using var colorPaletteBuffer = this.memoryAllocator.Allocate<byte>(ColorPaletteSize8Bit, AllocationOptions.Clean);
+        var colorPalette = colorPaletteBuffer.GetSpan();
 
         if (isL8)
         {
@@ -371,18 +371,18 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write8BitColor<TPixel>(Stream stream, ImageFrame<TPixel> image, Span<byte> colorPalette)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration);
-        using IndexedImageFrame<TPixel> quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(image, image.Bounds());
+        using var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration);
+        using var quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(image, image.Bounds());
 
-        ReadOnlySpan<TPixel> quantizedColorPalette = quantized.Palette.Span;
+        var quantizedColorPalette = quantized.Palette.Span;
         this.WriteColorPalette(stream, quantizedColorPalette, colorPalette);
 
-        for (int y = image.Height - 1; y >= 0; y--)
+        for (var y = image.Height - 1; y >= 0; y--)
         {
-            ReadOnlySpan<byte> pixelSpan = quantized.DangerousGetRowSpan(y);
+            var pixelSpan = quantized.DangerousGetRowSpan(y);
             stream.Write(pixelSpan);
 
-            for (int i = 0; i < this.padding; i++)
+            for (var i = 0; i < this.padding; i++)
             {
                 stream.WriteByte(0);
             }
@@ -400,10 +400,10 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         // Create a color palette with 256 different gray values.
-        for (int i = 0; i <= 255; i++)
+        for (var i = 0; i <= 255; i++)
         {
-            int idx = i * 4;
-            byte grayValue = (byte)i;
+            var idx = i * 4;
+            var grayValue = (byte)i;
             colorPalette[idx] = grayValue;
             colorPalette[idx + 1] = grayValue;
             colorPalette[idx + 2] = grayValue;
@@ -413,14 +413,14 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
         }
 
         stream.Write(colorPalette);
-        Buffer2D<TPixel> imageBuffer = image.PixelBuffer;
-        for (int y = image.Height - 1; y >= 0; y--)
+        var imageBuffer = image.PixelBuffer;
+        for (var y = image.Height - 1; y >= 0; y--)
         {
             ReadOnlySpan<TPixel> inputPixelRow = imageBuffer.DangerousGetRowSpan(y);
-            ReadOnlySpan<byte> outputPixelRow = MemoryMarshal.AsBytes(inputPixelRow);
+            var outputPixelRow = MemoryMarshal.AsBytes(inputPixelRow);
             stream.Write(outputPixelRow);
 
-            for (int i = 0; i < this.padding; i++)
+            for (var i = 0; i < this.padding; i++)
             {
                 stream.WriteByte(0);
             }
@@ -436,25 +436,25 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write4BitColor<TPixel>(Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration, new QuantizerOptions()
+        using var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration, new QuantizerOptions()
         {
             MaxColors = 16
         });
-        using IndexedImageFrame<TPixel> quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(image, image.Bounds());
-        using IMemoryOwner<byte> colorPaletteBuffer = this.memoryAllocator.Allocate<byte>(ColorPaletteSize4Bit, AllocationOptions.Clean);
+        using var quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(image, image.Bounds());
+        using var colorPaletteBuffer = this.memoryAllocator.Allocate<byte>(ColorPaletteSize4Bit, AllocationOptions.Clean);
 
-        Span<byte> colorPalette = colorPaletteBuffer.GetSpan();
-        ReadOnlySpan<TPixel> quantizedColorPalette = quantized.Palette.Span;
+        var colorPalette = colorPaletteBuffer.GetSpan();
+        var quantizedColorPalette = quantized.Palette.Span;
         this.WriteColorPalette(stream, quantizedColorPalette, colorPalette);
 
-        ReadOnlySpan<byte> pixelRowSpan = quantized.DangerousGetRowSpan(0);
-        int rowPadding = pixelRowSpan.Length % 2 != 0 ? this.padding - 1 : this.padding;
-        for (int y = image.Height - 1; y >= 0; y--)
+        var pixelRowSpan = quantized.DangerousGetRowSpan(0);
+        var rowPadding = pixelRowSpan.Length % 2 != 0 ? this.padding - 1 : this.padding;
+        for (var y = image.Height - 1; y >= 0; y--)
         {
             pixelRowSpan = quantized.DangerousGetRowSpan(y);
 
-            int endIdx = pixelRowSpan.Length % 2 == 0 ? pixelRowSpan.Length : pixelRowSpan.Length - 1;
-            for (int i = 0; i < endIdx; i += 2)
+            var endIdx = pixelRowSpan.Length % 2 == 0 ? pixelRowSpan.Length : pixelRowSpan.Length - 1;
+            for (var i = 0; i < endIdx; i += 2)
             {
                 stream.WriteByte((byte)((pixelRowSpan[i] << 4) | pixelRowSpan[i + 1]));
             }
@@ -464,7 +464,7 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
                 stream.WriteByte((byte)((pixelRowSpan[pixelRowSpan.Length - 1] << 4) | 0));
             }
 
-            for (int i = 0; i < rowPadding; i++)
+            for (var i = 0; i < rowPadding; i++)
             {
                 stream.WriteByte(0);
             }
@@ -480,37 +480,37 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void Write1BitColor<TPixel>(Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IQuantizer<TPixel> frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration, new QuantizerOptions()
+        using var frameQuantizer = this.quantizer.CreatePixelSpecificQuantizer<TPixel>(this.configuration, new QuantizerOptions()
         {
             MaxColors = 2
         });
-        using IndexedImageFrame<TPixel> quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(image, image.Bounds());
-        using IMemoryOwner<byte> colorPaletteBuffer = this.memoryAllocator.Allocate<byte>(ColorPaletteSize1Bit, AllocationOptions.Clean);
+        using var quantized = frameQuantizer.BuildPaletteAndQuantizeFrame(image, image.Bounds());
+        using var colorPaletteBuffer = this.memoryAllocator.Allocate<byte>(ColorPaletteSize1Bit, AllocationOptions.Clean);
 
-        Span<byte> colorPalette = colorPaletteBuffer.GetSpan();
-        ReadOnlySpan<TPixel> quantizedColorPalette = quantized.Palette.Span;
+        var colorPalette = colorPaletteBuffer.GetSpan();
+        var quantizedColorPalette = quantized.Palette.Span;
         this.WriteColorPalette(stream, quantizedColorPalette, colorPalette);
 
-        ReadOnlySpan<byte> quantizedPixelRow = quantized.DangerousGetRowSpan(0);
-        int rowPadding = quantizedPixelRow.Length % 8 != 0 ? this.padding - 1 : this.padding;
-        for (int y = image.Height - 1; y >= 0; y--)
+        var quantizedPixelRow = quantized.DangerousGetRowSpan(0);
+        var rowPadding = quantizedPixelRow.Length % 8 != 0 ? this.padding - 1 : this.padding;
+        for (var y = image.Height - 1; y >= 0; y--)
         {
             quantizedPixelRow = quantized.DangerousGetRowSpan(y);
 
-            int endIdx = quantizedPixelRow.Length % 8 == 0 ? quantizedPixelRow.Length : quantizedPixelRow.Length - 8;
-            for (int i = 0; i < endIdx; i += 8)
+            var endIdx = quantizedPixelRow.Length % 8 == 0 ? quantizedPixelRow.Length : quantizedPixelRow.Length - 8;
+            for (var i = 0; i < endIdx; i += 8)
             {
                 Write1BitPalette(stream, i, i + 8, quantizedPixelRow);
             }
 
             if (quantizedPixelRow.Length % 8 != 0)
             {
-                int startIdx = quantizedPixelRow.Length - 7;
+                var startIdx = quantizedPixelRow.Length - 7;
                 endIdx = quantizedPixelRow.Length;
                 Write1BitPalette(stream, startIdx, endIdx, quantizedPixelRow);
             }
 
-            for (int i = 0; i < rowPadding; i++)
+            for (var i = 0; i < rowPadding; i++)
             {
                 stream.WriteByte(0);
             }
@@ -527,10 +527,10 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     private void WriteColorPalette<TPixel>(Stream stream, ReadOnlySpan<TPixel> quantizedColorPalette, Span<byte> colorPalette)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        int quantizedColorBytes = quantizedColorPalette.Length * 4;
+        var quantizedColorBytes = quantizedColorPalette.Length * 4;
         PixelOperations<TPixel>.Instance.ToBgra32(this.configuration, quantizedColorPalette, MemoryMarshal.Cast<byte, Bgra32>(colorPalette.Slice(0, quantizedColorBytes)));
-        Span<uint> colorPaletteAsUInt = MemoryMarshal.Cast<byte, uint>(colorPalette);
-        for (int i = 0; i < colorPaletteAsUInt.Length; i++)
+        var colorPaletteAsUInt = MemoryMarshal.Cast<byte, uint>(colorPalette);
+        for (var i = 0; i < colorPaletteAsUInt.Length; i++)
         {
             colorPaletteAsUInt[i] = colorPaletteAsUInt[i] & 0x00FFFFFF; // Padding byte, always 0.
         }
@@ -547,9 +547,9 @@ internal sealed class BmpEncoderCore : IImageEncoderInternals
     /// <param name="quantizedPixelRow">A quantized pixel row.</param>
     private static void Write1BitPalette(Stream stream, int startIdx, int endIdx, ReadOnlySpan<byte> quantizedPixelRow)
     {
-        int shift = 7;
+        var shift = 7;
         byte indices = 0;
-        for (int j = startIdx; j < endIdx; j++)
+        for (var j = startIdx; j < endIdx; j++)
         {
             indices = (byte)(indices | ((byte)(quantizedPixelRow[j] & 1) << shift));
             shift--;

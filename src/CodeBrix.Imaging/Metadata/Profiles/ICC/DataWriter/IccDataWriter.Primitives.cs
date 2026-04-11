@@ -178,7 +178,7 @@ internal sealed partial class IccDataWriter
             return 0;
         }
 
-        byte[] data = Encoding.ASCII.GetBytes(value);
+        var data = Encoding.ASCII.GetBytes(value);
         this.dataStream.Write(data, 0, data.Length);
         return data.Length;
     }
@@ -204,8 +204,8 @@ internal sealed partial class IccDataWriter
             value = string.Empty;
         }
 
-        byte paddingChar = (byte)' ';
-        int lengthAdjust = 0;
+        var paddingChar = (byte)' ';
+        var lengthAdjust = 0;
 
         if (ensureNullTerminator)
         {
@@ -215,10 +215,10 @@ internal sealed partial class IccDataWriter
 
         value = value.Substring(0, Math.Min(length - lengthAdjust, value.Length));
 
-        byte[] textData = Encoding.ASCII.GetBytes(value);
-        int actualLength = Math.Min(length - lengthAdjust, textData.Length);
+        var textData = Encoding.ASCII.GetBytes(value);
+        var actualLength = Math.Min(length - lengthAdjust, textData.Length);
         this.dataStream.Write(textData, 0, actualLength);
-        for (int i = 0; i < length - actualLength; i++)
+        for (var i = 0; i < length - actualLength; i++)
         {
             this.dataStream.WriteByte(paddingChar);
         }
@@ -238,7 +238,7 @@ internal sealed partial class IccDataWriter
             return 0;
         }
 
-        byte[] data = Encoding.BigEndianUnicode.GetBytes(value);
+        var data = Encoding.BigEndianUnicode.GetBytes(value);
         this.dataStream.Write(data, 0, data.Length);
         return data.Length;
     }

@@ -37,7 +37,7 @@ internal static partial class SimdUtils
             out Vector<float> dest1,
             out Vector<float> dest2)
         {
-            Vector.Widen(source, out Vector<int> i1, out Vector<int> i2);
+            Vector.Widen(source, out var i1, out var i2);
             dest1 = Vector.ConvertToSingle(i1);
             dest2 = Vector.ConvertToSingle(i2);
         }
@@ -57,8 +57,8 @@ internal static partial class SimdUtils
                 return;
             }
 
-            int remainder = Numerics.ModuloP2(source.Length, Vector<byte>.Count);
-            int adjustedCount = source.Length - remainder;
+            var remainder = Numerics.ModuloP2(source.Length, Vector<byte>.Count);
+            var adjustedCount = source.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -84,8 +84,8 @@ internal static partial class SimdUtils
                 return;
             }
 
-            int remainder = Numerics.ModuloP2(source.Length, Vector<byte>.Count);
-            int adjustedCount = source.Length - remainder;
+            var remainder = Numerics.ModuloP2(source.Length, Vector<byte>.Count);
+            var adjustedCount = source.Length - remainder;
 
             if (adjustedCount > 0)
             {
@@ -105,25 +105,25 @@ internal static partial class SimdUtils
         {
             VerifySpanInput(source, dest, Vector<byte>.Count);
 
-            int n = dest.Length / Vector<byte>.Count;
+            var n = dest.Length / Vector<byte>.Count;
 
-            ref Vector<byte> sourceBase = ref Unsafe.As<byte, Vector<byte>>(ref MemoryMarshal.GetReference(source));
-            ref Vector<float> destBase = ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(dest));
+            ref var sourceBase = ref Unsafe.As<byte, Vector<byte>>(ref MemoryMarshal.GetReference(source));
+            ref var destBase = ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(dest));
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
-                Vector<byte> b = Unsafe.Add(ref sourceBase, i);
+                var b = Unsafe.Add(ref sourceBase, i);
 
-                Vector.Widen(b, out Vector<ushort> s0, out Vector<ushort> s1);
-                Vector.Widen(s0, out Vector<uint> w0, out Vector<uint> w1);
-                Vector.Widen(s1, out Vector<uint> w2, out Vector<uint> w3);
+                Vector.Widen(b, out var s0, out var s1);
+                Vector.Widen(s0, out var w0, out var w1);
+                Vector.Widen(s1, out var w2, out var w3);
 
-                Vector<float> f0 = ConvertToSingle(w0);
-                Vector<float> f1 = ConvertToSingle(w1);
-                Vector<float> f2 = ConvertToSingle(w2);
-                Vector<float> f3 = ConvertToSingle(w3);
+                var f0 = ConvertToSingle(w0);
+                var f1 = ConvertToSingle(w1);
+                var f2 = ConvertToSingle(w2);
+                var f3 = ConvertToSingle(w3);
 
-                ref Vector<float> d = ref Unsafe.Add(ref destBase, i * 4);
+                ref var d = ref Unsafe.Add(ref destBase, i * 4);
                 d = f0;
                 Unsafe.Add(ref d, 1) = f1;
                 Unsafe.Add(ref d, 2) = f2;
@@ -140,30 +140,30 @@ internal static partial class SimdUtils
         {
             VerifySpanInput(source, dest, Vector<byte>.Count);
 
-            int n = dest.Length / Vector<byte>.Count;
+            var n = dest.Length / Vector<byte>.Count;
 
-            ref Vector<float> sourceBase =
+            ref var sourceBase =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(source));
-            ref Vector<byte> destBase = ref Unsafe.As<byte, Vector<byte>>(ref MemoryMarshal.GetReference(dest));
+            ref var destBase = ref Unsafe.As<byte, Vector<byte>>(ref MemoryMarshal.GetReference(dest));
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
-                ref Vector<float> s = ref Unsafe.Add(ref sourceBase, i * 4);
+                ref var s = ref Unsafe.Add(ref sourceBase, i * 4);
 
-                Vector<float> f0 = s;
-                Vector<float> f1 = Unsafe.Add(ref s, 1);
-                Vector<float> f2 = Unsafe.Add(ref s, 2);
-                Vector<float> f3 = Unsafe.Add(ref s, 3);
+                var f0 = s;
+                var f1 = Unsafe.Add(ref s, 1);
+                var f2 = Unsafe.Add(ref s, 2);
+                var f3 = Unsafe.Add(ref s, 3);
 
-                Vector<uint> w0 = ConvertToUInt32(f0);
-                Vector<uint> w1 = ConvertToUInt32(f1);
-                Vector<uint> w2 = ConvertToUInt32(f2);
-                Vector<uint> w3 = ConvertToUInt32(f3);
+                var w0 = ConvertToUInt32(f0);
+                var w1 = ConvertToUInt32(f1);
+                var w2 = ConvertToUInt32(f2);
+                var w3 = ConvertToUInt32(f3);
 
-                Vector<ushort> u0 = Vector.Narrow(w0, w1);
-                Vector<ushort> u1 = Vector.Narrow(w2, w3);
+                var u0 = Vector.Narrow(w0, w1);
+                var u1 = Vector.Narrow(w2, w3);
 
-                Vector<byte> b = Vector.Narrow(u0, u1);
+                var b = Vector.Narrow(u0, u1);
 
                 Unsafe.Add(ref destBase, i) = b;
             }
@@ -176,15 +176,15 @@ internal static partial class SimdUtils
             vf *= maxBytes;
             vf += new Vector<float>(0.5f);
             vf = Vector.Min(Vector.Max(vf, Vector<float>.Zero), maxBytes);
-            Vector<int> vi = Vector.ConvertToInt32(vf);
+            var vi = Vector.ConvertToInt32(vf);
             return Vector.AsVectorUInt32(vi);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector<float> ConvertToSingle(Vector<uint> u)
         {
-            Vector<int> vi = Vector.AsVectorInt32(u);
-            Vector<float> v = Vector.ConvertToSingle(vi);
+            var vi = Vector.AsVectorInt32(u);
+            var v = Vector.ConvertToSingle(vi);
             v *= new Vector<float>(1f / 255f);
             return v;
         }

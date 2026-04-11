@@ -36,7 +36,7 @@ internal sealed class IccMultiProcessElementsTagDataEntry : IccTagDataEntry, IEq
         this.OutputChannelCount = data[0].OutputChannelCount;
         this.Data = data;
 
-        bool channelsNotSame = data.Any(t => t.InputChannelCount != this.InputChannelCount || t.OutputChannelCount != this.OutputChannelCount);
+        var channelsNotSame = data.Any(t => t.InputChannelCount != this.InputChannelCount || t.OutputChannelCount != this.OutputChannelCount);
         Guard.IsFalse(channelsNotSame, nameof(data), "The number of input and output channels are not the same for all elements");
     }
 

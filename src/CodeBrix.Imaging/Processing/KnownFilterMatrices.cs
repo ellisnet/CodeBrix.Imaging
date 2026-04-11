@@ -246,7 +246,7 @@ public static class KnownFilterMatrices
         Guard.MustBeGreaterThanOrEqualTo(amount, 0, nameof(amount));
 
         // See https://cs.chromium.org/chromium/src/cc/paint/render_surface_filters.cc
-        float contrast = (-.5F * amount) + .5F;
+        var contrast = (-.5F * amount) + .5F;
 
         return new ColorMatrix
         {
@@ -333,9 +333,9 @@ public static class KnownFilterMatrices
             degrees += 360;
         }
 
-        float radian = GeometryUtilities.DegreeToRadian(degrees);
-        float cosRadian = MathF.Cos(radian);
-        float sinRadian = MathF.Sin(radian);
+        var radian = GeometryUtilities.DegreeToRadian(degrees);
+        var cosRadian = MathF.Cos(radian);
+        var sinRadian = MathF.Sin(radian);
 
         // The matrix is set up to preserve the luminance of the image.
         // See http://graficaobscura.com/matrix/index.html
@@ -367,7 +367,7 @@ public static class KnownFilterMatrices
         Guard.MustBeBetweenOrEqualTo(amount, 0, 1, nameof(amount));
 
         // See https://cs.chromium.org/chromium/src/cc/paint/render_surface_filters.cc
-        float invert = 1F - (2F * amount);
+        var invert = 1F - (2F * amount);
 
         return new ColorMatrix
         {

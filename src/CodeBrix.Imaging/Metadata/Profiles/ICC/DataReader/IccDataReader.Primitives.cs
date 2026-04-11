@@ -73,7 +73,7 @@ internal sealed partial class IccDataReader
     /// <returns>the value</returns>
     public float ReadSingle()
     {
-        int intValue = this.ReadInt32();
+        var intValue = this.ReadInt32();
 
         return Unsafe.As<int, float>(ref intValue);
     }
@@ -84,7 +84,7 @@ internal sealed partial class IccDataReader
     /// <returns>the value</returns>
     public double ReadDouble()
     {
-        long intValue = this.ReadInt64();
+        var intValue = this.ReadInt64();
 
         return Unsafe.As<long, double>(ref intValue);
     }
@@ -102,10 +102,10 @@ internal sealed partial class IccDataReader
         }
 
         Guard.MustBeGreaterThan(length, 0, nameof(length));
-        string value = Encoding.ASCII.GetString(this.data, this.AddIndex(length), length);
+        var value = Encoding.ASCII.GetString(this.data, this.AddIndex(length), length);
 
         // remove data after (potential) null terminator
-        int pos = value.IndexOf('\0');
+        var pos = value.IndexOf('\0');
         if (pos >= 0)
         {
             value = value.Substring(0, pos);

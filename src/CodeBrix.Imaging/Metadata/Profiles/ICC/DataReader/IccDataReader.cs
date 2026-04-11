@@ -50,7 +50,7 @@ internal sealed partial class IccDataReader
     /// <returns>The current <see cref="currentIndex"/> without the increment</returns>
     private int AddIndex(int increment)
     {
-        int tmp = this.currentIndex;
+        var tmp = this.currentIndex;
         this.currentIndex += increment;
         return tmp;
     }
@@ -69,7 +69,7 @@ internal sealed partial class IccDataReader
     /// <returns>the number of bytes to pad</returns>
     private int CalcPadding()
     {
-        int p = 4 - (this.currentIndex % 4);
+        var p = 4 - (this.currentIndex % 4);
         return p >= 4 ? 0 : p;
     }
 

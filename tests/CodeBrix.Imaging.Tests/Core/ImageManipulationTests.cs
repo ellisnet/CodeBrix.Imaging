@@ -120,21 +120,21 @@ public class ImageManipulationTests
         }
 
         // Get image dimensions
-        int imageWidth = imageWithText.Width;
-        int imageHeight = imageWithText.Height;
+        var imageWidth = imageWithText.Width;
+        var imageHeight = imageWithText.Height;
 
         // Calculate the anchor point: 10% from right edge, 10% from bottom edge
         // This is where the bottom-right corner of the text should align
-        float anchorX = imageWidth * 0.9f;  // 90% from left = 10% from right
-        float anchorY = imageHeight * 0.9f; // 90% from top = 10% from bottom
+        var anchorX = imageWidth * 0.9f;  // 90% from left = 10% from right
+        var anchorY = imageHeight * 0.9f; // 90% from top = 10% from bottom
 
         // Measure the text to get its dimensions
         var textBounds = TextRenderingExtensions.MeasureText(textToWrite, font);
 
         // Calculate the text origin (top-left corner) so that the bottom-right
         // corner of the text aligns with our anchor point
-        float textOriginX = anchorX - textBounds.Width;
-        float textOriginY = anchorY - textBounds.Height;
+        var textOriginX = anchorX - textBounds.Width;
+        var textOriginY = anchorY - textBounds.Height;
 
         // Draw the text onto the image
         // Parse the hex color string to create the text color
@@ -614,8 +614,8 @@ public class ImageManipulationTests
             .Grayscale());
 
         // Get image dimensions
-        int imageWidth = foregroundImage.Width;
-        int imageHeight = foregroundImage.Height;
+        var imageWidth = foregroundImage.Width;
+        var imageHeight = foregroundImage.Height;
 
         // Layer the foreground image on top of the background image with the specified opacity
         // The opacity controls how much of the foreground shows vs the background bleeding through
@@ -972,8 +972,8 @@ public class ImageManipulationTests
         using var processedImage = sampleImage.CloneAs<Rgba32>();
 
         // Get image dimensions
-        int imageWidth = processedImage.Width;
-        int imageHeight = processedImage.Height;
+        var imageWidth = processedImage.Width;
+        var imageHeight = processedImage.Height;
 
         // Apply the processing operation
         processedImage.Mutate(ctx => operation(ctx));
@@ -1054,8 +1054,8 @@ public class ImageManipulationTests
         using var processedImage = sampleImage.CloneAs<Rgba32>();
 
         // Get original image dimensions
-        int originalWidth = processedImage.Width;
-        int originalHeight = processedImage.Height;
+        var originalWidth = processedImage.Width;
+        var originalHeight = processedImage.Height;
 
         // Apply the processing operation
         processedImage.Mutate(ctx => operation(ctx));

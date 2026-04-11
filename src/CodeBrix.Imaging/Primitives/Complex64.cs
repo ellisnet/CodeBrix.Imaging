@@ -66,8 +66,8 @@ internal readonly struct Complex64 : IEquatable<Complex64>
     [MethodImpl(InliningOptions.ShortMethod)]
     public static ComplexVector4 operator *(Complex64 value, ComplexVector4 vector)
     {
-        Vector4 real = (value.Real * vector.Real) - (value.Imaginary * vector.Imaginary);
-        Vector4 imaginary = (value.Real * vector.Imaginary) + (value.Imaginary * vector.Real);
+        var real = (value.Real * vector.Real) - (value.Imaginary * vector.Imaginary);
+        var imaginary = (value.Real * vector.Imaginary) + (value.Imaginary * vector.Real);
         return new ComplexVector4 { Real = real, Imaginary = imaginary };
     }
 

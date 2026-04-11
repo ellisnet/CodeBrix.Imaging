@@ -28,7 +28,7 @@ internal static class HuffmanUtils
 
     public static void CreateHuffmanTree(uint[] histogram, int treeDepthLimit, bool[] bufRle, HuffmanTree[] huffTree, HuffmanTreeCode huffCode)
     {
-        int numSymbols = huffCode.NumSymbols;
+        var numSymbols = huffCode.NumSymbols;
         bufRle.AsSpan().Clear();
         OptimizeHuffmanForRle(numSymbols, bufRle, histogram);
         GenerateOptimalTree(huffTree, histogram, numSymbols, treeDepthLimit, huffCode.CodeLengths);
@@ -62,15 +62,15 @@ internal static class HuffmanUtils
         // Let's not spoil any of the existing good rle codes.
         // Mark any seq of 0's that is longer as 5 as a goodForRle.
         // Mark any seq of non-0's that is longer as 7 as a goodForRle.
-        uint symbol = counts[0];
-        int stride = 0;
-        for (int i = 0; i < length + 1; i++)
+        var symbol = counts[0];
+        var stride = 0;
+        for (var i = 0; i < length + 1; i++)
         {
             if (i == length || counts[i] != symbol)
             {
                 if ((symbol == 0 && stride >= 5) || (symbol != 0 && stride >= 7))
                 {
-                    for (int k = 0; k < stride; k++)
+                    for (var k = 0; k < stride; k++)
                     {
                         goodForRle[i - k - 1] = true;
                     }
@@ -90,9 +90,9 @@ internal static class HuffmanUtils
 
         // 3) Let's replace those population counts that lead to more rle codes.
         stride = 0;
-        uint limit = counts[0];
+        var limit = counts[0];
         uint sum = 0;
-        for (int i = 0; i < length + 1; i++)
+        for (var i = 0; i < length + 1; i++)
         {
             if (i == length || goodForRle[i] || (i != 0 && goodForRle[i - 1]) || !ValuesShouldBeCollapsedToStrideAverage((int)counts[i], (int)limit))
             {
@@ -101,7 +101,7 @@ internal static class HuffmanUtils
                     uint k;
 
                     // The stride must end, collapse what we have, if we have enough (4).
-                    uint count = (uint)((sum + (stride / 2)) / stride);
+                    var count = (uint)((sum + (stride / 2)) / stride);
                     if (count < 1)
                     {
                         count = 1;
@@ -163,9 +163,9 @@ internal static class HuffmanUtils
     public static void GenerateOptimalTree(HuffmanTree[] tree, uint[] histogram, int histogramSize, int treeDepthLimit, byte[] bitDepths)
     {
         uint countMin;
-        int treeSizeOrig = 0;
+        var treeSizeOrig = 0;
 
-        for (int i = 0; i < histogramSize; i++)
+        for (var i = 0; i < histogramSize; i++)
         {
             if (histogram[i] != 0)
             {
@@ -178,22 +178,22 @@ internal static class HuffmanUtils
             return;
         }
 
-        Span<HuffmanTree> treePool = tree.AsSpan(treeSizeOrig);
+        var treePool = tree.AsSpan(treeSizeOrig);
 
         // For block sizes with less than 64k symbols we never need to do a
         // second iteration of this loop.
         for (countMin = 1; ; countMin *= 2)
         {
-            int treeSize = treeSizeOrig;
+            var treeSize = treeSizeOrig;
 
             // We need to pack the Huffman tree in treeDepthLimit bits.
             // So, we try by faking histogram entries to be at least 'countMin'.
-            int idx = 0;
-            for (int j = 0; j < histogramSize; j++)
+            var idx = 0;
+            for (var j = 0; j < histogramSize; j++)
             {
                 if (histogram[j] != 0)
                 {
-                    uint count = histogram[j] < countMin ? countMin : histogram[j];
+                    var count = histogram[j] < countMin ? countMin : histogram[j];
                     tree[idx].TotalCount = (int)count;
                     tree[idx].Value = j;
                     tree[idx].PoolIndexLeft = -1;
@@ -203,19 +203,19 @@ internal static class HuffmanUtils
             }
 
             // Build the Huffman tree.
-            Span<HuffmanTree> treeSlice = tree.AsSpan(0, treeSize);
+            var treeSlice = tree.AsSpan(0, treeSize);
             treeSlice.Sort(HuffmanTree.Compare);
 
             if (treeSize > 1)
             {
                 // Normal case.
-                int treePoolSize = 0;
+                var treePoolSize = 0;
                 while (treeSize > 1)
                 {
                     // Finish when we have only one root.
                     treePool[treePoolSize++] = tree[treeSize - 1];
                     treePool[treePoolSize++] = tree[treeSize - 2];
-                    int count = treePool[treePoolSize - 1].TotalCount + treePool[treePoolSize - 2].TotalCount;
+                    var count = treePool[treePoolSize - 1].TotalCount + treePool[treePoolSize - 2].TotalCount;
                     treeSize -= 2;
 
                     // Search for the insertion point.
@@ -228,10 +228,10 @@ internal static class HuffmanUtils
                         }
                     }
 
-                    int endIdx = k + 1;
-                    int num = treeSize - k;
-                    int startIdx = endIdx + num - 1;
-                    for (int i = startIdx; i >= endIdx; i--)
+                    var endIdx = k + 1;
+                    var num = treeSize - k;
+                    var startIdx = endIdx + num - 1;
+                    for (var i = startIdx; i >= endIdx; i--)
                     {
                         tree[i] = tree[i - 1];
                     }
@@ -253,7 +253,7 @@ internal static class HuffmanUtils
 
             // Test if this Huffman tree satisfies our 'treeDepthLimit' criteria.
             int maxDepth = bitDepths[0];
-            for (int j = 1; j < histogramSize; j++)
+            for (var j = 1; j < histogramSize; j++)
             {
                 if (maxDepth < bitDepths[j])
                 {
@@ -270,20 +270,20 @@ internal static class HuffmanUtils
 
     public static int CreateCompressedHuffmanTree(HuffmanTreeCode tree, HuffmanTreeToken[] tokensArray)
     {
-        int depthSize = tree.NumSymbols;
-        int prevValue = 8;  // 8 is the initial value for rle.
-        int i = 0;
-        int tokenPos = 0;
+        var depthSize = tree.NumSymbols;
+        var prevValue = 8;  // 8 is the initial value for rle.
+        var i = 0;
+        var tokenPos = 0;
         while (i < depthSize)
         {
             int value = tree.CodeLengths[i];
-            int k = i + 1;
+            var k = i + 1;
             while (k < depthSize && tree.CodeLengths[k] == value)
             {
                 k++;
             }
 
-            int runs = k - i;
+            var runs = k - i;
             if (value == 0)
             {
                 tokenPos += CodeRepeatedZeros(runs, tokensArray.AsSpan(tokenPos));
@@ -307,17 +307,17 @@ internal static class HuffmanUtils
         DebugGuard.MustBeGreaterThan(codeLengthsSize, 0, nameof(codeLengthsSize));
 
         // sorted[codeLengthsSize] is a pre-allocated array for sorting symbols by code length.
-        int[] sorted = new int[codeLengthsSize];
-        int totalSize = 1 << rootBits; // total size root table + 2nd level table.
+        var sorted = new int[codeLengthsSize];
+        var totalSize = 1 << rootBits; // total size root table + 2nd level table.
         int len; // current code length.
         int symbol; // symbol index in original or sorted table.
-        int[] counts = new int[WebpConstants.MaxAllowedCodeLength + 1]; // number of codes of each length.
-        int[] offsets = new int[WebpConstants.MaxAllowedCodeLength + 1]; // offsets in sorted table for each length.
+        var counts = new int[WebpConstants.MaxAllowedCodeLength + 1]; // number of codes of each length.
+        var offsets = new int[WebpConstants.MaxAllowedCodeLength + 1]; // offsets in sorted table for each length.
 
         // Build histogram of code lengths.
         for (symbol = 0; symbol < codeLengthsSize; ++symbol)
         {
-            int codeLengthOfSymbol = codeLengths[symbol];
+            var codeLengthOfSymbol = codeLengths[symbol];
             if (codeLengthOfSymbol > WebpConstants.MaxAllowedCodeLength)
             {
                 return 0;
@@ -336,7 +336,7 @@ internal static class HuffmanUtils
         offsets[1] = 0;
         for (len = 1; len < WebpConstants.MaxAllowedCodeLength; ++len)
         {
-            int codesOfLength = counts[len];
+            var codesOfLength = counts[len];
             if (codesOfLength > 1 << len)
             {
                 return 0;
@@ -348,7 +348,7 @@ internal static class HuffmanUtils
         // Sort symbols by length, by symbol order within each length.
         for (symbol = 0; symbol < codeLengthsSize; ++symbol)
         {
-            int symbolCodeLength = codeLengths[symbol];
+            var symbolCodeLength = codeLengths[symbol];
             if (symbolCodeLength > 0)
             {
                 sorted[offsets[symbolCodeLength]++] = symbol;
@@ -368,19 +368,19 @@ internal static class HuffmanUtils
         }
 
         int step; // step size to replicate values in current table
-        int low = -1;     // low bits for current root entry
-        int mask = totalSize - 1;    // mask for low bits
-        int key = 0;      // reversed prefix code
-        int numNodes = 1;     // number of Huffman tree nodes
-        int numOpen = 1;      // number of open branches in current tree level
-        int tableBits = rootBits;        // key length of current table
-        int tableSize = 1 << tableBits;  // size of current table
+        var low = -1;     // low bits for current root entry
+        var mask = totalSize - 1;    // mask for low bits
+        var key = 0;      // reversed prefix code
+        var numNodes = 1;     // number of Huffman tree nodes
+        var numOpen = 1;      // number of open branches in current tree level
+        var tableBits = rootBits;        // key length of current table
+        var tableSize = 1 << tableBits;  // size of current table
         symbol = 0;
 
         // Fill in root table.
         for (len = 1, step = 2; len <= rootBits; ++len, step <<= 1)
         {
-            int countsLen = counts[len];
+            var countsLen = counts[len];
             numOpen <<= 1;
             numNodes += numOpen;
             numOpen -= counts[len];
@@ -404,8 +404,8 @@ internal static class HuffmanUtils
         }
 
         // Fill in 2nd level tables and add pointers to root table.
-        Span<HuffmanCode> tableSpan = table;
-        int tablePos = 0;
+        var tableSpan = table;
+        var tablePos = 0;
         for (len = rootBits + 1, step = 2; len <= WebpConstants.MaxAllowedCodeLength; ++len, step <<= 1)
         {
             numOpen <<= 1;
@@ -448,12 +448,12 @@ internal static class HuffmanUtils
 
     private static int CodeRepeatedZeros(int repetitions, Span<HuffmanTreeToken> tokens)
     {
-        int pos = 0;
+        var pos = 0;
         while (repetitions >= 1)
         {
             if (repetitions < 3)
             {
-                for (int i = 0; i < repetitions; i++)
+                for (var i = 0; i < repetitions; i++)
                 {
                     tokens[pos].Code = 0;   // 0-value
                     tokens[pos].ExtraBits = 0;
@@ -490,7 +490,7 @@ internal static class HuffmanUtils
 
     private static int CodeRepeatedValues(int repetitions, Span<HuffmanTreeToken> tokens, int value, int prevValue)
     {
-        int pos = 0;
+        var pos = 0;
 
         if (value != prevValue)
         {
@@ -539,11 +539,11 @@ internal static class HuffmanUtils
     private static void ConvertBitDepthsToSymbols(HuffmanTreeCode tree)
     {
         // 0 bit-depth means that the symbol does not exist.
-        uint[] nextCode = new uint[WebpConstants.MaxAllowedCodeLength + 1];
-        int[] depthCount = new int[WebpConstants.MaxAllowedCodeLength + 1];
+        var nextCode = new uint[WebpConstants.MaxAllowedCodeLength + 1];
+        var depthCount = new int[WebpConstants.MaxAllowedCodeLength + 1];
 
-        int len = tree.NumSymbols;
-        for (int i = 0; i < len; i++)
+        var len = tree.NumSymbols;
+        for (var i = 0; i < len; i++)
         {
             int codeLength = tree.CodeLengths[i];
             depthCount[codeLength]++;
@@ -553,13 +553,13 @@ internal static class HuffmanUtils
         nextCode[0] = 0;
 
         uint code = 0;
-        for (int i = 1; i <= WebpConstants.MaxAllowedCodeLength; i++)
+        for (var i = 1; i <= WebpConstants.MaxAllowedCodeLength; i++)
         {
             code = (uint)((code + depthCount[i - 1]) << 1);
             nextCode[i] = code;
         }
 
-        for (int i = 0; i < len; i++)
+        for (var i = 0; i < len; i++)
         {
             int codeLength = tree.CodeLengths[i];
             tree.Codes[i] = (short)ReverseBits(codeLength, nextCode[codeLength]++);
@@ -582,7 +582,7 @@ internal static class HuffmanUtils
     private static uint ReverseBits(int numBits, uint bits)
     {
         uint retval = 0;
-        int i = 0;
+        var i = 0;
         while (i < numBits)
         {
             i += 4;
@@ -600,7 +600,7 @@ internal static class HuffmanUtils
     /// </summary>
     private static int NextTableBitSize(int[] count, int len, int rootBits)
     {
-        int left = 1 << (len - rootBits);
+        var left = 1 << (len - rootBits);
         while (len < WebpConstants.MaxAllowedCodeLength)
         {
             left -= count[len];
@@ -638,7 +638,7 @@ internal static class HuffmanUtils
     /// </summary>
     private static int GetNextKey(int key, int len)
     {
-        int step = 1 << (len - 1);
+        var step = 1 << (len - 1);
         while ((key & step) != 0)
         {
             step >>= 1;

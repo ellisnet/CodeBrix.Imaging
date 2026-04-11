@@ -29,7 +29,7 @@ public partial class ColorSpaceConverter
     public CieXyz ToCieXyz(in CieLab color)
     {
         // Conversion
-        CieXyz unadapted = CieLabToCieXyzConverter.Convert(color);
+        var unadapted = CieLabToCieXyzConverter.Convert(color);
 
         // Adaptation
         return this.Adapt(unadapted, color.WhitePoint);
@@ -43,15 +43,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLab> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLab sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLab sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -64,7 +64,7 @@ public partial class ColorSpaceConverter
     public CieXyz ToCieXyz(in CieLch color)
     {
         // Conversion to Lab
-        CieLab labColor = CieLchToCieLabConverter.Convert(color);
+        var labColor = CieLchToCieLabConverter.Convert(color);
 
         // Conversion to XYZ (incl. adaptation)
         return this.ToCieXyz(labColor);
@@ -78,15 +78,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLch> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLch sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLch sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -99,7 +99,7 @@ public partial class ColorSpaceConverter
     public CieXyz ToCieXyz(in CieLchuv color)
     {
         // Conversion to Luv
-        CieLuv luvColor = CieLchuvToCieLuvConverter.Convert(color);
+        var luvColor = CieLchuvToCieLuvConverter.Convert(color);
 
         // Conversion to XYZ (incl. adaptation)
         return this.ToCieXyz(luvColor);
@@ -113,15 +113,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLchuv> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLchuv sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLchuv sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -134,7 +134,7 @@ public partial class ColorSpaceConverter
     public CieXyz ToCieXyz(in CieLuv color)
     {
         // Conversion
-        CieXyz unadapted = CieLuvToCieXyzConverter.Convert(color);
+        var unadapted = CieLuvToCieXyzConverter.Convert(color);
 
         // Adaptation
         return this.Adapt(unadapted, color.WhitePoint);
@@ -148,15 +148,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieLuv> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieLuv sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieLuv sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -180,15 +180,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<CieXyy> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref CieXyy sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref CieXyy sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -213,15 +213,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Cmyk> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Cmyk sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Cmyk sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -246,15 +246,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Hsl> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Hsl sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Hsl sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -280,15 +280,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Hsv> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Hsv sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Hsv sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -300,7 +300,7 @@ public partial class ColorSpaceConverter
     /// <returns>The <see cref="CieXyz"/></returns>
     public CieXyz ToCieXyz(in HunterLab color)
     {
-        CieXyz unadapted = HunterLabToCieXyzConverter.Convert(color);
+        var unadapted = HunterLabToCieXyzConverter.Convert(color);
 
         return this.Adapt(unadapted, color.WhitePoint);
     }
@@ -313,15 +313,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<HunterLab> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref HunterLab sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref HunterLab sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -334,8 +334,8 @@ public partial class ColorSpaceConverter
     public CieXyz ToCieXyz(in LinearRgb color)
     {
         // Conversion
-        LinearRgbToCieXyzConverter converter = this.GetLinearRgbToCieXyzConverter(color.WorkingSpace);
-        CieXyz unadapted = converter.Convert(color);
+        var converter = this.GetLinearRgbToCieXyzConverter(color.WorkingSpace);
+        var unadapted = converter.Convert(color);
 
         return this.Adapt(unadapted, color.WorkingSpace.WhitePoint);
     }
@@ -348,15 +348,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<LinearRgb> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref LinearRgb sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref LinearRgb sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -379,15 +379,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Lms> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Lms sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Lms sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -400,7 +400,7 @@ public partial class ColorSpaceConverter
     public CieXyz ToCieXyz(in Rgb color)
     {
         // Conversion
-        LinearRgb linear = RgbToLinearRgbConverter.Convert(color);
+        var linear = RgbToLinearRgbConverter.Convert(color);
         return this.ToCieXyz(linear);
     }
 
@@ -412,15 +412,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<Rgb> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref Rgb sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref Rgb sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }
@@ -445,15 +445,15 @@ public partial class ColorSpaceConverter
     public void Convert(ReadOnlySpan<YCbCr> source, Span<CieXyz> destination)
     {
         Guard.DestinationShouldNotBeTooShort(source, destination, nameof(destination));
-        int count = source.Length;
+        var count = source.Length;
 
-        ref YCbCr sourceRef = ref MemoryMarshal.GetReference(source);
-        ref CieXyz destRef = ref MemoryMarshal.GetReference(destination);
+        ref var sourceRef = ref MemoryMarshal.GetReference(source);
+        ref var destRef = ref MemoryMarshal.GetReference(destination);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            ref YCbCr sp = ref Unsafe.Add(ref sourceRef, i);
-            ref CieXyz dp = ref Unsafe.Add(ref destRef, i);
+            ref var sp = ref Unsafe.Add(ref sourceRef, i);
+            ref var dp = ref Unsafe.Add(ref destRef, i);
             dp = this.ToCieXyz(sp);
         }
     }

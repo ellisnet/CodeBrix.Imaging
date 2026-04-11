@@ -22,19 +22,19 @@ internal static class ConvolutionProcessorHelpers
     {
         var kernel = new float[size];
 
-        float sum = 0F;
-        float midpoint = (size - 1) / 2F;
+        var sum = 0F;
+        var midpoint = (size - 1) / 2F;
 
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
-            float x = i - midpoint;
-            float gx = Numerics.Gaussian(x, weight);
+            var x = i - midpoint;
+            var gx = Numerics.Gaussian(x, weight);
             sum += gx;
             kernel[i] = gx;
         }
 
         // Normalize kernel so that the sum of all weights equals 1
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
             kernel[i] /= sum;
         }
@@ -52,18 +52,18 @@ internal static class ConvolutionProcessorHelpers
 
         float sum = 0;
 
-        float midpoint = (size - 1) / 2F;
-        for (int i = 0; i < size; i++)
+        var midpoint = (size - 1) / 2F;
+        for (var i = 0; i < size; i++)
         {
-            float x = i - midpoint;
-            float gx = Numerics.Gaussian(x, weight);
+            var x = i - midpoint;
+            var gx = Numerics.Gaussian(x, weight);
             sum += gx;
             kernel[i] = gx;
         }
 
         // Invert the kernel for sharpening.
-        int midpointRounded = (int)midpoint;
-        for (int i = 0; i < size; i++)
+        var midpointRounded = (int)midpoint;
+        for (var i = 0; i < size; i++)
         {
             if (i == midpointRounded)
             {
@@ -78,7 +78,7 @@ internal static class ConvolutionProcessorHelpers
         }
 
         // Normalize kernel so that the sum of all weights equals 1
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
             kernel[i] /= sum;
         }

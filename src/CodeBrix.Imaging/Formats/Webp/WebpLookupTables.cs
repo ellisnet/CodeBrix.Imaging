@@ -1228,14 +1228,14 @@ internal static class WebpLookupTables
 
     static WebpLookupTables()
     {
-        double scale = (double)(1 << WebpConstants.GammaTabFix) / WebpConstants.GammaScale;
-        double norm = 1.0d / 255.0d;
-        for (int v = 0; v < 256; ++v)
+        var scale = (double)(1 << WebpConstants.GammaTabFix) / WebpConstants.GammaScale;
+        var norm = 1.0d / 255.0d;
+        for (var v = 0; v < 256; ++v)
         {
             GammaToLinearTab[v] = (ushort)((Math.Pow(norm * v, WebpConstants.Gamma) * WebpConstants.GammaScale) + .5);
         }
 
-        for (int v = 0; v <= WebpConstants.GammaTabSize; ++v)
+        for (var v = 0; v <= WebpConstants.GammaTabSize; ++v)
         {
             LinearToGammaTab[v] = (int)((255.0d * Math.Pow(scale * v, 1.0d / WebpConstants.Gamma)) + .5);
         }

@@ -65,12 +65,12 @@ internal unsafe struct HuffmanTable
 
         // Generate codes
         uint code = 0;
-        int si = 1;
-        int p = 0;
-        for (int i = 1; i <= 16; i++)
+        var si = 1;
+        var p = 0;
+        for (var i = 1; i <= 16; i++)
         {
             int count = codeLengths[i];
-            for (int j = 0; j < count; j++)
+            for (var j = 0; j < count; j++)
             {
                 workspace[p++] = code;
                 code++;
@@ -93,7 +93,7 @@ internal unsafe struct HuffmanTable
 
         // Figure F.15: generate decoding tables for bit-sequential decoding
         p = 0;
-        for (int j = 1; j <= 16; j++)
+        for (var j = 1; j <= 16; j++)
         {
             if (codeLengths[j] != 0)
             {
@@ -117,19 +117,19 @@ internal unsafe struct HuffmanTable
         // then we iterate through the Huffman codes that are short enough and
         // fill in all the entries that correspond to bit sequences starting
         // with that code.
-        ref byte lookupSizeRef = ref this.LookaheadSize[0];
+        ref var lookupSizeRef = ref this.LookaheadSize[0];
         Unsafe.InitBlockUnaligned(ref lookupSizeRef, JpegConstants.Huffman.SlowBits, JpegConstants.Huffman.LookupSize);
 
         p = 0;
-        for (int length = 1; length <= JpegConstants.Huffman.LookupBits; length++)
+        for (var length = 1; length <= JpegConstants.Huffman.LookupBits; length++)
         {
-            int jShift = JpegConstants.Huffman.LookupBits - length;
-            for (int i = 1; i <= codeLengths[length]; i++, p++)
+            var jShift = JpegConstants.Huffman.LookupBits - length;
+            for (var i = 1; i <= codeLengths[length]; i++, p++)
             {
                 // length = current code's length, p = its index in huffCode[] & Values[].
                 // Generate left-justified code followed by all possible bit sequences
-                int lookBits = (int)(workspace[p] << jShift);
-                for (int ctr = 1 << (JpegConstants.Huffman.LookupBits - length); ctr > 0; ctr--)
+                var lookBits = (int)(workspace[p] << jShift);
+                for (var ctr = 1 << (JpegConstants.Huffman.LookupBits - length); ctr > 0; ctr--)
                 {
                     this.LookaheadSize[lookBits] = (byte)length;
                     this.LookaheadValue[lookBits] = this.Values[p];

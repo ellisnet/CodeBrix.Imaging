@@ -68,7 +68,7 @@ public partial struct NormalizedByte2 : IPixel<NormalizedByte2>, IPackedVector<u
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromScaledVector4(Vector4 vector)
     {
-        Vector2 scaled = new Vector2(vector.X, vector.Y) * 2F;
+        var scaled = new Vector2(vector.X, vector.Y) * 2F;
         scaled -= Vector2.One;
         this.PackedValue = Pack(scaled);
     }
@@ -184,8 +184,8 @@ public partial struct NormalizedByte2 : IPixel<NormalizedByte2>, IPackedVector<u
     {
         vector = Vector2.Clamp(vector, MinusOne, Vector2.One) * Half;
 
-        int byte2 = ((ushort)Convert.ToInt16(Math.Round(vector.X)) & 0xFF) << 0;
-        int byte1 = ((ushort)Convert.ToInt16(Math.Round(vector.Y)) & 0xFF) << 8;
+        var byte2 = ((ushort)Convert.ToInt16(Math.Round(vector.X)) & 0xFF) << 0;
+        var byte1 = ((ushort)Convert.ToInt16(Math.Round(vector.Y)) & 0xFF) << 8;
 
         return (ushort)(byte2 | byte1);
     }

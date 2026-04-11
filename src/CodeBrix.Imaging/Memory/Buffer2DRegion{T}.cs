@@ -90,9 +90,9 @@ public readonly struct Buffer2DRegion<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> DangerousGetRowSpan(int y)
     {
-        int yy = this.Rectangle.Y + y;
-        int xx = this.Rectangle.X;
-        int width = this.Rectangle.Width;
+        var yy = this.Rectangle.Y + y;
+        var xx = this.Rectangle.X;
+        var width = this.Rectangle.Width;
 
         return this.Buffer.DangerousGetRowSpan(yy).Slice(xx, width);
     }
@@ -123,8 +123,8 @@ public readonly struct Buffer2DRegion<T>
         DebugGuard.MustBeLessThanOrEqualTo(rectangle.Width, this.Rectangle.Width, nameof(rectangle));
         DebugGuard.MustBeLessThanOrEqualTo(rectangle.Height, this.Rectangle.Height, nameof(rectangle));
 
-        int x = this.Rectangle.X + rectangle.X;
-        int y = this.Rectangle.Y + rectangle.Y;
+        var x = this.Rectangle.X + rectangle.X;
+        var y = this.Rectangle.Y + rectangle.Y;
         rectangle = new Rectangle(x, y, rectangle.Width, rectangle.Height);
         return new Buffer2DRegion<T>(this.Buffer, rectangle);
     }
@@ -136,8 +136,8 @@ public readonly struct Buffer2DRegion<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ref T GetReferenceToOrigin()
     {
-        int y = this.Rectangle.Y;
-        int x = this.Rectangle.X;
+        var y = this.Rectangle.Y;
+        var x = this.Rectangle.X;
         return ref this.Buffer.DangerousGetRowSpan(y)[x];
     }
 
@@ -150,9 +150,9 @@ public readonly struct Buffer2DRegion<T>
             return;
         }
 
-        for (int y = 0; y < this.Rectangle.Height; y++)
+        for (var y = 0; y < this.Rectangle.Height; y++)
         {
-            Span<T> row = this.DangerousGetRowSpan(y);
+            var row = this.DangerousGetRowSpan(y);
             row.Clear();
         }
     }

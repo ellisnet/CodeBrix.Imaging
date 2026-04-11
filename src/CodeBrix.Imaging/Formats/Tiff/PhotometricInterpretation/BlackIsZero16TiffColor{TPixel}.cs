@@ -34,19 +34,19 @@ internal class BlackIsZero16TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         // Note: due to an issue with netcore 2.1 and default values and unpredictable behavior with those,
         // we define our own defaults as a workaround. See: https://github.com/dotnet/runtime/issues/55623
-        L16 l16 = TiffUtils.L16Default;
+        var l16 = TiffUtils.L16Default;
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
 
-        int offset = 0;
-        for (int y = top; y < top + height; y++)
+        var offset = 0;
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
-                    ushort intensity = TiffUtils.ConvertToUShortBigEndian(data.Slice(offset, 2));
+                    var intensity = TiffUtils.ConvertToUShortBigEndian(data.Slice(offset, 2));
                     offset += 2;
 
                     pixelRow[x] = TiffUtils.ColorFromL16(l16, intensity, color);
@@ -54,7 +54,7 @@ internal class BlackIsZero16TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
             }
             else
             {
-                int byteCount = pixelRow.Length * 2;
+                var byteCount = pixelRow.Length * 2;
                 PixelOperations<TPixel>.Instance.FromL16Bytes(
                     this.configuration,
                     data.Slice(offset, byteCount),

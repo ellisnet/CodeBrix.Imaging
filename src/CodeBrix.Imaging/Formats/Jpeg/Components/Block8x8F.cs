@@ -78,7 +78,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
         get
         {
             DebugGuard.MustBeBetweenOrEqualTo(idx, 0, Size - 1, nameof(idx));
-            ref float selfRef = ref Unsafe.As<Block8x8F, float>(ref this);
+            ref var selfRef = ref Unsafe.As<Block8x8F, float>(ref this);
             return Unsafe.Add(ref selfRef, (nint)(uint)idx);
         }
 
@@ -86,7 +86,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
         set
         {
             DebugGuard.MustBeBetweenOrEqualTo(idx, 0, Size - 1, nameof(idx));
-            ref float selfRef = ref Unsafe.As<Block8x8F, float>(ref this);
+            ref var selfRef = ref Unsafe.As<Block8x8F, float>(ref this);
             Unsafe.Add(ref selfRef, (nint)(uint)idx) = value;
         }
     }
@@ -111,8 +111,8 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void LoadFrom(Span<float> source)
     {
-        ref byte s = ref Unsafe.As<float, byte>(ref MemoryMarshal.GetReference(source));
-        ref byte d = ref Unsafe.As<Block8x8F, byte>(ref this);
+        ref var s = ref Unsafe.As<float, byte>(ref MemoryMarshal.GetReference(source));
+        ref var d = ref Unsafe.As<Block8x8F, byte>(ref this);
 
         Unsafe.CopyBlock(ref d, ref s, Size * sizeof(float));
     }
@@ -125,8 +125,8 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
     {
         fixed (Vector4* ptr = &this.V0L)
         {
-            float* fp = (float*)ptr;
-            for (int i = 0; i < Size; i++)
+            var fp = (float*)ptr;
+            for (var i = 0; i < Size; i++)
             {
                 fp[i] = source[i];
             }
@@ -148,7 +148,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
 
     public float[] ToArray()
     {
-        float[] result = new float[Size];
+        var result = new float[Size];
         this.ScaledCopyTo(result);
         return result;
     }
@@ -301,10 +301,10 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
             else
 #endif
         {
-            for (int i = 0; i < Size; i++)
+            for (var i = 0; i < Size; i++)
             {
                 int idx = ZigZag.TransposingOrder[i];
-                float quantizedVal = block[idx] * qt[idx];
+                var quantizedVal = block[idx] * qt[idx];
                 quantizedVal += quantizedVal < 0 ? -0.5f : 0.5f;
                 dest[i] = (short)quantizedVal;
             }
@@ -313,9 +313,9 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
 
     public void RoundInto(ref Block8x8 dest)
     {
-        for (int i = 0; i < Size; i++)
+        for (var i = 0; i < Size; i++)
         {
-            float val = this[i];
+            var val = this[i];
             if (val < 0)
             {
                 val -= 0.5f;
@@ -357,7 +357,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
     /// </summary>
     public void RoundInPlace()
     {
-        for (int i = 0; i < Size; i++)
+        for (var i = 0; i < Size; i++)
         {
             this[i] = MathF.Round(this[i]);
         }
@@ -386,12 +386,12 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
             SimdUtils.HasVector8,
             "LoadFromUInt16ExtendedAvx2 only works on AVX2 compatible architecture!");
 
-        ref Vector<short> sRef = ref Unsafe.As<Block8x8, Vector<short>>(ref source);
-        ref Vector<float> dRef = ref Unsafe.As<Block8x8F, Vector<float>>(ref this);
+        ref var sRef = ref Unsafe.As<Block8x8, Vector<short>>(ref source);
+        ref var dRef = ref Unsafe.As<Block8x8F, Vector<float>>(ref this);
 
         // Vector<ushort>.Count == 16 on AVX2
         // We can process 2 block rows in a single step
-        SimdUtils.ExtendedIntrinsics.ConvertToSingle(sRef, out Vector<float> top, out Vector<float> bottom);
+        SimdUtils.ExtendedIntrinsics.ConvertToSingle(sRef, out var top, out var bottom);
         dRef = top;
         Unsafe.Add(ref dRef, 1) = bottom;
 
@@ -435,9 +435,9 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
             }
 #endif
         {
-            ref float scalars = ref Unsafe.As<Block8x8F, float>(ref this);
+            ref var scalars = ref Unsafe.As<Block8x8F, float>(ref this);
 
-            for (int i = 0; i < Size; i++)
+            for (var i = 0; i < Size; i++)
             {
                 if ((int)Unsafe.Add(ref scalars, i) != value)
                 {
@@ -473,7 +473,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
     {
         var sb = new StringBuilder();
         sb.Append('[');
-        for (int i = 0; i < Size - 1; i++)
+        for (var i = 0; i < Size - 1; i++)
         {
             sb.Append(this[i]);
             sb.Append(',');
@@ -509,7 +509,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
     [MethodImpl(InliningOptions.ShortMethod)]
     private void TransposeInplace_Scalar()
     {
-        ref float elemRef = ref Unsafe.As<Block8x8F, float>(ref this);
+        ref var elemRef = ref Unsafe.As<Block8x8F, float>(ref this);
 
         // row #0
         Swap(ref Unsafe.Add(ref elemRef, 1), ref Unsafe.Add(ref elemRef, 8));
@@ -555,7 +555,7 @@ internal partial struct Block8x8F : IEquatable<Block8x8F>
 
         static void Swap(ref float a, ref float b)
         {
-            float tmp = a;
+            var tmp = a;
             a = b;
             b = tmp;
         }

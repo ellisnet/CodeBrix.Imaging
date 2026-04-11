@@ -51,13 +51,13 @@ internal sealed class OpaqueProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public void Invoke(int y, Span<Vector4> span)
         {
-            Span<TPixel> targetRowSpan = this.target.DangerousGetRowSpan(y).Slice(this.bounds.X);
+            var targetRowSpan = this.target.DangerousGetRowSpan(y).Slice(this.bounds.X);
             PixelOperations<TPixel>.Instance.ToVector4(this.configuration, targetRowSpan.Slice(0, span.Length), span, PixelConversionModifiers.Scale);
-            ref Vector4 baseRef = ref MemoryMarshal.GetReference(span);
+            ref var baseRef = ref MemoryMarshal.GetReference(span);
 
-            for (int x = 0; x < this.bounds.Width; x++)
+            for (var x = 0; x < this.bounds.Width; x++)
             {
-                ref Vector4 v = ref Unsafe.Add(ref baseRef, x);
+                ref var v = ref Unsafe.Add(ref baseRef, x);
                 v.W = 1F;
             }
 

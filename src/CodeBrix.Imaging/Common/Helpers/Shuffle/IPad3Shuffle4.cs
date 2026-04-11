@@ -38,8 +38,8 @@ internal readonly struct DefaultPad3Shuffle4 : IPad3Shuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref byte sBase = ref MemoryMarshal.GetReference(source);
-        ref byte dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
         int p3 = this.p3;
         int p2 = this.p2;
@@ -47,8 +47,8 @@ internal readonly struct DefaultPad3Shuffle4 : IPad3Shuffle4
         int p0 = this.p0;
 
         Span<byte> temp = stackalloc byte[4];
-        ref byte t = ref MemoryMarshal.GetReference(temp);
-        ref uint tu = ref Unsafe.As<byte, uint>(ref t);
+        ref var t = ref MemoryMarshal.GetReference(temp);
+        ref var tu = ref Unsafe.As<byte, uint>(ref t);
 
         for (int i = 0, j = 0; i < source.Length; i += 3, j += 4)
         {
@@ -74,11 +74,11 @@ internal readonly struct XYZWPad3Shuffle4 : IPad3Shuffle4
     [MethodImpl(InliningOptions.ShortMethod)]
     public void RunFallbackShuffle(ReadOnlySpan<byte> source, Span<byte> dest)
     {
-        ref byte sBase = ref MemoryMarshal.GetReference(source);
-        ref byte dBase = ref MemoryMarshal.GetReference(dest);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
 
-        ref byte sEnd = ref Unsafe.Add(ref sBase, source.Length);
-        ref byte sLoopEnd = ref Unsafe.Subtract(ref sEnd, 4);
+        ref var sEnd = ref Unsafe.Add(ref sBase, source.Length);
+        ref var sLoopEnd = ref Unsafe.Subtract(ref sEnd, 4);
 
         while (Unsafe.IsAddressLessThan(ref sBase, ref sLoopEnd))
         {

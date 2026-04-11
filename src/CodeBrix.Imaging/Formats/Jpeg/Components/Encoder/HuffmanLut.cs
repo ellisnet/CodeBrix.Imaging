@@ -37,7 +37,7 @@ internal readonly struct HuffmanLut
     static HuffmanLut()
     {
         // Initialize the Huffman tables
-        for (int i = 0; i < HuffmanSpec.TheHuffmanSpecs.Length; i++)
+        for (var i = 0; i < HuffmanSpec.TheHuffmanSpecs.Length; i++)
         {
             TheHuffmanLut[i] = new HuffmanLut(HuffmanSpec.TheHuffmanSpecs[i]);
         }
@@ -49,9 +49,9 @@ internal readonly struct HuffmanLut
     /// <param name="spec">dasd</param>
     public HuffmanLut(HuffmanSpec spec)
     {
-        int maxValue = 0;
+        var maxValue = 0;
 
-        foreach (byte v in spec.Values)
+        foreach (var v in spec.Values)
         {
             if (v > maxValue)
             {
@@ -61,13 +61,13 @@ internal readonly struct HuffmanLut
 
         this.Values = new int[maxValue + 1];
 
-        int code = 0;
-        int k = 0;
+        var code = 0;
+        var k = 0;
 
-        for (int i = 0; i < spec.Count.Length; i++)
+        for (var i = 0; i < spec.Count.Length; i++)
         {
-            int len = i + 1;
-            for (int j = 0; j < spec.Count[i]; j++)
+            var len = i + 1;
+            for (var j = 0; j < spec.Count[i]; j++)
             {
                 this.Values[spec.Values[k]] = len | (code << (32 - len));
                 code++;

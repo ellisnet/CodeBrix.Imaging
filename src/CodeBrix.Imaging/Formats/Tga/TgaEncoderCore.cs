@@ -71,11 +71,11 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
         Guard.NotNull(stream, nameof(stream));
 
         this.configuration = image.GetConfiguration();
-        ImageMetadata metadata = image.Metadata;
-        TgaMetadata tgaMetadata = metadata.GetTgaMetadata();
+        var metadata = image.Metadata;
+        var tgaMetadata = metadata.GetTgaMetadata();
         this.bitsPerPixel = this.bitsPerPixel ?? tgaMetadata.BitsPerPixel;
 
-        TgaImageType imageType = this.compression is TgaCompression.RunLength ? TgaImageType.RleTrueColor : TgaImageType.TrueColor;
+        var imageType = this.compression is TgaCompression.RunLength ? TgaImageType.RleTrueColor : TgaImageType.TrueColor;
         if (this.bitsPerPixel == TgaBitsPerPixel.Pixel8)
         {
             imageType = this.compression is TgaCompression.RunLength ? TgaImageType.RleBlackAndWhite : TgaImageType.BlackAndWhite;
@@ -142,7 +142,7 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
     private void WriteImage<TPixel>(Stream stream, ImageFrame<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        Buffer2D<TPixel> pixels = image.PixelBuffer;
+        var pixels = image.PixelBuffer;
         switch (this.bitsPerPixel)
         {
             case TgaBitsPerPixel.Pixel8:
@@ -173,23 +173,23 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         Rgba32 color = default;
-        Buffer2D<TPixel> pixels = image.PixelBuffer;
-        int totalPixels = image.Width * image.Height;
-        int encodedPixels = 0;
+        var pixels = image.PixelBuffer;
+        var totalPixels = image.Width * image.Height;
+        var encodedPixels = 0;
         while (encodedPixels < totalPixels)
         {
-            int x = encodedPixels % pixels.Width;
-            int y = encodedPixels / pixels.Width;
-            TPixel currentPixel = pixels[x, y];
+            var x = encodedPixels % pixels.Width;
+            var y = encodedPixels / pixels.Width;
+            var currentPixel = pixels[x, y];
             currentPixel.ToRgba32(ref color);
-            byte equalPixelCount = this.FindEqualPixels(pixels, x, y);
+            var equalPixelCount = this.FindEqualPixels(pixels, x, y);
 
             // Write the number of equal pixels, with the high bit set, indicating ist a compressed pixel run.
             stream.WriteByte((byte)(equalPixelCount | 128));
             switch (this.bitsPerPixel)
             {
                 case TgaBitsPerPixel.Pixel8:
-                    int luminance = GetLuminance(currentPixel);
+                    var luminance = GetLuminance(currentPixel);
                     stream.WriteByte((byte)luminance);
                     break;
 
@@ -231,13 +231,13 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
         where TPixel : unmanaged, IPixel<TPixel>
     {
         byte equalPixelCount = 0;
-        bool firstRow = true;
-        TPixel startPixel = pixels[xStart, yStart];
-        for (int y = yStart; y < pixels.Height; y++)
+        var firstRow = true;
+        var startPixel = pixels[xStart, yStart];
+        for (var y = yStart; y < pixels.Height; y++)
         {
-            for (int x = firstRow ? xStart + 1 : 0; x < pixels.Width; x++)
+            for (var x = firstRow ? xStart + 1 : 0; x < pixels.Width; x++)
             {
-                TPixel nextPixel = pixels[x, y];
+                var nextPixel = pixels[x, y];
                 if (startPixel.Equals(nextPixel))
                 {
                     equalPixelCount++;
@@ -271,12 +271,12 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
     private void Write8Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IMemoryOwner<byte> row = this.AllocateRow(pixels.Width, 1);
-        Span<byte> rowSpan = row.GetSpan();
+        using var row = this.AllocateRow(pixels.Width, 1);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToL8Bytes(
                 this.configuration,
                 pixelSpan,
@@ -295,12 +295,12 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
     private void Write16Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IMemoryOwner<byte> row = this.AllocateRow(pixels.Width, 2);
-        Span<byte> rowSpan = row.GetSpan();
+        using var row = this.AllocateRow(pixels.Width, 2);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToBgra5551Bytes(
                 this.configuration,
                 pixelSpan,
@@ -319,12 +319,12 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
     private void Write24Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IMemoryOwner<byte> row = this.AllocateRow(pixels.Width, 3);
-        Span<byte> rowSpan = row.GetSpan();
+        using var row = this.AllocateRow(pixels.Width, 3);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToBgr24Bytes(
                 this.configuration,
                 pixelSpan,
@@ -343,12 +343,12 @@ internal sealed class TgaEncoderCore : IImageEncoderInternals
     private void Write32Bit<TPixel>(Stream stream, Buffer2D<TPixel> pixels)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using IMemoryOwner<byte> row = this.AllocateRow(pixels.Width, 4);
-        Span<byte> rowSpan = row.GetSpan();
+        using var row = this.AllocateRow(pixels.Width, 4);
+        var rowSpan = row.GetSpan();
 
-        for (int y = pixels.Height - 1; y >= 0; y--)
+        for (var y = pixels.Height - 1; y >= 0; y--)
         {
-            Span<TPixel> pixelSpan = pixels.DangerousGetRowSpan(y);
+            var pixelSpan = pixels.DangerousGetRowSpan(y);
             PixelOperations<TPixel>.Instance.ToBgra32Bytes(
                 this.configuration,
                 pixelSpan,

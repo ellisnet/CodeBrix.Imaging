@@ -79,7 +79,7 @@ internal sealed class IccNamedColor2TagDataEntry : IccTagDataEntry, IEquatable<I
     {
         Guard.NotNull(colors, nameof(colors));
 
-        int coordinateCount = 0;
+        var coordinateCount = 0;
         if (colors.Length > 0)
         {
             coordinateCount = colors[0].DeviceCoordinates?.Length ?? 0;

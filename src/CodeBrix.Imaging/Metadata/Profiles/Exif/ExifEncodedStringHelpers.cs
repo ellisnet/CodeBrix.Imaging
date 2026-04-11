@@ -55,9 +55,9 @@ internal static class ExifEncodedStringHelpers
 
     public static bool TryParse(ReadOnlySpan<byte> buffer, out EncodedString encodedString)
     {
-        if (TryDetect(buffer, out CharacterCode code))
+        if (TryDetect(buffer, out var code))
         {
-            string text = GetEncoding(code).GetString(buffer.Slice(CharacterCodeBytesLength));
+            var text = GetEncoding(code).GetString(buffer.Slice(CharacterCodeBytesLength));
             encodedString = new EncodedString(code, text);
             return true;
         }
@@ -73,8 +73,8 @@ internal static class ExifEncodedStringHelpers
     {
         GetCodeBytes(encodedString.Code).CopyTo(destination);
 
-        string text = encodedString.Text;
-        int count = Write(GetEncoding(encodedString.Code), text, destination.Slice(CharacterCodeBytesLength));
+        var text = encodedString.Text;
+        var count = Write(GetEncoding(encodedString.Code), text, destination.Slice(CharacterCodeBytesLength));
 
         return CharacterCodeBytesLength + count;
     }
@@ -86,7 +86,7 @@ internal static class ExifEncodedStringHelpers
     {
         if (buffer.Length >= CharacterCodeBytesLength)
         {
-            ulong test = BinaryPrimitives.ReadUInt64LittleEndian(buffer);
+            var test = BinaryPrimitives.ReadUInt64LittleEndian(buffer);
             switch (test)
             {
                 case AsciiCode:

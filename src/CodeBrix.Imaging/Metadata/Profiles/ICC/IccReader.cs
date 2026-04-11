@@ -22,8 +22,8 @@ internal sealed class IccReader
         Guard.IsTrue(data.Length >= 128, nameof(data), "Data length must be at least 128 to be a valid ICC profile");
 
         var reader = new IccDataReader(data);
-        IccProfileHeader header = this.ReadHeader(reader);
-        IccTagDataEntry[] tagData = this.ReadTagData(reader);
+        var header = this.ReadHeader(reader);
+        var tagData = this.ReadTagData(reader);
 
         return new IccProfile(header, tagData);
     }
@@ -84,11 +84,11 @@ internal sealed class IccReader
 
     private IccTagDataEntry[] ReadTagData(IccDataReader reader)
     {
-        IccTagTableEntry[] tagTable = this.ReadTagTable(reader);
+        var tagTable = this.ReadTagTable(reader);
         var entries = new List<IccTagDataEntry>(tagTable.Length);
         var store = new Dictionary<uint, IccTagDataEntry>();
 
-        foreach (IccTagTableEntry tag in tagTable)
+        foreach (var tag in tagTable)
         {
             IccTagDataEntry entry;
             if (store.ContainsKey(tag.Offset))
@@ -121,7 +121,7 @@ internal sealed class IccReader
     {
         reader.SetIndex(128);   // An ICC header is 128 bytes long
 
-        uint tagCount = reader.ReadUInt32();
+        var tagCount = reader.ReadUInt32();
 
         // Prevent creating huge arrays because of corrupt profiles.
         // A normal profile usually has 5-15 entries
@@ -131,11 +131,11 @@ internal sealed class IccReader
         }
 
         var table = new List<IccTagTableEntry>((int)tagCount);
-        for (int i = 0; i < tagCount; i++)
+        for (var i = 0; i < tagCount; i++)
         {
-            uint tagSignature = reader.ReadUInt32();
-            uint tagOffset = reader.ReadUInt32();
-            uint tagSize = reader.ReadUInt32();
+            var tagSignature = reader.ReadUInt32();
+            var tagOffset = reader.ReadUInt32();
+            var tagSize = reader.ReadUInt32();
 
             // Exclude entries that have nonsense values and could cause exceptions further on
             if (tagOffset < reader.DataLength && tagSize < reader.DataLength - 128)

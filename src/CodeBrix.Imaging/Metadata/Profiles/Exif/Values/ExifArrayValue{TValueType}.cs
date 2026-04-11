@@ -36,7 +36,7 @@ internal abstract class ExifArrayValue<TValueType> : ExifValue, IExifValue<TValu
             return true;
         }
 
-        Type type = value.GetType();
+        var type = value.GetType();
         if (value.GetType() == typeof(TValueType[]))
         {
             this.Value = (TValueType[])value;

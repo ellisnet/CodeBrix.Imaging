@@ -33,7 +33,7 @@ internal sealed class PaletteDitherProcessor<TPixel> : ImageProcessor<TPixel>
     {
         this.dither = definition.Dither;
 
-        ReadOnlySpan<Color> sourcePalette = definition.Palette.Span;
+        var sourcePalette = definition.Palette.Span;
         this.paletteOwner = this.Configuration.MemoryAllocator.Allocate<TPixel>(sourcePalette.Length);
         Color.ToPixel(this.Configuration, sourcePalette, this.paletteOwner.Memory.Span);
 
@@ -99,7 +99,7 @@ internal sealed class PaletteDitherProcessor<TPixel> : ImageProcessor<TPixel>
         [MethodImpl(InliningOptions.ShortMethod)]
         public TPixel GetPaletteColor(TPixel color)
         {
-            this.pixelMap.GetClosestColor(color, out TPixel match);
+            this.pixelMap.GetClosestColor(color, out var match);
             return match;
         }
 

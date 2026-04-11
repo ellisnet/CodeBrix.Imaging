@@ -123,7 +123,7 @@ public sealed class IccProfile : IDeepCloneable<IccProfile>
                 Array.Clear(data, profileIdPos, 16);
 
                 // Calculate hash
-                byte[] hash = md5.ComputeHash(data);
+                var hash = md5.ComputeHash(data);
 
                 // Read values from hash
                 var reader = new IccDataReader(hash);
@@ -148,7 +148,7 @@ public sealed class IccProfile : IDeepCloneable<IccProfile>
         const int minSize = 128;
         const int maxSize = 50_000_000; // it's unlikely there is a profile bigger than 50MB
 
-        bool arrayValid = true;
+        var arrayValid = true;
         if (this.data != null)
         {
             arrayValid = this.data.Length >= minSize &&

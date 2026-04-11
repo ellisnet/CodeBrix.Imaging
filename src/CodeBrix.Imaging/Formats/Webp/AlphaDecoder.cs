@@ -39,7 +39,7 @@ internal class AlphaDecoder : IDisposable
         this.Data = data;
         this.memoryAllocator = memoryAllocator;
         this.LastRow = 0;
-        int totalPixels = width * height;
+        var totalPixels = width * height;
 
         var compression = (WebpAlphaCompressionMethod)(alphaChunkHeader & 0x03);
         if (compression is not WebpAlphaCompressionMethod.NoCompression and not WebpAlphaCompressionMethod.WebpLosslessCompression)
@@ -50,7 +50,7 @@ internal class AlphaDecoder : IDisposable
         this.Compressed = compression == WebpAlphaCompressionMethod.WebpLosslessCompression;
 
         // The filtering method used. Only values between 0 and 3 are valid.
-        int filter = (alphaChunkHeader >> 2) & 0x03;
+        var filter = (alphaChunkHeader >> 2) & 0x03;
         if (filter is < (int)WebpAlphaFilterType.None or > (int)WebpAlphaFilterType.Gradient)
         {
             WebpThrowHelper.ThrowImageFormatException($"unexpected alpha filter method {filter} found");
@@ -133,24 +133,24 @@ internal class AlphaDecoder : IDisposable
     {
         if (!this.Compressed)
         {
-            Span<byte> dataSpan = this.Data.Memory.Span;
-            int pixelCount = this.Width * this.Height;
+            var dataSpan = this.Data.Memory.Span;
+            var pixelCount = this.Width * this.Height;
             if (dataSpan.Length < pixelCount)
             {
                 WebpThrowHelper.ThrowImageFormatException("not enough data in the ALPH chunk");
             }
 
-            Span<byte> alphaSpan = this.Alpha.Memory.Span;
+            var alphaSpan = this.Alpha.Memory.Span;
             if (this.AlphaFilterType == WebpAlphaFilterType.None)
             {
                 dataSpan.Slice(0, pixelCount).CopyTo(alphaSpan);
                 return;
             }
 
-            Span<byte> deltas = dataSpan;
-            Span<byte> dst = alphaSpan;
+            var deltas = dataSpan;
+            var dst = alphaSpan;
             Span<byte> prev = default;
-            for (int y = 0; y < this.Height; y++)
+            for (var y = 0; y < this.Height; y++)
             {
                 switch (this.AlphaFilterType)
                 {
@@ -198,9 +198,9 @@ internal class AlphaDecoder : IDisposable
             return;
         }
 
-        Span<byte> alphaSpan = this.Alpha.Memory.Span;
-        Span<byte> prev = this.PrevRow == 0 ? null : alphaSpan.Slice(this.Width * this.PrevRow);
-        for (int y = firstRow; y < lastRow; y++)
+        var alphaSpan = this.Alpha.Memory.Span;
+        var prev = this.PrevRow == 0 ? null : alphaSpan.Slice(this.Width * this.PrevRow);
+        for (var y = firstRow; y < lastRow; y++)
         {
             switch (this.AlphaFilterType)
             {
@@ -226,23 +226,23 @@ internal class AlphaDecoder : IDisposable
     {
         // For vertical and gradient filtering, we need to decode the part above the
         // cropTop row, in order to have the correct spatial predictors.
-        int topRow = this.AlphaFilterType is WebpAlphaFilterType.None or WebpAlphaFilterType.Horizontal ? 0 : this.LastRow;
-        int firstRow = this.LastRow < topRow ? topRow : this.LastRow;
+        var topRow = this.AlphaFilterType is WebpAlphaFilterType.None or WebpAlphaFilterType.Horizontal ? 0 : this.LastRow;
+        var firstRow = this.LastRow < topRow ? topRow : this.LastRow;
         if (lastRow > firstRow)
         {
             // Special method for paletted alpha data.
-            Span<byte> output = this.Alpha.Memory.Span;
-            Span<uint> pixelData = this.Vp8LDec.Pixels.Memory.Span;
-            Span<byte> pixelDataAsBytes = MemoryMarshal.Cast<uint, byte>(pixelData);
-            Span<byte> dst = output.Slice(this.Width * firstRow);
-            Span<byte> input = pixelDataAsBytes.Slice(this.Vp8LDec.Width * firstRow);
+            var output = this.Alpha.Memory.Span;
+            var pixelData = this.Vp8LDec.Pixels.Memory.Span;
+            var pixelDataAsBytes = MemoryMarshal.Cast<uint, byte>(pixelData);
+            var dst = output.Slice(this.Width * firstRow);
+            var input = pixelDataAsBytes.Slice(this.Vp8LDec.Width * firstRow);
 
             if (this.Vp8LDec.Transforms.Count == 0 || this.Vp8LDec.Transforms[0].TransformType != Vp8LTransformType.ColorIndexingTransform)
             {
                 WebpThrowHelper.ThrowImageFormatException("error while decoding alpha channel, expected color index transform data is missing");
             }
 
-            Vp8LTransform transform = this.Vp8LDec.Transforms[0];
+            var transform = this.Vp8LDec.Transforms[0];
             ColorIndexInverseTransformAlpha(transform, firstRow, lastRow, input, dst);
             this.AlphaApplyFilter(firstRow, lastRow, dst, this.Width);
         }
@@ -256,14 +256,14 @@ internal class AlphaDecoder : IDisposable
     /// <param name="dec">The VP8L decoder.</param>
     private void ExtractAlphaRows(Vp8LDecoder dec)
     {
-        int numRowsToProcess = dec.Height;
-        int width = dec.Width;
-        Span<uint> pixels = dec.Pixels.Memory.Span;
-        Span<uint> input = pixels;
-        Span<byte> output = this.Alpha.Memory.Span;
+        var numRowsToProcess = dec.Height;
+        var width = dec.Width;
+        var pixels = dec.Pixels.Memory.Span;
+        var input = pixels;
+        var output = this.Alpha.Memory.Span;
 
         // Extract alpha (which is stored in the green plane).
-        int pixelCount = width * numRowsToProcess;
+        var pixelCount = width * numRowsToProcess;
         WebpLosslessDecoder.ApplyInverseTransforms(dec, input, this.memoryAllocator);
         ExtractGreen(input, output, pixelCount);
         this.AlphaApplyFilter(0, numRowsToProcess, output, width);
@@ -276,20 +276,20 @@ internal class AlphaDecoder : IDisposable
         Span<byte> src,
         Span<byte> dst)
     {
-        int bitsPerPixel = 8 >> transform.Bits;
-        int width = transform.XSize;
-        Span<uint> colorMap = transform.Data.Memory.Span;
+        var bitsPerPixel = 8 >> transform.Bits;
+        var width = transform.XSize;
+        var colorMap = transform.Data.Memory.Span;
         if (bitsPerPixel < 8)
         {
-            int srcOffset = 0;
-            int dstOffset = 0;
-            int pixelsPerByte = 1 << transform.Bits;
-            int countMask = pixelsPerByte - 1;
-            int bitMask = (1 << bitsPerPixel) - 1;
-            for (int y = yStart; y < yEnd; y++)
+            var srcOffset = 0;
+            var dstOffset = 0;
+            var pixelsPerByte = 1 << transform.Bits;
+            var countMask = pixelsPerByte - 1;
+            var bitMask = (1 << bitsPerPixel) - 1;
+            for (var y = yStart; y < yEnd; y++)
             {
-                int packedPixels = 0;
-                for (int x = 0; x < width; x++)
+                var packedPixels = 0;
+                for (var x = 0; x < width; x++)
                 {
                     if ((x & countMask) == 0)
                     {
@@ -347,11 +347,11 @@ internal class AlphaDecoder : IDisposable
             else
 #endif
         {
-            byte pred = (byte)(prev.IsEmpty ? 0 : prev[0]);
+            var pred = (byte)(prev.IsEmpty ? 0 : prev[0]);
 
-            for (int i = 0; i < width; i++)
+            for (var i = 0; i < width; i++)
             {
-                byte val = (byte)(pred + input[i]);
+                var val = (byte)(pred + input[i]);
                 pred = val;
                 dst[i] = val;
             }
@@ -388,7 +388,7 @@ internal class AlphaDecoder : IDisposable
                 else
 #endif
             {
-                for (int i = 0; i < width; i++)
+                for (var i = 0; i < width; i++)
                 {
                     dst[i] = (byte)(prev[i] + input[i]);
                 }
@@ -404,12 +404,12 @@ internal class AlphaDecoder : IDisposable
         }
         else
         {
-            byte prev0 = prev[0];
-            byte topLeft = prev0;
-            byte left = prev0;
-            for (int i = 0; i < width; i++)
+            var prev0 = prev[0];
+            var topLeft = prev0;
+            var left = prev0;
+            for (var i = 0; i < width; i++)
             {
-                byte top = prev[i];
+                var top = prev[i];
                 left = (byte)(input[i] + GradientPredictor(left, top, topLeft));
                 topLeft = top;
                 dst[i] = left;
@@ -430,9 +430,9 @@ internal class AlphaDecoder : IDisposable
             return false;
         }
 
-        for (int i = 0; i < hdr.NumHTreeGroups; i++)
+        for (var i = 0; i < hdr.NumHTreeGroups; i++)
         {
-            List<HuffmanCode[]> htrees = hdr.HTreeGroups[i].HTrees;
+            var htrees = hdr.HTreeGroups[i].HTrees;
             if (htrees[HuffIndex.Red][0].BitsUsed > 0)
             {
                 return false;
@@ -454,10 +454,10 @@ internal class AlphaDecoder : IDisposable
 
     private static void MapAlpha(Span<byte> src, Span<uint> colorMap, Span<byte> dst, int yStart, int yEnd, int width)
     {
-        int offset = 0;
-        for (int y = yStart; y < yEnd; y++)
+        var offset = 0;
+        for (var y = yStart; y < yEnd; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
                 dst[offset] = GetAlphaValue((int)colorMap[src[offset]]);
                 offset++;
@@ -471,14 +471,14 @@ internal class AlphaDecoder : IDisposable
     [MethodImpl(InliningOptions.ShortMethod)]
     private static int GradientPredictor(byte a, byte b, byte c)
     {
-        int g = a + b - c;
+        var g = a + b - c;
         return (g & ~0xff) == 0 ? g : g < 0 ? 0 : 255;  // clip to 8bit.
     }
 
     [MethodImpl(InliningOptions.ShortMethod)]
     private static void ExtractGreen(Span<uint> argb, Span<byte> alpha, int size)
     {
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
             alpha[i] = (byte)(argb[i] >> 8);
         }

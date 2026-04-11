@@ -22,10 +22,10 @@ internal sealed class CieLchuvToCieLuvConverter
         // Conversion algorithm described here:
         // https://en.wikipedia.org/wiki/CIELUV#Cylindrical_representation_.28CIELCH.29
         float l = input.L, c = input.C, hDegrees = input.H;
-        float hRadians = GeometryUtilities.DegreeToRadian(hDegrees);
+        var hRadians = GeometryUtilities.DegreeToRadian(hDegrees);
 
-        float u = c * MathF.Cos(hRadians);
-        float v = c * MathF.Sin(hRadians);
+        var u = c * MathF.Cos(hRadians);
+        var v = c * MathF.Sin(hRadians);
 
         return new CieLuv(l, u, v, input.WhitePoint);
     }

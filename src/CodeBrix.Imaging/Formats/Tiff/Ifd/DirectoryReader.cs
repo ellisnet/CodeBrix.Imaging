@@ -108,7 +108,7 @@ internal class DirectoryReader
         }
 
         var list = new List<ExifProfile>(readers.Count);
-        foreach (EntryReader reader in readers)
+        foreach (var reader in readers)
         {
             reader.ReadBigValues();
             var profile = new ExifProfile(reader.Values, reader.InvalidTags);

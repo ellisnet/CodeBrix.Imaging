@@ -150,11 +150,11 @@ internal static partial class SimdUtils
         Span<float> dest,
         byte control)
     {
-        ref float sBase = ref MemoryMarshal.GetReference(source);
-        ref float dBase = ref MemoryMarshal.GetReference(dest);
-        Shuffle.InverseMmShuffle(control, out int p3, out int p2, out int p1, out int p0);
+        ref var sBase = ref MemoryMarshal.GetReference(source);
+        ref var dBase = ref MemoryMarshal.GetReference(dest);
+        Shuffle.InverseMmShuffle(control, out var p3, out var p2, out var p1, out var p0);
 
-        for (int i = 0; i < source.Length; i += 4)
+        for (var i = 0; i < source.Length; i += 4)
         {
             Unsafe.Add(ref dBase, i) = Unsafe.Add(ref sBase, p0 + i);
             Unsafe.Add(ref dBase, i + 1) = Unsafe.Add(ref sBase, p1 + i);
@@ -242,14 +242,14 @@ internal static partial class SimdUtils
         {
             InverseMmShuffle(
                 control,
-                out int p3,
-                out int p2,
-                out int p1,
-                out int p0);
+                out var p3,
+                out var p2,
+                out var p1,
+                out var p0);
 
-            ref byte spanBase = ref MemoryMarshal.GetReference(span);
+            ref var spanBase = ref MemoryMarshal.GetReference(span);
 
-            for (int i = 0; i < span.Length; i += 4)
+            for (var i = 0; i < span.Length; i += 4)
             {
                 Unsafe.Add(ref spanBase, i) = (byte)(p0 + i);
                 Unsafe.Add(ref spanBase, i + 1) = (byte)(p1 + i);

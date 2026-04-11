@@ -69,7 +69,7 @@ public partial struct NormalizedShort2 : IPixel<NormalizedShort2>, IPackedVector
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromScaledVector4(Vector4 vector)
     {
-        Vector2 scaled = new Vector2(vector.X, vector.Y) * 2F;
+        var scaled = new Vector2(vector.X, vector.Y) * 2F;
         scaled -= Vector2.One;
         this.PackedValue = Pack(scaled);
     }
@@ -187,8 +187,8 @@ public partial struct NormalizedShort2 : IPixel<NormalizedShort2>, IPackedVector
         vector = Vector2.Clamp(vector, Min, Max);
 
         // Round rather than truncate.
-        uint word2 = (uint)((int)MathF.Round(vector.X) & 0xFFFF);
-        uint word1 = (uint)(((int)MathF.Round(vector.Y) & 0xFFFF) << 0x10);
+        var word2 = (uint)((int)MathF.Round(vector.X) & 0xFFFF);
+        var word1 = (uint)(((int)MathF.Round(vector.Y) & 0xFFFF) << 0x10);
 
         return word2 | word1;
     }

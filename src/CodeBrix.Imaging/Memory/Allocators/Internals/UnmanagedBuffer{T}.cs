@@ -49,7 +49,7 @@ internal sealed unsafe class UnmanagedBuffer<T> : MemoryManager<T>, IRefCounted
         // Will be released in Unpin
         this.lifetimeGuard.AddRef();
 
-        void* pbData = Unsafe.Add<T>(this.Pointer, elementIndex);
+        var pbData = Unsafe.Add<T>(this.Pointer, elementIndex);
         return new MemoryHandle(pbData, pinnable: this);
     }
 

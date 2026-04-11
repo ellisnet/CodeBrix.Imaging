@@ -30,7 +30,7 @@ internal readonly struct IccLut : IEquatable<IccLut>
         const float max = ushort.MaxValue;
 
         this.Values = new float[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             this.Values[i] = values[i] / max;
         }
@@ -47,7 +47,7 @@ internal readonly struct IccLut : IEquatable<IccLut>
         const float max = byte.MaxValue;
 
         this.Values = new float[values.Length];
-        for (int i = 0; i < values.Length; i++)
+        for (var i = 0; i < values.Length; i++)
         {
             this.Values[i] = values[i] / max;
         }

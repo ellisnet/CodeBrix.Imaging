@@ -72,7 +72,7 @@ public partial struct Short2 : IPixel<Short2>, IPackedVector<uint>
     [MethodImpl(InliningOptions.ShortMethod)]
     public void FromScaledVector4(Vector4 vector)
     {
-        Vector2 scaled = new Vector2(vector.X, vector.Y) * 65534F;
+        var scaled = new Vector2(vector.X, vector.Y) * 65534F;
         scaled -= new Vector2(32767F);
         this.PackedValue = Pack(scaled);
     }
@@ -185,8 +185,8 @@ public partial struct Short2 : IPixel<Short2>, IPackedVector<uint>
     private static uint Pack(Vector2 vector)
     {
         vector = Vector2.Clamp(vector, Min, Max);
-        uint word2 = (uint)Convert.ToInt32(Math.Round(vector.X)) & 0xFFFF;
-        uint word1 = ((uint)Convert.ToInt32(Math.Round(vector.Y)) & 0xFFFF) << 0x10;
+        var word2 = (uint)Convert.ToInt32(Math.Round(vector.X)) & 0xFFFF;
+        var word1 = ((uint)Convert.ToInt32(Math.Round(vector.Y)) & 0xFFFF) << 0x10;
 
         return word2 | word1;
     }

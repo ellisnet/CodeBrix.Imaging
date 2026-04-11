@@ -44,22 +44,22 @@ internal class Rgba16161616TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         // Note: due to an issue with netcore 2.1 and default values and unpredictable behavior with those,
         // we define our own defaults as a workaround. See: https://github.com/dotnet/runtime/issues/55623
-        Rgba64 rgba = TiffUtils.Rgba64Default;
+        var rgba = TiffUtils.Rgba64Default;
         var color = default(TPixel);
         color.FromScaledVector4(TiffUtils.Vector4Default);
 
-        bool hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
-        int offset = 0;
+        var hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
+        var offset = 0;
 
-        using IMemoryOwner<Vector4> vectors = hasAssociatedAlpha ? this.memoryAllocator.Allocate<Vector4>(width) : null;
-        Span<Vector4> vectorsSpan = hasAssociatedAlpha ? vectors.GetSpan() : Span<Vector4>.Empty;
-        for (int y = top; y < top + height; y++)
+        using var vectors = hasAssociatedAlpha ? this.memoryAllocator.Allocate<Vector4>(width) : null;
+        var vectorsSpan = hasAssociatedAlpha ? vectors.GetSpan() : Span<Vector4>.Empty;
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
 
             if (this.isBigEndian)
             {
-                for (int x = 0; x < pixelRow.Length; x++)
+                for (var x = 0; x < pixelRow.Length; x++)
                 {
                     ulong r = TiffUtils.ConvertToUShortBigEndian(data.Slice(offset, 2));
                     offset += 2;
@@ -77,7 +77,7 @@ internal class Rgba16161616TiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
             }
             else
             {
-                int byteCount = pixelRow.Length * 8;
+                var byteCount = pixelRow.Length * 8;
                 PixelOperations<TPixel>.Instance.FromRgba64Bytes(
                     this.configuration,
                     data.Slice(offset, byteCount),

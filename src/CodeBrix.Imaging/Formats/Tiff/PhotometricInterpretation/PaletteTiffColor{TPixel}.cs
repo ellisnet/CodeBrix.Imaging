@@ -24,7 +24,7 @@ internal class PaletteTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     public PaletteTiffColor(TiffBitsPerSample bitsPerSample, ushort[] colorMap)
     {
         this.bitsPerSample0 = bitsPerSample.Channel0;
-        int colorCount = 1 << this.bitsPerSample0;
+        var colorCount = 1 << this.bitsPerSample0;
         this.palette = GeneratePalette(colorMap, colorCount);
     }
 
@@ -33,12 +33,12 @@ internal class PaletteTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
     {
         var bitReader = new BitReader(data);
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                int index = bitReader.ReadBits(this.bitsPerSample0);
+                var index = bitReader.ReadBits(this.bitsPerSample0);
                 pixelRow[x] = this.palette[index];
             }
 
@@ -51,14 +51,14 @@ internal class PaletteTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
         var palette = new TPixel[colorCount];
 
         const int rOffset = 0;
-        int gOffset = colorCount;
-        int bOffset = colorCount * 2;
+        var gOffset = colorCount;
+        var bOffset = colorCount * 2;
 
-        for (int i = 0; i < palette.Length; i++)
+        for (var i = 0; i < palette.Length; i++)
         {
-            float r = colorMap[rOffset + i] / 65535F;
-            float g = colorMap[gOffset + i] / 65535F;
-            float b = colorMap[bOffset + i] / 65535F;
+            var r = colorMap[rOffset + i] / 65535F;
+            var g = colorMap[gOffset + i] / 65535F;
+            var b = colorMap[bOffset + i] / 65535F;
             palette[i].FromScaledVector4(new Vector4(r, g, b, 1.0f));
         }
 

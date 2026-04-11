@@ -146,10 +146,10 @@ internal static class ColorNumerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Transform(ref Vector4 vector, ref ColorMatrix matrix)
     {
-        float x = vector.X;
-        float y = vector.Y;
-        float z = vector.Z;
-        float w = vector.W;
+        var x = vector.X;
+        var y = vector.Y;
+        var z = vector.Z;
+        var w = vector.W;
 
         vector.X = (x * matrix.M11) + (y * matrix.M21) + (z * matrix.M31) + (w * matrix.M41) + matrix.M51;
         vector.Y = (x * matrix.M12) + (y * matrix.M22) + (z * matrix.M32) + (w * matrix.M42) + matrix.M52;
@@ -165,11 +165,11 @@ internal static class ColorNumerics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Transform(Span<Vector4> vectors, ref ColorMatrix matrix)
     {
-        ref Vector4 baseRef = ref MemoryMarshal.GetReference(vectors);
+        ref var baseRef = ref MemoryMarshal.GetReference(vectors);
 
-        for (int i = 0; i < vectors.Length; i++)
+        for (var i = 0; i < vectors.Length; i++)
         {
-            ref Vector4 v = ref Unsafe.Add(ref baseRef, i);
+            ref var v = ref Unsafe.Add(ref baseRef, i);
             Transform(ref v, ref matrix);
         }
     }

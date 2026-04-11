@@ -52,7 +52,7 @@ public static class QuantizerUtilities
         Guard.NotNull(source, nameof(source));
 
         var interest = Rectangle.Intersect(source.Bounds(), bounds);
-        Buffer2DRegion<TPixel> region = source.PixelBuffer.GetRegion(interest);
+        var region = source.PixelBuffer.GetRegion(interest);
 
         // Collect the palette. Required before the second pass runs.
         quantizer.AddPaletteColors(region);
@@ -93,7 +93,7 @@ public static class QuantizerUtilities
         else
         {
             // We clone the image as we don't want to alter the original via error diffusion based dithering.
-            using ImageFrame<TPixel> clone = source.Clone();
+            using var clone = source.Clone();
             SecondPass(ref quantizer, clone, destination, interest);
         }
 
@@ -106,7 +106,7 @@ public static class QuantizerUtilities
         Image<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        foreach (Buffer2DRegion<TPixel> region in pixelSamplingStrategy.EnumeratePixelRegions(image))
+        foreach (var region in pixelSamplingStrategy.EnumeratePixelRegions(image))
         {
             quantizer.AddPaletteColors(region);
         }
@@ -121,22 +121,22 @@ public static class QuantizerUtilities
         where TFrameQuantizer : struct, IQuantizer<TPixel>
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        IDither dither = quantizer.Options.Dither;
-        Buffer2D<TPixel> sourceBuffer = source.PixelBuffer;
+        var dither = quantizer.Options.Dither;
+        var sourceBuffer = source.PixelBuffer;
 
         if (dither is null)
         {
-            int offsetY = bounds.Top;
-            int offsetX = bounds.Left;
+            var offsetY = bounds.Top;
+            var offsetX = bounds.Left;
 
-            for (int y = bounds.Y; y < bounds.Height; y++)
+            for (var y = bounds.Y; y < bounds.Height; y++)
             {
-                Span<TPixel> sourceRow = sourceBuffer.DangerousGetRowSpan(y);
-                Span<byte> destinationRow = destination.GetWritablePixelRowSpanUnsafe(y - offsetY);
+                var sourceRow = sourceBuffer.DangerousGetRowSpan(y);
+                var destinationRow = destination.GetWritablePixelRowSpanUnsafe(y - offsetY);
 
-                for (int x = bounds.Left; x < bounds.Right; x++)
+                for (var x = bounds.Left; x < bounds.Right; x++)
                 {
-                    destinationRow[x - offsetX] = Unsafe.AsRef(ref quantizer).GetQuantizedColor(sourceRow[x], out TPixel _);
+                    destinationRow[x - offsetX] = Unsafe.AsRef(ref quantizer).GetQuantizedColor(sourceRow[x], out var _);
                 }
             }
 

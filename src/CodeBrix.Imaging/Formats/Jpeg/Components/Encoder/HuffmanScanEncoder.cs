@@ -108,7 +108,7 @@ internal class HuffmanScanEncoder
     /// <param name="outputStream">Output stream for saving encoded data.</param>
     public HuffmanScanEncoder(int blocksPerCodingUnit, Stream outputStream)
     {
-        int emitBufferByteLength = MaxBytesPerBlock * blocksPerCodingUnit;
+        var emitBufferByteLength = MaxBytesPerBlock * blocksPerCodingUnit;
         this.emitBuffer = new uint[emitBufferByteLength / sizeof(uint)];
         this.emitWriteIndex = this.emitBuffer.Length;
 
@@ -147,18 +147,18 @@ internal class HuffmanScanEncoder
         // ReSharper disable once InconsistentNaming
         int prevDCY = 0, prevDCCb = 0, prevDCCr = 0;
 
-        ImageFrame<TPixel> frame = pixels.Frames.RootFrame;
-        Buffer2D<TPixel> pixelBuffer = frame.PixelBuffer;
+        var frame = pixels.Frames.RootFrame;
+        var pixelBuffer = frame.PixelBuffer;
         RowOctet<TPixel> currentRows = default;
 
         var pixelConverter = new YCbCrForwardConverter444<TPixel>(frame);
 
-        for (int y = 0; y < pixels.Height; y += 8)
+        for (var y = 0; y < pixels.Height; y += 8)
         {
             cancellationToken.ThrowIfCancellationRequested();
             currentRows.Update(pixelBuffer, y);
 
-            for (int x = 0; x < pixels.Width; x += 8)
+            for (var x = 0; x < pixels.Width; x += 8)
             {
                 pixelConverter.Convert(x, y, ref currentRows);
 
@@ -209,20 +209,20 @@ internal class HuffmanScanEncoder
 
         // ReSharper disable once InconsistentNaming
         int prevDCY = 0, prevDCCb = 0, prevDCCr = 0;
-        ImageFrame<TPixel> frame = pixels.Frames.RootFrame;
-        Buffer2D<TPixel> pixelBuffer = frame.PixelBuffer;
+        var frame = pixels.Frames.RootFrame;
+        var pixelBuffer = frame.PixelBuffer;
         RowOctet<TPixel> currentRows = default;
 
         var pixelConverter = new YCbCrForwardConverter420<TPixel>(frame);
 
-        for (int y = 0; y < pixels.Height; y += 16)
+        for (var y = 0; y < pixels.Height; y += 16)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            for (int x = 0; x < pixels.Width; x += 16)
+            for (var x = 0; x < pixels.Width; x += 16)
             {
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
-                    int yOff = i * 8;
+                    var yOff = i * 8;
                     currentRows.Update(pixelBuffer, y + yOff);
                     pixelConverter.Convert(x, y, ref currentRows, i);
 
@@ -276,20 +276,20 @@ internal class HuffmanScanEncoder
         this.huffmanTables = HuffmanLut.TheHuffmanLut;
 
         // ReSharper disable once InconsistentNaming
-        int prevDCY = 0;
+        var prevDCY = 0;
 
-        ImageFrame<TPixel> frame = pixels.Frames.RootFrame;
-        Buffer2D<TPixel> pixelBuffer = frame.PixelBuffer;
+        var frame = pixels.Frames.RootFrame;
+        var pixelBuffer = frame.PixelBuffer;
         RowOctet<TPixel> currentRows = default;
 
         var pixelConverter = new LuminanceForwardConverter<TPixel>(frame);
 
-        for (int y = 0; y < pixels.Height; y += 8)
+        for (var y = 0; y < pixels.Height; y += 8)
         {
             cancellationToken.ThrowIfCancellationRequested();
             currentRows.Update(pixelBuffer, y);
 
-            for (int x = 0; x < pixels.Width; x += 8)
+            for (var x = 0; x < pixels.Width; x += 8)
             {
                 pixelConverter.Convert(x, y, ref currentRows);
 
@@ -326,18 +326,18 @@ internal class HuffmanScanEncoder
         // ReSharper disable once InconsistentNaming
         int prevDCR = 0, prevDCG = 0, prevDCB = 0;
 
-        ImageFrame<TPixel> frame = pixels.Frames.RootFrame;
-        Buffer2D<TPixel> pixelBuffer = frame.PixelBuffer;
+        var frame = pixels.Frames.RootFrame;
+        var pixelBuffer = frame.PixelBuffer;
         RowOctet<TPixel> currentRows = default;
 
         var pixelConverter = new RgbForwardConverter<TPixel>(frame);
 
-        for (int y = 0; y < pixels.Height; y += 8)
+        for (var y = 0; y < pixels.Height; y += 8)
         {
             cancellationToken.ThrowIfCancellationRequested();
             currentRows.Update(pixelBuffer, y);
 
-            for (int x = 0; x < pixels.Width; x += 8)
+            for (var x = 0; x < pixels.Width; x += 8)
             {
                 pixelConverter.Convert(x, y, ref currentRows);
 
@@ -385,7 +385,7 @@ internal class HuffmanScanEncoder
         ref Block8x8F block,
         ref Block8x8F quant)
     {
-        ref Block8x8 spectralBlock = ref this.tempBlock;
+        ref var spectralBlock = ref this.tempBlock;
 
         // Shifting level from 0..255 to -128..127
         block.AddInPlace(-128f);
@@ -401,12 +401,12 @@ internal class HuffmanScanEncoder
         this.EmitHuffRLE(this.huffmanTables[2 * (int)index].Values, 0, dc - prevDC);
 
         // Emit the AC components.
-        int[] acHuffTable = this.huffmanTables[(2 * (int)index) + 1].Values;
+        var acHuffTable = this.huffmanTables[(2 * (int)index) + 1].Values;
 
-        nint lastValuableIndex = spectralBlock.GetLastNonZeroIndex();
+        var lastValuableIndex = spectralBlock.GetLastNonZeroIndex();
 
-        int runLength = 0;
-        ref short blockRef = ref Unsafe.As<Block8x8, short>(ref spectralBlock);
+        var runLength = 0;
+        ref var blockRef = ref Unsafe.As<Block8x8, short>(ref spectralBlock);
         for (nint zig = 1; zig <= lastValuableIndex; zig++)
         {
             const int zeroRun1 = 1 << 4;
@@ -510,7 +510,7 @@ internal class HuffmanScanEncoder
     [MethodImpl(InliningOptions.ShortMethod)]
     private void EmitHuff(int[] table, int value)
     {
-        int x = table[value];
+        var x = table[value];
         this.Emit((uint)x & 0xffff_ff00u, x & 0xff);
     }
 
@@ -525,23 +525,23 @@ internal class HuffmanScanEncoder
     {
         DebugGuard.IsTrue((runLength & 0xf) == 0, $"{nameof(runLength)} parameter must be shifted to the left by 4 bits");
 
-        int a = value;
-        int b = value;
+        var a = value;
+        var b = value;
         if (a < 0)
         {
             a = -value;
             b = value - 1;
         }
 
-        int valueLen = GetHuffmanEncodingLength((uint)a);
+        var valueLen = GetHuffmanEncodingLength((uint)a);
 
         // Huffman prefix code
-        int huffPackage = table[runLength | valueLen];
-        int prefixLen = huffPackage & 0xff;
-        uint prefix = (uint)huffPackage & 0xffff_0000u;
+        var huffPackage = table[runLength | valueLen];
+        var prefixLen = huffPackage & 0xff;
+        var prefix = (uint)huffPackage & 0xffff_0000u;
 
         // Actual encoded value
-        uint encodedValue = (uint)b << (32 - valueLen);
+        var encodedValue = (uint)b << (32 - valueLen);
 
         // Doing two binary shifts to get rid of leading 1's in negative value case
         this.Emit(prefix | (encodedValue >> prefixLen), prefixLen + valueLen);
@@ -593,10 +593,10 @@ internal class HuffmanScanEncoder
     [MethodImpl(InliningOptions.ShortMethod)]
     private void FlushToStream(int endIndex)
     {
-        Span<byte> emitBytes = MemoryMarshal.AsBytes(this.emitBuffer.AsSpan());
+        var emitBytes = MemoryMarshal.AsBytes(this.emitBuffer.AsSpan());
 
-        int writeIdx = 0;
-        int startIndex = emitBytes.Length - 1;
+        var writeIdx = 0;
+        var startIndex = emitBytes.Length - 1;
 
         // Some platforms may fail to eliminate this if-else branching
         // Even if it happens - buffer is flushed in big packs,
@@ -609,9 +609,9 @@ internal class HuffmanScanEncoder
             // so we are going from the end of the array to its beginning:
             // ... [  double word #1   ] [  double word #0   ]
             // ... [idx3|idx2|idx1|idx0] [idx3|idx2|idx1|idx0]
-            for (int i = startIndex; i >= endIndex; i--)
+            for (var i = startIndex; i >= endIndex; i--)
             {
-                byte value = emitBytes[i];
+                var value = emitBytes[i];
                 this.streamWriteBuffer[writeIdx++] = value;
 
                 // Inserting stuff byte
@@ -628,16 +628,16 @@ internal class HuffmanScanEncoder
             // ... [  double word #1   ] [  double word #0   ]
             // ... [idx0|idx1|idx2|idx3] [idx0|idx1|idx2|idx3]
             // So we must write each 4-bytes in 'natural order'
-            for (int i = startIndex; i >= endIndex; i -= 4)
+            for (var i = startIndex; i >= endIndex; i -= 4)
             {
                 // This loop is caused by the nature of underlying byte buffer
                 // implementation and indeed causes performace by somewhat 5%
                 // compared to little endian scenario
                 // Even with this performance drop this cached buffer implementation
                 // is faster than individually writing bytes using binary shifts and binary and(s)
-                for (int j = i - 3; j <= i; j++)
+                for (var j = i - 3; j <= i; j++)
                 {
-                    byte value = emitBytes[j];
+                    var value = emitBytes[j];
                     this.streamWriteBuffer[writeIdx++] = value;
 
                     // Inserting stuff byte
@@ -677,12 +677,12 @@ internal class HuffmanScanEncoder
     {
         // Padding all 4 bytes with 1's while not corrupting initial bits stored in accumulatedBits
         // And writing only valuable count of bytes count we want to write to the output stream
-        int valuableBytesCount = (int)Numerics.DivideCeil((uint)this.bitCount, 8);
-        uint packedBytes = this.accumulatedBits | (uint.MaxValue >> this.bitCount);
+        var valuableBytesCount = (int)Numerics.DivideCeil((uint)this.bitCount, 8);
+        var packedBytes = this.accumulatedBits | (uint.MaxValue >> this.bitCount);
         this.emitBuffer[this.emitWriteIndex - 1] = packedBytes;
 
         // Flush cached bytes to the output stream with padding bits
-        int lastByteIndex = (this.emitWriteIndex * 4) - valuableBytesCount;
+        var lastByteIndex = (this.emitWriteIndex * 4) - valuableBytesCount;
         this.FlushToStream(lastByteIndex);
     }
 }

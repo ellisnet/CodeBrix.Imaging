@@ -35,7 +35,7 @@ public sealed class ImageFrameMetadata : IDeepCloneable<ImageFrameMetadata>
     {
         DebugGuard.NotNull(other, nameof(other));
 
-        foreach (KeyValuePair<IImageFormat, IDeepCloneable> meta in other.formatMetadata)
+        foreach (var meta in other.formatMetadata)
         {
             this.formatMetadata.Add(meta.Key, meta.Value.DeepClone());
         }
@@ -82,12 +82,12 @@ public sealed class ImageFrameMetadata : IDeepCloneable<ImageFrameMetadata>
         where TFormatMetadata : class
         where TFormatFrameMetadata : class, IDeepCloneable
     {
-        if (this.formatMetadata.TryGetValue(key, out IDeepCloneable meta))
+        if (this.formatMetadata.TryGetValue(key, out var meta))
         {
             return (TFormatFrameMetadata)meta;
         }
 
-        TFormatFrameMetadata newMeta = key.CreateDefaultFormatFrameMetadata();
+        var newMeta = key.CreateDefaultFormatFrameMetadata();
         this.formatMetadata[key] = newMeta;
         return newMeta;
     }

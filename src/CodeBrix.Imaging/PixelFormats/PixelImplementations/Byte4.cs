@@ -171,10 +171,10 @@ public partial struct Byte4 : IPixel<Byte4>, IPackedVector<uint>
         // Clamp the value between min and max values
         vector = Numerics.Clamp(vector, Vector4.Zero, new Vector4(Max));
 
-        uint byte4 = (uint)Math.Round(vector.X) & 0xFF;
-        uint byte3 = ((uint)Math.Round(vector.Y) & 0xFF) << 0x8;
-        uint byte2 = ((uint)Math.Round(vector.Z) & 0xFF) << 0x10;
-        uint byte1 = ((uint)Math.Round(vector.W) & 0xFF) << 0x18;
+        var byte4 = (uint)Math.Round(vector.X) & 0xFF;
+        var byte3 = ((uint)Math.Round(vector.Y) & 0xFF) << 0x8;
+        var byte2 = ((uint)Math.Round(vector.Z) & 0xFF) << 0x10;
+        var byte1 = ((uint)Math.Round(vector.W) & 0xFF) << 0x18;
 
         return byte4 | byte3 | byte2 | byte1;
     }

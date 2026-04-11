@@ -19,11 +19,11 @@ internal abstract partial class JpegColorConverterBase
 
         protected override void ConvertCoreVectorizedInplace(in ComponentValues values)
         {
-            ref Vector<float> c0Base =
+            ref var c0Base =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(values.Component0));
-            ref Vector<float> c1Base =
+            ref var c1Base =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(values.Component1));
-            ref Vector<float> c2Base =
+            ref var c2Base =
                 ref Unsafe.As<float, Vector<float>>(ref MemoryMarshal.GetReference(values.Component2));
 
             var chromaOffset = new Vector<float>(-this.HalfValue);
@@ -40,19 +40,19 @@ internal abstract partial class JpegColorConverterBase
                 // y = yVals[i];
                 // cb = cbVals[i] - 128F;
                 // cr = crVals[i] - 128F;
-                ref Vector<float> c0 = ref Unsafe.Add(ref c0Base, i);
-                ref Vector<float> c1 = ref Unsafe.Add(ref c1Base, i);
-                ref Vector<float> c2 = ref Unsafe.Add(ref c2Base, i);
-                Vector<float> y = Unsafe.Add(ref c0Base, i);
-                Vector<float> cb = Unsafe.Add(ref c1Base, i) + chromaOffset;
-                Vector<float> cr = Unsafe.Add(ref c2Base, i) + chromaOffset;
+                ref var c0 = ref Unsafe.Add(ref c0Base, i);
+                ref var c1 = ref Unsafe.Add(ref c1Base, i);
+                ref var c2 = ref Unsafe.Add(ref c2Base, i);
+                var y = Unsafe.Add(ref c0Base, i);
+                var cb = Unsafe.Add(ref c1Base, i) + chromaOffset;
+                var cr = Unsafe.Add(ref c2Base, i) + chromaOffset;
 
                 // r = y + (1.402F * cr);
                 // g = y - (0.344136F * cb) - (0.714136F * cr);
                 // b = y + (1.772F * cb);
-                Vector<float> r = y + (cr * rCrMult);
-                Vector<float> g = y + (cb * gCbMult) + (cr * gCrMult);
-                Vector<float> b = y + (cb * bCbMult);
+                var r = y + (cr * rCrMult);
+                var g = y + (cb * gCbMult) + (cr * gCrMult);
+                var b = y + (cb * bCbMult);
 
                 r = r.FastRound();
                 g = g.FastRound();

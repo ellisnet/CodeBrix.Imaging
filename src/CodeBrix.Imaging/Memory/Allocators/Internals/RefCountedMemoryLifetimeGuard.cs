@@ -43,7 +43,7 @@ internal abstract class RefCountedMemoryLifetimeGuard : IDisposable
 
     public void Dispose()
     {
-        int wasDisposed = Interlocked.Exchange(ref this.disposed, 1);
+        var wasDisposed = Interlocked.Exchange(ref this.disposed, 1);
         if (wasDisposed == 0)
         {
             this.ReleaseRef();
@@ -58,7 +58,7 @@ internal abstract class RefCountedMemoryLifetimeGuard : IDisposable
         Interlocked.Decrement(ref this.refCount);
         if (this.refCount == 0)
         {
-            int wasReleased = Interlocked.Exchange(ref this.released, 1);
+            var wasReleased = Interlocked.Exchange(ref this.released, 1);
 
             if (wasReleased == 0)
             {

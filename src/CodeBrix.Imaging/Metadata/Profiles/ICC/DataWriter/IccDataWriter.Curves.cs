@@ -17,15 +17,15 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteOneDimensionalCurve(IccOneDimensionalCurve value)
     {
-        int count = this.WriteUInt16((ushort)value.Segments.Length);
+        var count = this.WriteUInt16((ushort)value.Segments.Length);
         count += this.WriteEmpty(2);
 
-        foreach (float point in value.BreakPoints)
+        foreach (var point in value.BreakPoints)
         {
             count += this.WriteSingle(point);
         }
 
-        foreach (IccCurveSegment segment in value.Segments)
+        foreach (var segment in value.Segments)
         {
             count += this.WriteCurveSegment(segment);
         }
@@ -40,21 +40,21 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteResponseCurve(IccResponseCurve value)
     {
-        int count = this.WriteUInt32((uint)value.CurveType);
+        var count = this.WriteUInt32((uint)value.CurveType);
 
-        foreach (IccResponseNumber[] responseArray in value.ResponseArrays)
+        foreach (var responseArray in value.ResponseArrays)
         {
             count += this.WriteUInt32((uint)responseArray.Length);
         }
 
-        foreach (Vector3 xyz in value.XyzValues)
+        foreach (var xyz in value.XyzValues)
         {
             count += this.WriteXyzNumber(xyz);
         }
 
-        foreach (IccResponseNumber[] responseArray in value.ResponseArrays)
+        foreach (var responseArray in value.ResponseArrays)
         {
-            foreach (IccResponseNumber response in responseArray)
+            foreach (var response in responseArray)
             {
                 count += this.WriteResponseNumber(response);
             }
@@ -70,8 +70,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteParametricCurve(IccParametricCurve value)
     {
-        ushort typeValue = (ushort)value.Type;
-        int count = this.WriteUInt16(typeValue);
+        var typeValue = (ushort)value.Type;
+        var count = this.WriteUInt16(typeValue);
         count += this.WriteEmpty(2);
 
         if (typeValue <= 4)
@@ -111,7 +111,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteCurveSegment(IccCurveSegment value)
     {
-        int count = this.WriteUInt32((uint)value.Signature);
+        var count = this.WriteUInt32((uint)value.Signature);
         count += this.WriteEmpty(4);
 
         switch (value.Signature)
@@ -132,7 +132,7 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteFormulaCurveElement(IccFormulaCurveElement value)
     {
-        int count = this.WriteUInt16((ushort)value.Type);
+        var count = this.WriteUInt16((ushort)value.Type);
         count += this.WriteEmpty(2);
 
         if (value.Type == IccFormulaCurveType.Type1 || value.Type == IccFormulaCurveType.Type2)
@@ -164,8 +164,8 @@ internal sealed partial class IccDataWriter
     /// <returns>The number of bytes written</returns>
     public int WriteSampledCurveElement(IccSampledCurveElement value)
     {
-        int count = this.WriteUInt32((uint)value.CurveEntries.Length);
-        foreach (float entry in value.CurveEntries)
+        var count = this.WriteUInt32((uint)value.CurveEntries.Length);
+        foreach (var entry in value.CurveEntries)
         {
             count += this.WriteSingle(entry);
         }

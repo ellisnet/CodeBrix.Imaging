@@ -95,9 +95,9 @@ internal ref struct RgbForwardConverter<TPixel>
 
         PixelOperations<TPixel>.Instance.ToRgb24(this.config, this.pixelSpan, this.rgbSpan);
 
-        ref Block8x8F redBlock = ref this.R;
-        ref Block8x8F greenBlock = ref this.G;
-        ref Block8x8F blueBlock = ref this.B;
+        ref var redBlock = ref this.R;
+        ref var greenBlock = ref this.G;
+        ref var blueBlock = ref this.B;
 
         if (RgbToYCbCrConverterVectorized.IsSupported)
         {
@@ -150,11 +150,11 @@ internal ref struct RgbForwardConverter<TPixel>
 
     private static void ConvertScalar(Span<Rgb24> rgbSpan, ref Block8x8F redBlock, ref Block8x8F greenBlock, ref Block8x8F blueBlock)
     {
-        ref Rgb24 rgbStart = ref MemoryMarshal.GetReference(rgbSpan);
+        ref var rgbStart = ref MemoryMarshal.GetReference(rgbSpan);
 
-        for (int i = 0; i < Block8x8F.Size; i++)
+        for (var i = 0; i < Block8x8F.Size; i++)
         {
-            Rgb24 c = Unsafe.Add(ref rgbStart, (nint)(uint)i);
+            var c = Unsafe.Add(ref rgbStart, (nint)(uint)i);
 
             redBlock[i] = c.R;
             greenBlock[i] = c.G;

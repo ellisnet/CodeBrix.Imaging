@@ -16,16 +16,16 @@ internal sealed partial class IccDataReader
     /// <returns>The read curve</returns>
     public IccOneDimensionalCurve ReadOneDimensionalCurve()
     {
-        ushort segmentCount = this.ReadUInt16();
+        var segmentCount = this.ReadUInt16();
         this.AddIndex(2);   // 2 bytes reserved
         var breakPoints = new float[segmentCount - 1];
-        for (int i = 0; i < breakPoints.Length; i++)
+        for (var i = 0; i < breakPoints.Length; i++)
         {
             breakPoints[i] = this.ReadSingle();
         }
 
         var segments = new IccCurveSegment[segmentCount];
-        for (int i = 0; i < segmentCount; i++)
+        for (var i = 0; i < segmentCount; i++)
         {
             segments[i] = this.ReadCurveSegment();
         }
@@ -42,19 +42,19 @@ internal sealed partial class IccDataReader
     {
         var type = (IccCurveMeasurementEncodings)this.ReadUInt32();
         var measurement = new uint[channelCount];
-        for (int i = 0; i < channelCount; i++)
+        for (var i = 0; i < channelCount; i++)
         {
             measurement[i] = this.ReadUInt32();
         }
 
         var xyzValues = new Vector3[channelCount];
-        for (int i = 0; i < channelCount; i++)
+        for (var i = 0; i < channelCount; i++)
         {
             xyzValues[i] = this.ReadXyzNumber();
         }
 
         var response = new IccResponseNumber[channelCount][];
-        for (int i = 0; i < channelCount; i++)
+        for (var i = 0; i < channelCount; i++)
         {
             response[i] = new IccResponseNumber[measurement[i]];
             for (uint j = 0; j < measurement[i]; j++)
@@ -72,7 +72,7 @@ internal sealed partial class IccDataReader
     /// <returns>The read curve</returns>
     public IccParametricCurve ReadParametricCurve()
     {
-        ushort type = this.ReadUInt16();
+        var type = this.ReadUInt16();
         this.AddIndex(2);   // 2 bytes reserved
         float gamma, a, b, c, d, e, f;
         gamma = a = b = c = d = e = f = 0;
@@ -174,9 +174,9 @@ internal sealed partial class IccDataReader
     /// <returns>The read segment</returns>
     public IccSampledCurveElement ReadSampledCurveElement()
     {
-        uint count = this.ReadUInt32();
+        var count = this.ReadUInt32();
         var entries = new float[count];
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             entries[i] = this.ReadSingle();
         }
@@ -192,9 +192,9 @@ internal sealed partial class IccDataReader
     private IccTagDataEntry[] ReadCurves(int count)
     {
         var tdata = new IccTagDataEntry[count];
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            IccTypeSignature type = this.ReadTagDataEntryHeader();
+            var type = this.ReadTagDataEntryHeader();
             if (type != IccTypeSignature.Curve && type != IccTypeSignature.ParametricCurve)
             {
                 throw new InvalidIccProfileException($"Curve has to be either \"{nameof(IccTypeSignature)}.{nameof(IccTypeSignature.Curve)}\" or" +

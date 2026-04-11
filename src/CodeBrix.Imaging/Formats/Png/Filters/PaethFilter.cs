@@ -112,25 +112,25 @@ internal static class PaethFilter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void DecodeScalar(Span<byte> scanline, Span<byte> previousScanline, int bytesPerPixel)
     {
-        ref byte scanBaseRef = ref MemoryMarshal.GetReference(scanline);
-        ref byte prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
+        ref var scanBaseRef = ref MemoryMarshal.GetReference(scanline);
+        ref var prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
 
         // Paeth(x) + PaethPredictor(Raw(x-bpp), Prior(x), Prior(x-bpp))
-        int offset = bytesPerPixel + 1; // Add one because x starts at one.
-        int x = 1;
+        var offset = bytesPerPixel + 1; // Add one because x starts at one.
+        var x = 1;
         for (; x < offset; x++)
         {
-            ref byte scan = ref Unsafe.Add(ref scanBaseRef, x);
-            byte above = Unsafe.Add(ref prevBaseRef, x);
+            ref var scan = ref Unsafe.Add(ref scanBaseRef, x);
+            var above = Unsafe.Add(ref prevBaseRef, x);
             scan = (byte)(scan + above);
         }
 
         for (; x < scanline.Length; x++)
         {
-            ref byte scan = ref Unsafe.Add(ref scanBaseRef, x);
-            byte left = Unsafe.Add(ref scanBaseRef, x - bytesPerPixel);
-            byte above = Unsafe.Add(ref prevBaseRef, x);
-            byte upperLeft = Unsafe.Add(ref prevBaseRef, x - bytesPerPixel);
+            ref var scan = ref Unsafe.Add(ref scanBaseRef, x);
+            var left = Unsafe.Add(ref scanBaseRef, x - bytesPerPixel);
+            var above = Unsafe.Add(ref prevBaseRef, x);
+            var upperLeft = Unsafe.Add(ref prevBaseRef, x - bytesPerPixel);
             scan = (byte)(scan + PaethPredictor(left, above, upperLeft));
         }
     }
@@ -149,21 +149,21 @@ internal static class PaethFilter
         DebugGuard.MustBeSameSized(scanline, previousScanline, nameof(scanline));
         DebugGuard.MustBeSizedAtLeast(result, scanline, nameof(result));
 
-        ref byte scanBaseRef = ref MemoryMarshal.GetReference(scanline);
-        ref byte prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
-        ref byte resultBaseRef = ref MemoryMarshal.GetReference(result);
+        ref var scanBaseRef = ref MemoryMarshal.GetReference(scanline);
+        ref var prevBaseRef = ref MemoryMarshal.GetReference(previousScanline);
+        ref var resultBaseRef = ref MemoryMarshal.GetReference(result);
         sum = 0;
 
         // Paeth(x) = Raw(x) - PaethPredictor(Raw(x-bpp), Prior(x), Prior(x - bpp))
         resultBaseRef = 4;
 
-        int x = 0;
+        var x = 0;
         for (; x < bytesPerPixel; /* Note: ++x happens in the body to avoid one add operation */)
         {
-            byte scan = Unsafe.Add(ref scanBaseRef, x);
-            byte above = Unsafe.Add(ref prevBaseRef, x);
+            var scan = Unsafe.Add(ref scanBaseRef, x);
+            var above = Unsafe.Add(ref prevBaseRef, x);
             ++x;
-            ref byte res = ref Unsafe.Add(ref resultBaseRef, x);
+            ref var res = ref Unsafe.Add(ref resultBaseRef, x);
             res = (byte)(scan - PaethPredictor(0, above, 0));
             sum += Numerics.Abs(unchecked((sbyte)res));
         }
@@ -215,14 +215,14 @@ internal static class PaethFilter
             }
 #endif
 
-        for (int xLeft = x - bytesPerPixel; x < scanline.Length; ++xLeft /* Note: ++x happens in the body to avoid one add operation */)
+        for (var xLeft = x - bytesPerPixel; x < scanline.Length; ++xLeft /* Note: ++x happens in the body to avoid one add operation */)
         {
-            byte scan = Unsafe.Add(ref scanBaseRef, x);
-            byte left = Unsafe.Add(ref scanBaseRef, xLeft);
-            byte above = Unsafe.Add(ref prevBaseRef, x);
-            byte upperLeft = Unsafe.Add(ref prevBaseRef, xLeft);
+            var scan = Unsafe.Add(ref scanBaseRef, x);
+            var left = Unsafe.Add(ref scanBaseRef, xLeft);
+            var above = Unsafe.Add(ref prevBaseRef, x);
+            var upperLeft = Unsafe.Add(ref prevBaseRef, xLeft);
             ++x;
-            ref byte res = ref Unsafe.Add(ref resultBaseRef, x);
+            ref var res = ref Unsafe.Add(ref resultBaseRef, x);
             res = (byte)(scan - PaethPredictor(left, above, upperLeft));
             sum += Numerics.Abs(unchecked((sbyte)res));
         }
@@ -243,10 +243,10 @@ internal static class PaethFilter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static byte PaethPredictor(byte left, byte above, byte upperLeft)
     {
-        int p = left + above - upperLeft;
-        int pa = Numerics.Abs(p - left);
-        int pb = Numerics.Abs(p - above);
-        int pc = Numerics.Abs(p - upperLeft);
+        var p = left + above - upperLeft;
+        var pa = Numerics.Abs(p - left);
+        var pb = Numerics.Abs(p - above);
+        var pc = Numerics.Abs(p - upperLeft);
 
         if (pa <= pb && pa <= pc)
         {

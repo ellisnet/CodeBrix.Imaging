@@ -55,17 +55,17 @@ internal class RgbaTiffColor<TPixel> : TiffBaseColorDecoder<TPixel>
 
         var bitReader = new BitReader(data);
 
-        bool hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
+        var hasAssociatedAlpha = this.extraSamplesType.HasValue && this.extraSamplesType == TiffExtraSampleType.AssociatedAlphaData;
 
-        for (int y = top; y < top + height; y++)
+        for (var y = top; y < top + height; y++)
         {
-            Span<TPixel> pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
-            for (int x = 0; x < pixelRow.Length; x++)
+            var pixelRow = pixels.DangerousGetRowSpan(y).Slice(left, width);
+            for (var x = 0; x < pixelRow.Length; x++)
             {
-                float r = bitReader.ReadBits(this.bitsPerSampleR) / this.rFactor;
-                float g = bitReader.ReadBits(this.bitsPerSampleG) / this.gFactor;
-                float b = bitReader.ReadBits(this.bitsPerSampleB) / this.bFactor;
-                float a = bitReader.ReadBits(this.bitsPerSampleB) / this.aFactor;
+                var r = bitReader.ReadBits(this.bitsPerSampleR) / this.rFactor;
+                var g = bitReader.ReadBits(this.bitsPerSampleG) / this.gFactor;
+                var b = bitReader.ReadBits(this.bitsPerSampleB) / this.bFactor;
+                var a = bitReader.ReadBits(this.bitsPerSampleB) / this.aFactor;
 
                 var vec = new Vector4(r, g, b, a);
                 if (hasAssociatedAlpha)

@@ -39,10 +39,10 @@ public partial class ImageFrame
     internal static ImageFrame<TPixel> LoadPixelData<TPixel>(Configuration configuration, ReadOnlySpan<TPixel> data, int width, int height)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        long longCount = (long)width * height;
+        var longCount = (long)width * height;
         Guard.MustBeLessThanOrEqualTo(longCount, (long)int.MaxValue, nameof(data));
 
-        int count = (int)longCount;
+        var count = (int)longCount;
         Guard.MustBeGreaterThanOrEqualTo(data.Length, count, nameof(data));
 
         var image = new ImageFrame<TPixel>(configuration, width, height);

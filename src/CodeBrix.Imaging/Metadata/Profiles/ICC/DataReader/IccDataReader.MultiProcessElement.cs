@@ -14,9 +14,9 @@ internal sealed partial class IccDataReader
     /// <returns>The read <see cref="IccMultiProcessElement"/></returns>
     public IccMultiProcessElement ReadMultiProcessElement()
     {
-        IccMultiProcessElementSignature signature = (IccMultiProcessElementSignature)this.ReadUInt32();
-        ushort inChannelCount = this.ReadUInt16();
-        ushort outChannelCount = this.ReadUInt16();
+        var signature = (IccMultiProcessElementSignature)this.ReadUInt32();
+        var inChannelCount = this.ReadUInt16();
+        var outChannelCount = this.ReadUInt16();
 
         switch (signature)
         {
@@ -49,7 +49,7 @@ internal sealed partial class IccDataReader
     public IccCurveSetProcessElement ReadCurveSetProcessElement(int inChannelCount, int outChannelCount)
     {
         var curves = new IccOneDimensionalCurve[inChannelCount];
-        for (int i = 0; i < inChannelCount; i++)
+        for (var i = 0; i < inChannelCount; i++)
         {
             curves[i] = this.ReadOneDimensionalCurve();
             this.AddPadding();

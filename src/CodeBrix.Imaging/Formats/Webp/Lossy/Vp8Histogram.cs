@@ -46,9 +46,9 @@ internal sealed class Vp8Histogram
         // 'alpha' will later be clipped to [0..MAX_ALPHA] range, clamping outer
         // values which happen to be mostly noise. This leaves the maximum precision
         // for handling the useful small values which contribute most.
-        int maxValue = this.maxValue;
-        int lastNonZero = this.lastNonZero;
-        int alpha = maxValue > 1 ? WebpConstants.AlphaScale * lastNonZero / maxValue : 0;
+        var maxValue = this.maxValue;
+        var lastNonZero = this.lastNonZero;
+        var alpha = maxValue > 1 ? WebpConstants.AlphaScale * lastNonZero / maxValue : 0;
         return alpha;
     }
 
@@ -87,10 +87,10 @@ internal sealed class Vp8Histogram
                 else
 #endif
             {
-                for (int k = 0; k < 16; ++k)
+                for (var k = 0; k < 16; ++k)
                 {
-                    int v = Math.Abs(this.output[k]) >> 3;
-                    int clippedValue = ClipMax(v, MaxCoeffThresh);
+                    var v = Math.Abs(this.output[k]) >> 3;
+                    var clippedValue = ClipMax(v, MaxCoeffThresh);
                     ++this.distribution[clippedValue];
                 }
             }
@@ -114,11 +114,11 @@ internal sealed class Vp8Histogram
 
     private void SetHistogramData(int[] distribution)
     {
-        int maxValue = 0;
-        int lastNonZero = 1;
-        for (int k = 0; k <= MaxCoeffThresh; ++k)
+        var maxValue = 0;
+        var lastNonZero = 1;
+        for (var k = 0; k <= MaxCoeffThresh; ++k)
         {
-            int value = distribution[k];
+            var value = distribution[k];
             if (value > 0)
             {
                 if (value > maxValue)

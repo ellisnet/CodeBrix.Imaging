@@ -31,16 +31,16 @@ internal abstract class TiffCompositeColorWriter<TPixel> : TiffBaseColorWriter<T
 
         this.rowBuffer.Clear();
 
-        Span<byte> outputRowSpan = this.rowBuffer.GetSpan().Slice(0, this.BytesPerRow * height);
+        var outputRowSpan = this.rowBuffer.GetSpan().Slice(0, this.BytesPerRow * height);
 
-        int width = this.Image.Width;
-        using IMemoryOwner<TPixel> stripPixelBuffer = this.MemoryAllocator.Allocate<TPixel>(height * width);
-        Span<TPixel> stripPixels = stripPixelBuffer.GetSpan();
-        int lastRow = y + height;
-        int stripPixelsRowIdx = 0;
-        for (int row = y; row < lastRow; row++)
+        var width = this.Image.Width;
+        using var stripPixelBuffer = this.MemoryAllocator.Allocate<TPixel>(height * width);
+        var stripPixels = stripPixelBuffer.GetSpan();
+        var lastRow = y + height;
+        var stripPixelsRowIdx = 0;
+        for (var row = y; row < lastRow; row++)
         {
-            Span<TPixel> stripPixelsRow = this.Image.PixelBuffer.DangerousGetRowSpan(row);
+            var stripPixelsRow = this.Image.PixelBuffer.DangerousGetRowSpan(row);
             stripPixelsRow.CopyTo(stripPixels.Slice(stripPixelsRowIdx * width, width));
             stripPixelsRowIdx++;
         }

@@ -25,17 +25,17 @@ internal abstract partial class JpegColorConverterBase
 
         internal static void ConvertCoreInplace(in ComponentValues values, float maxValue, float halfValue)
         {
-            Span<float> c0 = values.Component0;
-            Span<float> c1 = values.Component1;
-            Span<float> c2 = values.Component2;
+            var c0 = values.Component0;
+            var c1 = values.Component1;
+            var c2 = values.Component2;
 
-            float scale = 1 / maxValue;
+            var scale = 1 / maxValue;
 
-            for (int i = 0; i < c0.Length; i++)
+            for (var i = 0; i < c0.Length; i++)
             {
-                float y = c0[i];
-                float cb = c1[i] - halfValue;
-                float cr = c2[i] - halfValue;
+                var y = c0[i];
+                var cb = c1[i] - halfValue;
+                var cr = c2[i] - halfValue;
 
                 // r = y + (1.402F * cr);
                 // g = y - (0.344136F * cb) - (0.714136F * cr);

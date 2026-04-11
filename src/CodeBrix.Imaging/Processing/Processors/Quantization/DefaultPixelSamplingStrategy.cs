@@ -53,9 +53,9 @@ public class DefaultPixelSamplingStrategy : IPixelSamplingStrategy
     public IEnumerable<Buffer2DRegion<TPixel>> EnumeratePixelRegions<TPixel>(Image<TPixel> image)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        long maximumPixels = Math.Min(this.MaximumPixels, (long)image.Width * image.Height * image.Frames.Count);
-        long maxNumberOfRows = maximumPixels / image.Width;
-        long totalNumberOfRows = (long)image.Height * image.Frames.Count;
+        var maximumPixels = Math.Min(this.MaximumPixels, (long)image.Width * image.Height * image.Frames.Count);
+        var maxNumberOfRows = maximumPixels / image.Width;
+        var totalNumberOfRows = (long)image.Height * image.Frames.Count;
 
         if (totalNumberOfRows <= maxNumberOfRows)
         {
@@ -67,7 +67,7 @@ public class DefaultPixelSamplingStrategy : IPixelSamplingStrategy
         }
         else
         {
-            double r = maxNumberOfRows / (double)totalNumberOfRows;
+            var r = maxNumberOfRows / (double)totalNumberOfRows;
 
             // Use a rough approximation to make sure we don't leave out large contiguous regions:
             if (maxNumberOfRows > 200)
@@ -83,12 +83,12 @@ public class DefaultPixelSamplingStrategy : IPixelSamplingStrategy
 
             var ratio = new Rational(r);
 
-            int denom = (int)ratio.Denominator;
-            int num = (int)ratio.Numerator;
+            var denom = (int)ratio.Denominator;
+            var num = (int)ratio.Numerator;
 
-            for (int pos = 0; pos < totalNumberOfRows; pos++)
+            for (var pos = 0; pos < totalNumberOfRows; pos++)
             {
-                int subPos = pos % denom;
+                var subPos = pos % denom;
                 if (subPos < num)
                 {
                     yield return GetRow(pos);
@@ -97,8 +97,8 @@ public class DefaultPixelSamplingStrategy : IPixelSamplingStrategy
 
             Buffer2DRegion<TPixel> GetRow(int pos)
             {
-                int frameIdx = pos / image.Height;
-                int y = pos % image.Height;
+                var frameIdx = pos / image.Height;
+                var y = pos % image.Height;
                 return image.Frames[frameIdx].PixelBuffer.GetRegion(0, y, image.Width, 1);
             }
         }

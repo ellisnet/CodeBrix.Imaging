@@ -43,13 +43,13 @@ internal sealed class CieXyzToCieLabConverter
 
         float xr = input.X / wx, yr = input.Y / wy, zr = input.Z / wz;
 
-        float fx = xr > CieConstants.Epsilon ? MathF.Pow(xr, 0.3333333F) : ((CieConstants.Kappa * xr) + 16F) / 116F;
-        float fy = yr > CieConstants.Epsilon ? MathF.Pow(yr, 0.3333333F) : ((CieConstants.Kappa * yr) + 16F) / 116F;
-        float fz = zr > CieConstants.Epsilon ? MathF.Pow(zr, 0.3333333F) : ((CieConstants.Kappa * zr) + 16F) / 116F;
+        var fx = xr > CieConstants.Epsilon ? MathF.Pow(xr, 0.3333333F) : ((CieConstants.Kappa * xr) + 16F) / 116F;
+        var fy = yr > CieConstants.Epsilon ? MathF.Pow(yr, 0.3333333F) : ((CieConstants.Kappa * yr) + 16F) / 116F;
+        var fz = zr > CieConstants.Epsilon ? MathF.Pow(zr, 0.3333333F) : ((CieConstants.Kappa * zr) + 16F) / 116F;
 
-        float l = (116F * fy) - 16F;
-        float a = 500F * (fx - fy);
-        float b = 200F * (fy - fz);
+        var l = (116F * fy) - 16F;
+        var a = 500F * (fx - fy);
+        var b = 200F * (fy - fz);
 
         return new CieLab(l, a, b, this.LabWhitePoint);
     }
