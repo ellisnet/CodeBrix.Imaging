@@ -22,6 +22,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt601_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt601_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt601_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt601_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt601_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt601_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt709_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt709_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt709_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt709_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt709_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_bt709_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_default_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_default_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_default_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_default_matrix_from_JPG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_default_matrix_from_PNG_BmpIndexingMode_Normal_reference.bmp" />
+    <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_default_matrix_from_PNG_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_Normal_reference.bmp" />
     <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_BMP_BmpIndexingMode_SystemDrawingCompatible_reference.bmp" />
     <EmbeddedResource Include="SampleFiles\ExportAs8bppGrayscaleBmp_with_redheavy_matrix_from_JPG_BmpIndexingMode_Normal_reference.bmp" />
