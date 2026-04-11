@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 
-// TODO: These should just call the guard equivalents
 namespace CodeBrix.Imaging;  //Was previously: namespace SixLabors
 
 /// <summary>

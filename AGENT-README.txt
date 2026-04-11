@@ -23,8 +23,6 @@ License: Apache License 2.0
 INSTALLATION
 ------------
 NuGet Package: CodeBrix.Imaging.ApacheLicenseForever
-Latest Version: 1.0.49 (as of Feb 2026)
-Package Size: ~813 KB
 Dependencies: None
 
 Requirements: .NET 10.0 or higher
@@ -33,9 +31,9 @@ To add to a .NET 10+ project:
 
     dotnet add package CodeBrix.Imaging.ApacheLicenseForever
 
-Or in a .csproj file:
+Or in a .csproj file (NuGet will resolve the latest version):
 
-    <PackageReference Include="CodeBrix.Imaging.ApacheLicenseForever" Version="1.0.49" />
+    <PackageReference Include="CodeBrix.Imaging.ApacheLicenseForever" />
 
 IMPORTANT: The package name is "CodeBrix.Imaging.ApacheLicenseForever" (not just
 "CodeBrix.Imaging"). Always use this full package name when installing.
@@ -312,9 +310,20 @@ Indexing Modes (BmpIndexingMode enum, from CodeBrix.Imaging.Helpers):
         Produces output that matches System.Drawing's Format8bppIndexed conversion,
         suitable for interop with systems that expect GDI+-compatible 8bpp BMPs.
 
-The default color matrix (BmpFormatHelper.DefaultGrayscaleColorMatrix) uses
-the standard luminance weights: R=0.3, G=0.59, B=0.11 — matching those used
-by System.Drawing.Imaging.ColorMatrix for grayscale conversion.
+Available pre-defined color matrices (all public static readonly on BmpFormatHelper):
+
+    BmpFormatHelper.DefaultGrayscaleColorMatrix
+        R=0.3, G=0.59, B=0.11 — matches System.Drawing.Imaging.ColorMatrix
+        grayscale conversion weights. This is the default when no color matrix
+        is specified.
+
+    BmpFormatHelper.Bt601GrayscaleColorMatrix
+        R=0.299, G=0.587, B=0.114 — ITU-R BT.601 luma coefficients.
+        Matches CodeBrix.Imaging.Processing.GrayscaleMode.Bt601.
+
+    BmpFormatHelper.Bt709GrayscaleColorMatrix
+        R=0.2126, G=0.7152, B=0.0722 — ITU-R BT.709 luma coefficients.
+        Matches CodeBrix.Imaging.Processing.GrayscaleMode.Bt709.
 
 The custom ColorMatrix overloads accept any 5x4 color matrix, but the output
 is always grayscale. The matrix controls how RGB channels are weighted to
@@ -1085,6 +1094,14 @@ Feature-to-test-file mapping:
   8bpp grayscale BMP export (ExportAs8bppGrayscaleBmpFormat, BmpIndexingMode,
   custom ColorMatrix, byte-level reference comparison):
     -> tests/CodeBrix.Imaging.Tests/Advanced/Format8bppIndexedTests.cs
+
+  8bpp grayscale BMP validation (argument checks, error cases, color matrix
+  constants):
+    -> tests/CodeBrix.Imaging.Tests/Advanced/BmpFormatHelperValidationTests.cs
+
+  XMP metadata profile (XmpProfile creation, GetDocument, DeepClone,
+  ToByteArray, null/empty handling):
+    -> tests/CodeBrix.Imaging.Tests/Metadata/XmpProfileTests.cs
 
   Encoder detection, visitor pattern, configuration access, pixel memory:
     -> tests/CodeBrix.Imaging.Tests/Advanced/AdvancedImageExtensionsTests.cs
