@@ -20,14 +20,18 @@ namespace CodeBrix.Imaging.Tests.Core;
 
 public class ImageManipulationTests
 {
-#if TESTING_ON_LINUX
-    public const string TempFolder = @"/home/jeremy/Temp";
-#elif TESTING_ON_MACOS
+#if TESTING_ON_MACOS_JEREMY_USER
     public const string TempFolder = @"/Users/jeremy/Temp";
-#elif TESTING_ON_LINUX_ORANGEPI
+#elif TESTING_ON_LINUX_JEREMY_USER
+    public const string TempFolder = @"/home/jeremy/Temp";
+#elif TESTING_ON_LINUX_ORANGEPI_USER
     public const string TempFolder = "/home/orangepi/Temp";
-#elif TESTING_ON_LINUX_MINT
+#elif TESTING_ON_LINUX_MINT_USER
     public const string TempFolder = "/home/mint/Temp";
+#elif TESTING_ON_LINUX_DEBIAN_USER
+    public const string TempFolder = "/home/debian/Temp";
+#elif TESTING_ON_LINUX_UBUNTU_USER
+    public const string TempFolder = "/home/ubuntu/Temp";    
 #else
     //TESTING_ON_WINDOWS
     public const string TempFolder = @"C:\Temp";
