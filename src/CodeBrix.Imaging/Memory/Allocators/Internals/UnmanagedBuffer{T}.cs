@@ -35,16 +35,35 @@ internal sealed unsafe class UnmanagedBuffer<T> : MemoryManager<T>, IRefCounted
 
     public override Span<T> GetSpan()
     {
-        DebugGuard.NotDisposed(this.disposed == 1, this.GetType().Name);
-        DebugGuard.NotDisposed(this.lifetimeGuard.IsDisposed, this.lifetimeGuard.GetType().Name);
+        // Promoted from DebugGuard to runtime checks: accessing the unmanaged
+        // pointer after disposal is a use-after-free and must fail in release
+        // builds as well, not just in DEBUG.
+        if (this.disposed == 1)
+        {
+            throw new ObjectDisposedException(this.GetType().Name);
+        }
+
+        if (this.lifetimeGuard.IsDisposed)
+        {
+            throw new ObjectDisposedException(this.lifetimeGuard.GetType().Name);
+        }
+
         return new(this.Pointer, this.lengthInElements);
     }
 
     /// <inheritdoc />
     public override MemoryHandle Pin(int elementIndex = 0)
     {
-        DebugGuard.NotDisposed(this.disposed == 1, this.GetType().Name);
-        DebugGuard.NotDisposed(this.lifetimeGuard.IsDisposed, this.lifetimeGuard.GetType().Name);
+        // Promoted from DebugGuard to runtime checks for the same reason as GetSpan().
+        if (this.disposed == 1)
+        {
+            throw new ObjectDisposedException(this.GetType().Name);
+        }
+
+        if (this.lifetimeGuard.IsDisposed)
+        {
+            throw new ObjectDisposedException(this.lifetimeGuard.GetType().Name);
+        }
 
         // Will be released in Unpin
         this.lifetimeGuard.AddRef();
@@ -74,6 +93,34 @@ internal sealed unsafe class UnmanagedBuffer<T> : MemoryManager<T>, IRefCounted
 
     public void ReleaseRef() => this.lifetimeGuard.ReleaseRef();
 
-    public static UnmanagedBuffer<T> Allocate(int lengthInElements) =>
-        new(lengthInElements, new UnmanagedBufferLifetimeGuard.FreeHandle(UnmanagedMemoryHandle.Allocate(lengthInElements * Unsafe.SizeOf<T>())));
+    public static UnmanagedBuffer<T> Allocate(int lengthInElements)
+    {
+        if (lengthInElements < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(lengthInElements),
+                lengthInElements,
+                "The unmanaged buffer length must be non-negative.");
+        }
+
+        // Use a checked context so that lengthInElements * Unsafe.SizeOf<T>()
+        // overflowing Int32 results in a deterministic OverflowException
+        // instead of allocating an undersized native buffer (potential
+        // out-of-bounds access in unsafe code).
+        int lengthInBytes;
+        try
+        {
+            lengthInBytes = checked(lengthInElements * Unsafe.SizeOf<T>());
+        }
+        catch (OverflowException ex)
+        {
+            throw new InvalidMemoryOperationException(
+                $"Unmanaged buffer size overflows Int32 (length={lengthInElements}, sizeof(T)={Unsafe.SizeOf<T>()}).")
+            {
+                Source = ex.Source
+            };
+        }
+
+        return new(lengthInElements, new UnmanagedBufferLifetimeGuard.FreeHandle(UnmanagedMemoryHandle.Allocate(lengthInBytes)));
+    }
 }

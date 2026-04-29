@@ -130,16 +130,34 @@ internal abstract class BaseExifReader
             return;
         }
 
+        // Cap the maximum allowed big-value payload to the remaining stream length.
+        // EXIF tags whose declared size exceeds Int32.MaxValue or the stream
+        // length cannot possibly be valid and were previously only rejected by
+        // a DEBUG-only assertion. Reject them at runtime so malformed input
+        // cannot trigger an oversized allocation or overflow during the cast.
+        var streamLength = (ulong)this.data.Length;
         var maxSize = 0;
-        foreach ((var offset, var dataType, var numberOfComponents, var exif) in this.BigValues)
+        for (var i = this.BigValues.Count - 1; i >= 0; i--)
         {
-            var size = numberOfComponents * ExifDataTypes.GetSize(dataType);
-            DebugGuard.MustBeLessThanOrEqualTo<ulong>(size, int.MaxValue, nameof(size));
+            var tag = this.BigValues[i];
+            var size = tag.NumberOfComponents * ExifDataTypes.GetSize(tag.DataType);
+
+            if (size > int.MaxValue || size > streamLength)
+            {
+                this.AddInvalidTag(tag.Exif.Tag);
+                this.BigValues.RemoveAt(i);
+                continue;
+            }
 
             if ((int)size > maxSize)
             {
                 maxSize = (int)size;
             }
+        }
+
+        if (this.BigValues.Count == 0)
+        {
+            return;
         }
 
         if (this.allocator != null)
@@ -478,7 +496,17 @@ internal abstract class BaseExifReader
         if (size > 8)
         {
             var newOffset = this.ConvertToUInt64(offsetBuffer);
-            if (newOffset > ulong.MaxValue || newOffset > ((ulong)this.data.Length - size))
+
+            // Validate bounds without underflow:
+            //  - The previous check `newOffset > ulong.MaxValue` was tautologically false.
+            //  - `(ulong)this.data.Length - size` would underflow when size exceeds the stream length,
+            //    silently producing a huge "valid" upper bound.
+            // Also reject sizes that cannot be represented as Int64, since the underlying
+            // Stream is bounded by Int64.MaxValue (and we cast to long when seeking).
+            var streamLength = (ulong)this.data.Length;
+            if (size > (ulong)long.MaxValue
+                || size > streamLength
+                || newOffset > streamLength - size)
             {
                 this.AddInvalidTag(new UnkownExifTag(tag));
                 return;

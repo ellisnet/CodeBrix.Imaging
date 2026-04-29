@@ -1103,6 +1103,14 @@ Feature-to-test-file mapping:
   ToByteArray, null/empty handling):
     -> tests/CodeBrix.Imaging.Tests/Metadata/XmpProfileTests.cs
 
+  EXIF metadata profile (SetValue/GetValue roundtrips, inline and big-value
+  paths, DeepClone, RemoveValue, malformed/truncated input handling):
+    -> tests/CodeBrix.Imaging.Tests/Metadata/ExifProfileTests.cs
+
+  Memory allocator behavior (default allocator, allocation size paths,
+  IMemoryOwner<T>, idempotent disposal, ReleaseRetainedResources):
+    -> tests/CodeBrix.Imaging.Tests/MemoryAllocators/MemoryAllocatorTests.cs
+
   Encoder detection, visitor pattern, configuration access, pixel memory:
     -> tests/CodeBrix.Imaging.Tests/Advanced/AdvancedImageExtensionsTests.cs
 
