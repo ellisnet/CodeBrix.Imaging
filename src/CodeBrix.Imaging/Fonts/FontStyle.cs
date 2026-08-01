@@ -33,7 +33,19 @@ public enum FontStyle
     /// </summary>
     BoldItalic = 3,
 
+    /// <summary>
+    ///     Underline.
+    /// </summary>
+    /// <remarks>
+    ///     Accepted and round-tripped, but not yet applied during rendering.
+    /// </remarks>
     Underline = 4, // TODO: Not yet supported, but enabled for anything that specifies it
 
+    /// <summary>
+    ///     Strikeout.
+    /// </summary>
+    /// <remarks>
+    ///     Accepted and round-tripped, but not yet applied during rendering.
+    /// </remarks>
     Strikeout = 8 // TODO: Not yet supported, but enabled for anything that specifies it
 }

@@ -46,7 +46,7 @@ public class Format8bppIndexedTests
 
         // Act - Export as 8bpp grayscale BMP using the CodeBrix.Imaging library
         using var outputMs = new MemoryStream();
-        await sampleImage.ExportAs8bppGrayscaleBmpFormatAsync(outputMs, indexingMode);
+        await sampleImage.ExportAs8bppGrayscaleBmpFormatAsync(outputMs, indexingMode, TestContext.Current.CancellationToken);
         var actualBytes = outputMs.ToArray();
 
         // Load the reference image from embedded resources
@@ -219,7 +219,7 @@ public class Format8bppIndexedTests
             _ => throw new ArgumentOutOfRangeException(nameof(testingColorMatrixMode))
         };
 
-        await sampleImage.ExportAs8bppGrayscaleBmpFormatAsync(outputMs, specifiedColorMatrix, indexingMode);
+        await sampleImage.ExportAs8bppGrayscaleBmpFormatAsync(outputMs, specifiedColorMatrix, indexingMode, TestContext.Current.CancellationToken);
         var actualBytes = outputMs.ToArray();
 
         // Load the reference image from embedded resources

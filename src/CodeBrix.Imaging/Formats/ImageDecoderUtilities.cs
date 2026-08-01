@@ -28,6 +28,10 @@ internal static class ImageDecoderUtilities
         {
             throw new InvalidImageContentException(decoder.Dimensions, ex);
         }
+        catch (EndOfStreamException ex)
+        {
+            throw new InvalidImageContentException(TruncatedStreamMessage, ex);
+        }
     }
 
     public static Image<TPixel> Decode<TPixel>(
@@ -57,6 +61,10 @@ internal static class ImageDecoderUtilities
         {
             throw largeImageExceptionFactory(ex, decoder.Dimensions);
         }
+        catch (EndOfStreamException ex)
+        {
+            throw new InvalidImageContentException(TruncatedStreamMessage, ex);
+        }
         finally
         {
             if (bufferedReadStream != stream)
@@ -65,6 +73,17 @@ internal static class ImageDecoderUtilities
             }
         }
     }
+
+    /// <summary>
+    /// The message used when a decoder runs off the end of the stream. The decoders read
+    /// with <see cref="Stream.ReadExactly(byte[], int, int)"/> rather than
+    /// <see cref="Stream.Read(byte[], int, int)"/> so that a short read fails instead of
+    /// silently decoding uninitialized buffer contents. That surfaces as an
+    /// <see cref="EndOfStreamException"/>, which is wrapped here so that callers only ever
+    /// have to handle the documented <see cref="ImageFormatException"/> hierarchy.
+    /// </summary>
+    private const string TruncatedStreamMessage =
+        "Cannot decode image. The image data ended unexpectedly; the source is truncated or corrupt.";
 
     private static InvalidImageContentException DefaultLargeImageExceptionFactory(
         InvalidMemoryOperationException memoryOperationException,

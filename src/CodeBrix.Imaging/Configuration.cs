@@ -189,6 +189,53 @@ public sealed class Configuration
     }
 
     /// <summary>
+    /// Creates a copy of this <see cref="Configuration"/> whose <see cref="MemoryAllocator"/>
+    /// refuses to allocate more than <paramref name="allocationLimitMegabytes"/> for a single
+    /// image, so that a malicious or corrupt file cannot exhaust process memory.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Decoders trust the dimensions declared in an image header before any pixel data has
+    /// been read, so a small file can ask for an enormous buffer - the "decompression bomb"
+    /// pattern. The default limit is the platform default (1 GB on 32-bit processes, 4 GB on
+    /// 64-bit), which is generous enough that a hostile file can still cause real memory
+    /// pressure. Applications that decode untrusted images - anything user-uploaded, or
+    /// embedded in a user-supplied document - should decode through a configuration created
+    /// here instead of <see cref="Default"/>:
+    /// </para>
+    /// <code>
+    /// var safe = Configuration.Default.CreateSandboxed(256);
+    /// using var image = Image.Load(safe, untrustedBytes);
+    /// </code>
+    /// <para>
+    /// Exceeding the limit throws <see cref="InvalidImageContentException"/> from the
+    /// <c>Image.Load</c> call, so it is caught by the same handler as any other malformed
+    /// image. The limit applies per image, not per process; decoding several images
+    /// concurrently can still total more than the limit.
+    /// </para>
+    /// </remarks>
+    /// <param name="allocationLimitMegabytes">
+    /// The maximum size, in megabytes, of the (discontiguous) pixel buffer a single decode may
+    /// allocate. Must be greater than zero.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="allocationLimitMegabytes"/> is less than or equal to zero.
+    /// </exception>
+    /// <returns>A new configuration instance with the allocation limit applied.</returns>
+    public Configuration CreateSandboxed(int allocationLimitMegabytes)
+    {
+        Guard.MustBeGreaterThan(allocationLimitMegabytes, 0, nameof(allocationLimitMegabytes));
+
+        Configuration clone = this.Clone();
+        clone.MemoryAllocator = MemoryAllocator.Create(new MemoryAllocatorOptions
+        {
+            AllocationLimitMegabytes = allocationLimitMegabytes
+        });
+
+        return clone;
+    }
+
+    /// <summary>
     /// Creates a shallow copy of the <see cref="Configuration"/>.
     /// </summary>
     /// <returns>A new configuration instance.</returns>

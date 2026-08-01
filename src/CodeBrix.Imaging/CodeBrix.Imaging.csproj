@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--
+      Emit CodeBrix.Imaging.xml so the library's XML doc comments reach consumers
+      as IntelliSense. The file is picked up automatically by `dotnet pack` and
+      shipped alongside the assembly in lib/net10.0.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <!--

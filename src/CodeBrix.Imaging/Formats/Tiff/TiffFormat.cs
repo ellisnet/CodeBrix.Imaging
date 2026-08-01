@@ -11,10 +11,29 @@ namespace CodeBrix.Imaging.Formats.Tiff; //Was previously: namespace SixLabors.I
 /// </summary>
 public sealed class TiffFormat : IImageFormat<TiffMetadata, TiffFrameMetadata>
 {
+    /// <summary>
+    /// The display name of the TIFF format, as reported by <see cref="Name"/>.
+    /// </summary>
     public const string FormatName = "TIFF";
+
+    /// <summary>
+    /// The default MIME type of the TIFF format, as reported by <see cref="DefaultMimeType"/>.
+    /// </summary>
     public const string FormatMimeType = "image/tiff";
+
+    /// <summary>
+    /// The alternate MIME type recognised for the TIFF format.
+    /// </summary>
     public const string FormatAltMimeType = "image/x-tiff";
+
+    /// <summary>
+    /// The default file extension of the TIFF format, as reported by <see cref="DefaultFileExtension"/>.
+    /// </summary>
     public const string FormatDefaultExtension = ".tiff";
+
+    /// <summary>
+    /// The alternate file extension recognised for the TIFF format.
+    /// </summary>
     public const string FormatAltDefaultExtension = ".tif";
 
     private TiffFormat() { }

@@ -190,16 +190,91 @@ public static partial class ImageExtensions
         return $"data:{format.DefaultMimeType};base64,{Convert.ToBase64String(buffer.Array, 0, (int)stream.Length)}";
     }
 
+    /// <summary>
+    /// Encodes the image in the given format and returns the result as a byte array.
+    /// </summary>
+    /// <param name="source">The source image.</param>
+    /// <param name="format">The format to encode the image in.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="format"/> is null.</exception>
+    /// <exception cref="NotSupportedException">
+    /// No encoder is registered for <paramref name="format"/>. This includes
+    /// <see cref="UnknownImageFormat"/>, which an image carries until it has been loaded
+    /// from - or saved in - a known format.
+    /// </exception>
+    /// <returns>The encoded image bytes.</returns>
     public static byte[] ToByteArray(this Image source, IImageFormat format)
     {
+        Guard.NotNull(source, nameof(source));
         Guard.NotNull(format, nameof(format));
 
         using var stream = new MemoryStream();
         source.Save(stream, format);
+        return stream.ToArray();
+    }
 
-        // Always available.
-        stream.TryGetBuffer(out var buffer);
+    /// <summary>
+    /// Encodes the image using the given encoder and returns the result as a byte array.
+    /// </summary>
+    /// <param name="source">The source image.</param>
+    /// <param name="encoder">The encoder to use.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="encoder"/> is null.</exception>
+    /// <returns>The encoded image bytes.</returns>
+    public static byte[] ToByteArray(this Image source, IImageEncoder encoder)
+    {
+        Guard.NotNull(source, nameof(source));
+        Guard.NotNull(encoder, nameof(encoder));
 
-        return buffer.ToArray();
+        using var stream = new MemoryStream();
+        source.Save(stream, encoder);
+        return stream.ToArray();
+    }
+
+    /// <summary>
+    /// Asynchronously encodes the image in the given format and returns the result as a
+    /// byte array.
+    /// </summary>
+    /// <param name="source">The source image.</param>
+    /// <param name="format">The format to encode the image in.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="format"/> is null.</exception>
+    /// <exception cref="NotSupportedException">
+    /// No encoder is registered for <paramref name="format"/>. This includes
+    /// <see cref="UnknownImageFormat"/>, which an image carries until it has been loaded
+    /// from - or saved in - a known format.
+    /// </exception>
+    /// <returns>The encoded image bytes.</returns>
+    public static async Task<byte[]> ToByteArrayAsync(
+        this Image source,
+        IImageFormat format,
+        CancellationToken cancellationToken = default)
+    {
+        Guard.NotNull(source, nameof(source));
+        Guard.NotNull(format, nameof(format));
+
+        using var stream = new MemoryStream();
+        await source.SaveAsync(stream, format, cancellationToken).ConfigureAwait(false);
+        return stream.ToArray();
+    }
+
+    /// <summary>
+    /// Asynchronously encodes the image using the given encoder and returns the result as a
+    /// byte array.
+    /// </summary>
+    /// <param name="source">The source image.</param>
+    /// <param name="encoder">The encoder to use.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="encoder"/> is null.</exception>
+    /// <returns>The encoded image bytes.</returns>
+    public static async Task<byte[]> ToByteArrayAsync(
+        this Image source,
+        IImageEncoder encoder,
+        CancellationToken cancellationToken = default)
+    {
+        Guard.NotNull(source, nameof(source));
+        Guard.NotNull(encoder, nameof(encoder));
+
+        using var stream = new MemoryStream();
+        await source.SaveAsync(stream, encoder, cancellationToken).ConfigureAwait(false);
+        return stream.ToArray();
     }
 }

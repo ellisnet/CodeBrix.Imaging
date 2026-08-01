@@ -10,8 +10,19 @@ namespace CodeBrix.Imaging.Formats.Webp; //Was previously: namespace SixLabors.I
 /// </summary>
 public sealed class WebpFormat : IImageFormat<WebpMetadata>
 {
+    /// <summary>
+    /// The display name of the WebP format, as reported by <see cref="Name"/>.
+    /// </summary>
     public const string FormatName = "Webp";
+
+    /// <summary>
+    /// The default MIME type of the WebP format, as reported by <see cref="DefaultMimeType"/>.
+    /// </summary>
     public const string FormatMimeType = "image/webp";
+
+    /// <summary>
+    /// The default file extension of the WebP format, as reported by <see cref="DefaultFileExtension"/>.
+    /// </summary>
     public const string FormatDefaultExtension = ".webp";
 
     private WebpFormat() { }

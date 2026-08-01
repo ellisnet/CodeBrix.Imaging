@@ -187,46 +187,107 @@ public readonly struct CodePoint : IComparable, IComparable<CodePoint>, IEquatab
     public static CodePoint ReplacementChar { get; } = new(0xFFFD);
 
     // Operators below are explicit because they may throw.
+
+    /// <summary>
+    /// Converts a <see cref="char"/> to a <see cref="CodePoint"/>.
+    /// </summary>
+    /// <param name="ch">The character to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="ch"/> is a surrogate, which is not a scalar value on its own.
+    /// </exception>
+    /// <returns>The <see cref="CodePoint"/>.</returns>
     public static explicit operator CodePoint(char ch)
     {
         return new CodePoint(ch);
     }
 
+    /// <summary>
+    /// Converts a 32 bit unsigned integer to a <see cref="CodePoint"/>.
+    /// </summary>
+    /// <param name="value">The scalar value to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="value"/> is not a valid Unicode scalar value.
+    /// </exception>
+    /// <returns>The <see cref="CodePoint"/>.</returns>
     public static explicit operator CodePoint(uint value)
     {
         return new CodePoint(value);
     }
 
+    /// <summary>
+    /// Converts a 32 bit signed integer to a <see cref="CodePoint"/>.
+    /// </summary>
+    /// <param name="value">The scalar value to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="value"/> is not a valid Unicode scalar value.
+    /// </exception>
+    /// <returns>The <see cref="CodePoint"/>.</returns>
     public static explicit operator CodePoint(int value)
     {
         return new CodePoint(value);
     }
 
+    /// <summary>
+    /// Compares two <see cref="CodePoint"/> values for equality.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if the two values are equal; otherwise <see langword="false"/>.</returns>
     public static bool operator ==(CodePoint left, CodePoint right)
     {
         return left.value == right.value;
     }
 
+    /// <summary>
+    /// Compares two <see cref="CodePoint"/> values for inequality.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if the two values are not equal; otherwise <see langword="false"/>.</returns>
     public static bool operator !=(CodePoint left, CodePoint right)
     {
         return left.value != right.value;
     }
 
+    /// <summary>
+    /// Determines whether one <see cref="CodePoint"/> has a lower scalar value than another.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is less than <paramref name="right"/>; otherwise <see langword="false"/>.</returns>
     public static bool operator <(CodePoint left, CodePoint right)
     {
         return left.value < right.value;
     }
 
+    /// <summary>
+    /// Determines whether one <see cref="CodePoint"/> has a scalar value lower than or equal to another.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is less than or equal to <paramref name="right"/>; otherwise <see langword="false"/>.</returns>
     public static bool operator <=(CodePoint left, CodePoint right)
     {
         return left.value <= right.value;
     }
 
+    /// <summary>
+    /// Determines whether one <see cref="CodePoint"/> has a higher scalar value than another.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is greater than <paramref name="right"/>; otherwise <see langword="false"/>.</returns>
     public static bool operator >(CodePoint left, CodePoint right)
     {
         return left.value > right.value;
     }
 
+    /// <summary>
+    /// Determines whether one <see cref="CodePoint"/> has a scalar value higher than or equal to another.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>; otherwise <see langword="false"/>.</returns>
     public static bool operator >=(CodePoint left, CodePoint right)
     {
         return left.value >= right.value;

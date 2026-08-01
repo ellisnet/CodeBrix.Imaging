@@ -29,7 +29,7 @@ internal static partial class Vector4Converters
         private static readonly int Vector4ConversionThreshold = CalculateVector4ConversionThreshold();
 
         /// <summary>
-        /// Provides an efficient default implementation for <see cref="PixelOperations{TPixel}.ToVector4(SixLabors.ImageSharp.Configuration,System.ReadOnlySpan{TPixel},System.Span{System.Numerics.Vector4},SixLabors.ImageSharp.PixelFormats.PixelConversionModifiers)"/>
+        /// Provides an efficient default implementation for <see cref="PixelOperations{TPixel}.ToVector4(CodeBrix.Imaging.Configuration,System.ReadOnlySpan{TPixel},System.Span{System.Numerics.Vector4},CodeBrix.Imaging.PixelFormats.PixelConversionModifiers)"/>
         /// The method works by internally converting to a <see cref="Rgba32"/> therefore it's not applicable for that type!
         /// </summary>
         [MethodImpl(InliningOptions.ShortMethod)]
@@ -73,7 +73,7 @@ internal static partial class Vector4Converters
         }
 
         /// <summary>
-        /// Provides an efficient default implementation for <see cref="PixelOperations{TPixel}.FromVector4Destructive(SixLabors.ImageSharp.Configuration,System.Span{System.Numerics.Vector4},System.Span{TPixel},SixLabors.ImageSharp.PixelFormats.PixelConversionModifiers)"/>
+        /// Provides an efficient default implementation for <see cref="PixelOperations{TPixel}.FromVector4Destructive(CodeBrix.Imaging.Configuration,System.Span{System.Numerics.Vector4},System.Span{TPixel},CodeBrix.Imaging.PixelFormats.PixelConversionModifiers)"/>
         /// The method is works by internally converting to a <see cref="Rgba32"/> therefore it's not applicable for that type!
         /// </summary>
         [MethodImpl(InliningOptions.ShortMethod)]

@@ -268,29 +268,48 @@ public abstract partial class Image
     {
         Guard.NotNull(configuration, nameof(configuration));
 
+        // The binding constraint is the BYTE count, not the pixel count: BGRA data uses
+        // 4 bytes per pixel, so a pixel count that fits in an Int32 can still produce a
+        // byte count that does not. Both are computed as Int64 and the byte count is the
+        // value that gets range-checked; computing it as Int32 would silently wrap
+        // negative for images larger than 536,870,911 pixels, which made the length guard
+        // below pass vacuously and produced a meaningless slicing exception further down.
         var longCount = (long)width * height;
-        Guard.MustBeLessThanOrEqualTo(longCount, (long)int.MaxValue, nameof(data));
+        var longByteCount = longCount * 4;
+        Guard.MustBeLessThanOrEqualTo(longByteCount, (long)int.MaxValue, nameof(data));
 
-        var count = (int)longCount;
-        var byteCount = count * 4;
+        var byteCount = (int)longByteCount;
         Guard.MustBeGreaterThanOrEqualTo(data.Length, byteCount, nameof(data));
 
         var image = new Image<Rgba32>(configuration, width, height, expectedFormat);
-        var source = data.Slice(0, byteCount);
 
-        // Convert BGRA to RGBA using the SIMD-optimized PixelConverter, writing
-        // directly into the image's pixel buffer segments. This handles potentially
-        // discontiguous memory groups while using hardware-accelerated (AVX2/SSSE3)
-        // channel reordering for maximum throughput.
-        IMemoryGroup<Rgba32> memoryGroup = image.Frames.RootFrame.PixelBuffer.FastMemoryGroup;
-        foreach (var memory in memoryGroup)
+        try
         {
-            var rgbaSpan = memory.Span;
-            var segmentBytes = rgbaSpan.Length * 4;
-            var destBytes = MemoryMarshal.Cast<Rgba32, byte>(rgbaSpan);
+            var source = data.Slice(0, byteCount);
 
-            PixelConverter.FromBgra32.ToRgba32(source.Slice(0, segmentBytes), destBytes);
-            source = source.Slice(segmentBytes);
+            // Convert BGRA to RGBA using the SIMD-optimized PixelConverter, writing
+            // directly into the image's pixel buffer segments. This handles potentially
+            // discontiguous memory groups while using hardware-accelerated (AVX2/SSSE3)
+            // channel reordering for maximum throughput.
+            IMemoryGroup<Rgba32> memoryGroup = image.Frames.RootFrame.PixelBuffer.FastMemoryGroup;
+            foreach (var memory in memoryGroup)
+            {
+                // Safe to compute as Int32: the segment lengths sum to the total pixel
+                // count, so segmentBytes can never exceed the guarded byteCount.
+                var rgbaSpan = memory.Span;
+                var segmentBytes = rgbaSpan.Length * 4;
+                var destBytes = MemoryMarshal.Cast<Rgba32, byte>(rgbaSpan);
+
+                PixelConverter.FromBgra32.ToRgba32(source.Slice(0, segmentBytes), destBytes);
+                source = source.Slice(segmentBytes);
+            }
+        }
+        catch
+        {
+            // Do not leak the image (and the pooled unmanaged memory backing it) if the
+            // pixel conversion fails part way through.
+            image.Dispose();
+            throw;
         }
 
         return image;

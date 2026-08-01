@@ -119,6 +119,15 @@ public readonly partial struct Color : IEquatable<Color>
     [MethodImpl(InliningOptions.ShortMethod)]
     public static Color FromRgb(byte r, byte g, byte b) => new(r, g, b);
 
+    /// <summary>
+    /// Creates a <see cref="Color"/> from ARGB component values.
+    /// </summary>
+    /// <param name="a">The alpha component (0-255).</param>
+    /// <param name="r">The red component (0-255).</param>
+    /// <param name="g">The green component (0-255).</param>
+    /// <param name="b">The blue component (0-255).</param>
+    /// <exception cref="ArgumentException">One of the components is outside the range 0-255.</exception>
+    /// <returns>The <see cref="Color"/>.</returns>
     public static Color FromArgb(int a, int r, int g, int b)
     {
         CheckByte(a, nameof(a));
@@ -128,6 +137,14 @@ public readonly partial struct Color : IEquatable<Color>
         return FromRgba((byte)r, (byte)g, (byte)b, (byte)a);
     }
 
+    /// <summary>
+    /// Creates a fully opaque <see cref="Color"/> from RGB component values.
+    /// </summary>
+    /// <param name="r">The red component (0-255).</param>
+    /// <param name="g">The green component (0-255).</param>
+    /// <param name="b">The blue component (0-255).</param>
+    /// <exception cref="ArgumentException">One of the components is outside the range 0-255.</exception>
+    /// <returns>The <see cref="Color"/>.</returns>
     public static Color FromArgb(int r, int g, int b)
     {
         CheckByte(r, nameof(r));
@@ -136,6 +153,13 @@ public readonly partial struct Color : IEquatable<Color>
         return FromRgba((byte)r, (byte)g, (byte)b, 255);
     }
 
+    /// <summary>
+    /// Creates a <see cref="Color"/> from a packed 32-bit ARGB value, where the alpha
+    /// component occupies the most significant byte and the blue component the least
+    /// significant byte.
+    /// </summary>
+    /// <param name="argb">The packed ARGB value.</param>
+    /// <returns>The <see cref="Color"/>.</returns>
     public static Color FromArgb(int argb)
     {
         return FromRgba(
@@ -145,13 +169,30 @@ public readonly partial struct Color : IEquatable<Color>
             (byte)((argb >> 24) & 0xFF));
     }
 
+    /// <summary>
+    /// Creates a <see cref="Color"/> from an existing <see cref="Color"/>, replacing its
+    /// alpha component with the supplied value and leaving its red, green and blue
+    /// components unchanged.
+    /// </summary>
+    /// <param name="a">The alpha component (0-255), on the same scale as the other
+    /// <c>FromArgb</c> overloads: 0 is fully transparent and 255 is fully opaque.</param>
+    /// <param name="c">The color supplying the red, green and blue components.</param>
+    /// <exception cref="ArgumentException"><paramref name="a"/> is outside the range 0-255.</exception>
+    /// <returns>The <see cref="Color"/>.</returns>
     public static Color FromArgb(int a, Color c)
     {
-        if (a is > ushort.MaxValue or < ushort.MinValue) throw new ArgumentOutOfRangeException(nameof(a));
+        // The alpha value is a byte (0-255) here, matching the other FromArgb overloads
+        // and System.Drawing.Color.FromArgb(int alpha, Color baseColor). It must NOT be
+        // treated as a 16-bit value: doing so made FromArgb(255, c) produce an alpha of
+        // 1 (very nearly invisible) instead of a fully opaque color.
+        CheckByte(a, nameof(a));
         var rgb = c.ToRgb24();
-        return FromRgba(rgb.R, rgb.G, rgb.B, ColorNumerics.DownScaleFrom16BitTo8Bit((ushort)a));
+        return FromRgba(rgb.R, rgb.G, rgb.B, (byte)a);
     }
 
+    /// <summary>
+    /// Gets a value indicating whether this color is the uninitialized <see cref="Empty"/> color.
+    /// </summary>
     public bool IsEmpty => this == Empty;
 
 

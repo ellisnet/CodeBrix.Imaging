@@ -1,4 +1,4 @@
-using CodeBrix.Imaging.Formats;
+﻿using CodeBrix.Imaging.Formats;
 using CodeBrix.Imaging.Formats.Bmp;
 using CodeBrix.Imaging.Formats.Gif;
 using CodeBrix.Imaging.Formats.Jpeg;
@@ -1305,6 +1305,241 @@ public class ImageSecurityTests
         }
 
         _output.WriteLine($"LoadPixelDataFromBgra matches manual conversion for {width}x{height} random pixels");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_WhenByteCountOverflowsInt32_ThrowsArgumentOutOfRange()
+    {
+        // Arrange - 40000 x 20000 is 800,000,000 pixels, which fits in an Int32, but the
+        // BGRA byte count (3,200,000,000) does not. Computing the byte count as an Int32
+        // wrapped it negative, which made the buffer-length guard pass vacuously and let
+        // execution reach a slice with a negative length.
+        var width = 40000;
+        var height = 20000;
+        var tooSmall = new byte[16];
+
+        // Act
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(
+            () => Image.LoadPixelDataFromBgra(tooSmall, width, height, PngFormat.Instance));
+
+        // Assert - the guard must name the offending parameter rather than surfacing a
+        // bare slicing failure from deeper inside the method.
+        Assert.Equal("data", ex.ParamName);
+        _output.WriteLine($"Oversized BGRA request rejected by guard: {ex.Message}");
+    }
+
+    [Fact]
+    public void LoadPixelDataFromBgra_WithMaximumNonOverflowingSize_IsRejectedByLengthGuard()
+    {
+        // Arrange - the largest pixel count whose byte count still fits in an Int32.
+        var width = 536870911;
+        var height = 1;
+        var tooSmall = new byte[16];
+
+        // Act
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(
+            () => Image.LoadPixelDataFromBgra(tooSmall, width, height, PngFormat.Instance));
+
+        // Assert - rejected because the buffer is too small, not because of an overflow.
+        Assert.Equal("data", ex.ParamName);
+        _output.WriteLine($"Maximum non-overflowing size rejected on buffer length: {ex.Message}");
+    }
+
+    #endregion
+
+    #region Truncated Stream Decoding Tests
+
+    [Theory]
+    [InlineData("BMP")]
+    [InlineData("PNG")]
+    [InlineData("TIFF")]
+    public void Load_WithTruncatedImageData_ThrowsImageFormatException(string formatName)
+    {
+        // Arrange - the decoders read with Stream.ReadExactly so that a short read fails
+        // rather than silently decoding uninitialized buffer contents. That surfaces as an
+        // EndOfStreamException, which must be wrapped so callers only have to handle the
+        // documented ImageFormatException hierarchy.
+        IImageEncoder encoder = formatName switch
+        {
+            "BMP" => new BmpEncoder(),
+            "PNG" => new PngEncoder(),
+            "TIFF" => new TiffEncoder(),
+            _ => throw new ArgumentOutOfRangeException(nameof(formatName))
+        };
+
+        byte[] encoded;
+        using (var source = new Image<Rgba32>(200, 200, new Rgba32(200, 30, 30, 255)))
+        using (var ms = new MemoryStream())
+        {
+            source.Save(ms, encoder);
+            encoded = ms.ToArray();
+        }
+
+        // Act & Assert - every truncation point must produce an ImageFormatException,
+        // never a raw System.IO.EndOfStreamException.
+        foreach (var fraction in new[] { 0.55, 0.80, 0.95 })
+        {
+            var truncated = new byte[(int)(encoded.Length * fraction)];
+            Array.Copy(encoded, truncated, truncated.Length);
+
+            var ex = Assert.ThrowsAny<Exception>(() => Image.Load(truncated));
+            Assert.IsNotType<EndOfStreamException>(ex);
+            Assert.IsAssignableFrom<ImageFormatException>(ex);
+            _output.WriteLine($"{formatName} truncated to {fraction:P0}: {ex.GetType().Name}");
+        }
+    }
+
+    [Fact]
+    public void Load_WithTruncatedBmp_PreservesEndOfStreamExceptionAsInnerException()
+    {
+        // Arrange
+        byte[] encoded;
+        using (var source = new Image<Rgba32>(200, 200, new Rgba32(10, 200, 60, 255)))
+        using (var ms = new MemoryStream())
+        {
+            source.Save(ms, new BmpEncoder());
+            encoded = ms.ToArray();
+        }
+
+        var truncated = new byte[encoded.Length / 2];
+        Array.Copy(encoded, truncated, truncated.Length);
+
+        // Act
+        var ex = Assert.Throws<InvalidImageContentException>(() => Image.Load(truncated));
+
+        // Assert - the original cause stays available for diagnostics.
+        Assert.IsType<EndOfStreamException>(ex.InnerException);
+        _output.WriteLine($"Truncated BMP wrapped correctly: {ex.Message}");
+    }
+
+    [Fact]
+    public void Identify_WithTruncatedImageData_ThrowsImageFormatException()
+    {
+        // Arrange - truncate inside the header so Identify itself runs off the end.
+        byte[] encoded;
+        using (var source = new Image<Rgba32>(64, 64))
+        using (var ms = new MemoryStream())
+        {
+            source.Save(ms, new BmpEncoder());
+            encoded = ms.ToArray();
+        }
+
+        var truncated = new byte[20];
+        Array.Copy(encoded, truncated, truncated.Length);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAny<Exception>(() => Image.Identify(truncated));
+        Assert.IsNotType<EndOfStreamException>(ex);
+        _output.WriteLine($"Truncated header on Identify: {ex.GetType().Name}");
+    }
+
+    #endregion
+
+    #region File Path Handling
+
+    [Fact]
+    public void Load_WithFileNameEndingInDots_Succeeds()
+    {
+        // Arrange - a previous path "traversal guard" rejected any resolved path ending in
+        // "..", which is a legal file name on Linux and macOS. It blocked no traversal (
+        // Path.GetFullPath normalizes ".." away before the check) while breaking real files.
+        var dir = Path.Combine(Path.GetTempPath(), "cbimg_pathtests");
+        Directory.CreateDirectory(dir);
+        var awkwardPath = Path.Combine(dir, "legit..");
+
+        try
+        {
+            using (var source = new Image<Rgba32>(4, 4, new Rgba32(1, 2, 3, 255)))
+            using (var fs = File.Create(awkwardPath))
+            {
+                source.SaveAsPng(fs);
+            }
+
+            // Act
+            using var loaded = Image.Load(awkwardPath);
+
+            // Assert
+            Assert.Equal(4, loaded.Width);
+            Assert.Equal(4, loaded.Height);
+            _output.WriteLine("File named 'legit..' loaded successfully");
+        }
+        finally
+        {
+            if (File.Exists(awkwardPath)) { File.Delete(awkwardPath); }
+        }
+    }
+
+    [Fact]
+    public void Save_WithFileNameEndingInDots_Succeeds()
+    {
+        // Arrange
+        var dir = Path.Combine(Path.GetTempPath(), "cbimg_pathtests");
+        Directory.CreateDirectory(dir);
+        var awkwardPath = Path.Combine(dir, "output..");
+
+        try
+        {
+            using var image = new Image<Rgba32>(4, 4);
+
+            // Act
+            image.Save(awkwardPath, new PngEncoder());
+
+            // Assert
+            Assert.True(File.Exists(awkwardPath));
+            _output.WriteLine("File named 'output..' written successfully");
+        }
+        finally
+        {
+            if (File.Exists(awkwardPath)) { File.Delete(awkwardPath); }
+        }
+    }
+
+    #endregion
+
+    #region Decode Allocation Budget
+
+    [Fact]
+    public void CreateSandboxed_AppliesAnAllocationLimit()
+    {
+        // Arrange
+        var sandboxed = Configuration.Default.CreateSandboxed(1);
+
+        // Act & Assert - the clone is independent of the default configuration.
+        Assert.NotSame(Configuration.Default, sandboxed);
+        Assert.NotSame(Configuration.Default.MemoryAllocator, sandboxed.MemoryAllocator);
+        _output.WriteLine("CreateSandboxed produced an independent configuration with its own allocator");
+    }
+
+    [Fact]
+    public void CreateSandboxed_RejectsNonPositiveLimits()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default.CreateSandboxed(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default.CreateSandboxed(-1));
+        _output.WriteLine("Non-positive allocation limits rejected");
+    }
+
+    [Fact]
+    public void CreateSandboxed_StillDecodesImagesThatFitTheBudget()
+    {
+        // Arrange
+        byte[] encoded;
+        using (var source = new Image<Rgba32>(64, 64, new Rgba32(10, 20, 30, 255)))
+        using (var ms = new MemoryStream())
+        {
+            source.SaveAsPng(ms);
+            encoded = ms.ToArray();
+        }
+
+        var sandboxed = Configuration.Default.CreateSandboxed(64);
+
+        // Act
+        using var image = Image.Load<Rgba32>(sandboxed, encoded);
+
+        // Assert
+        Assert.Equal(64, image.Width);
+        Assert.Equal(new Rgba32(10, 20, 30, 255), image[0, 0]);
+        _output.WriteLine("A modest image still decodes under a 64 MB budget");
     }
 
     #endregion

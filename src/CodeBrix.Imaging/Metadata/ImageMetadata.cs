@@ -158,8 +158,29 @@ public sealed class ImageMetadata : IDeepCloneable<ImageMetadata>
     public IptcProfile IptcProfile { get; set; }
 
     /// <summary>
-    /// Gets or sets the ExpectedFormat of the image.
+    /// Gets or sets the image format this image is expected to be encoded in.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is the format the image was decoded from. An image created in memory rather than
+    /// loaded - for example <c>new Image&lt;Rgba32&gt;(width, height)</c> - starts out as
+    /// <see cref="UnknownImageFormat"/>, which has no encoder: saving such an image without
+    /// naming a format throws <see cref="System.NotSupportedException"/>.
+    /// </para>
+    /// <para>
+    /// NOTE: saving an image UPDATES this property to the format that was just written. So
+    /// <c>image.SaveAsJpeg(stream)</c> leaves <see cref="ExpectedFormat"/> reporting JPEG even
+    /// if the image was originally decoded from a PNG. Two consequences worth knowing:
+    /// saving is not a read-only operation on the image, and saving the same image
+    /// concurrently to two different formats races on this property. Clone the image first if
+    /// you need to write several formats in parallel.
+    /// </para>
+    /// <para>
+    /// The specialised <c>ExportAs8bppGrayscaleBmpFormat</c> helpers deliberately do NOT
+    /// update this property, because that output cannot be round-tripped through the normal
+    /// encoder pipeline.
+    /// </para>
+    /// </remarks>
     public IImageFormat ExpectedFormat { get; set; }
 
     /// <summary>

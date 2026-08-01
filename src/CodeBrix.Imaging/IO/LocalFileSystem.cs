@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Six Labors.
 // Licensed under the Apache License, Version 2.0.
 
-using System;
 using System.IO;
 
 namespace CodeBrix.Imaging.IO; //Was previously: namespace SixLabors.ImageSharp.IO;
@@ -9,41 +8,24 @@ namespace CodeBrix.Imaging.IO; //Was previously: namespace SixLabors.ImageSharp.
 /// <summary>
 /// A wrapper around the local File apis.
 /// </summary>
+/// <remarks>
+/// Paths are passed through to <see cref="File"/> unmodified and unvalidated. Deciding
+/// whether a path is safe to open or create is the caller's responsibility - this library
+/// has no way to know which directories an application considers legitimate.
+/// <para>
+/// A previous revision attempted a path-traversal guard here. It was removed because it
+/// could not work: <see cref="Path.GetFullPath(string)"/> normalizes ".." segments away
+/// before any such check runs, so the guard blocked no traversal at all, while rejecting
+/// legitimate file names that end in dots (valid on Linux and macOS). Callers that need
+/// containment should compare <see cref="Path.GetFullPath(string)"/> of the candidate
+/// against their own allowed root before calling into this library.
+/// </para>
+/// </remarks>
 internal sealed class LocalFileSystem : IFileSystem
 {
     /// <inheritdoc/>
-    public Stream OpenRead(string path)
-    {
-        ValidatePath(path);
-        return File.OpenRead(path);
-    }
+    public Stream OpenRead(string path) => File.OpenRead(path);
 
     /// <inheritdoc/>
-    public Stream Create(string path)
-    {
-        ValidatePath(path);
-        return File.Create(path);
-    }
-
-    /// <summary>
-    /// Validates the file path to prevent path traversal attacks and other malicious input.
-    /// </summary>
-    /// <param name="path">The file path to validate.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="path"/> is empty, whitespace, or contains path traversal sequences.</exception>
-    private static void ValidatePath(string path)
-    {
-        Guard.NotNullOrWhiteSpace(path, nameof(path));
-
-        // Reject paths containing path traversal sequences.
-        // Check both the raw path and the normalized path to catch encoded or
-        // OS-specific separator variants.
-        var fullPath = Path.GetFullPath(path);
-        if (fullPath.Contains(".." + Path.DirectorySeparatorChar)
-            || fullPath.Contains(".." + Path.AltDirectorySeparatorChar)
-            || fullPath.EndsWith(".."))
-        {
-            throw new ArgumentException("Path contains invalid traversal sequence.", nameof(path));
-        }
-    }
+    public Stream Create(string path) => File.Create(path);
 }

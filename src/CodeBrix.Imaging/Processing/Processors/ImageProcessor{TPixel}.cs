@@ -38,7 +38,7 @@ public abstract class ImageProcessor<TPixel> : IImageProcessor<TPixel>
     protected Rectangle SourceRectangle { get; }
 
     /// <summary>
-    /// Gets the <see cref="ImageSharp.Configuration"/> instance to use when performing operations.
+    /// Gets the <see cref="CodeBrix.Imaging.Configuration"/> instance to use when performing operations.
     /// </summary>
     protected Configuration Configuration { get; }
 

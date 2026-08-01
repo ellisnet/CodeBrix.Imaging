@@ -10,8 +10,19 @@ namespace CodeBrix.Imaging.Formats.Gif; //Was previously: namespace SixLabors.Im
 /// </summary>
 public sealed class GifFormat : IImageFormat<GifMetadata, GifFrameMetadata>
 {
+    /// <summary>
+    /// The display name of the GIF format, as reported by <see cref="Name"/>.
+    /// </summary>
     public const string FormatName = "GIF";
+
+    /// <summary>
+    /// The default MIME type of the GIF format, as reported by <see cref="DefaultMimeType"/>.
+    /// </summary>
     public const string FormatMimeType = "image/gif";
+
+    /// <summary>
+    /// The default file extension of the GIF format, as reported by <see cref="DefaultFileExtension"/>.
+    /// </summary>
     public const string FormatDefaultExtension = ".gif";
 
     private GifFormat() { }

@@ -759,6 +759,10 @@ public readonly partial struct Color
     /// </summary>
     public static readonly Color YellowGreen = FromRgba(154, 205, 50, 255);
 
+    /// <summary>
+    /// Represents an uninitialized, fully transparent black <see cref="Color"/>.
+    /// Compare against it with <see cref="Color.IsEmpty"/>.
+    /// </summary>
     public static readonly Color Empty = FromRgba(0, 0, 0, 0);
 
     private static Dictionary<string, Color> CreateNamedColorsLookup()

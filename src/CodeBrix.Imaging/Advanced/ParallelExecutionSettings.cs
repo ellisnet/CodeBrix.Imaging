@@ -88,7 +88,7 @@ public readonly struct ParallelExecutionSettings
     }
 
     /// <summary>
-    /// Get the default <see cref="SixLabors.ImageSharp.Advanced.ParallelExecutionSettings"/> for a <see cref="SixLabors.ImageSharp.Configuration"/>
+    /// Get the default <see cref="CodeBrix.Imaging.Advanced.ParallelExecutionSettings"/> for a <see cref="CodeBrix.Imaging.Configuration"/>
     /// </summary>
     /// <param name="configuration">The <see cref="Configuration"/>.</param>
     /// <returns>The <see cref="ParallelExecutionSettings"/>.</returns>

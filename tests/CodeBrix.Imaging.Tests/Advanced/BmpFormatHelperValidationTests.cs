@@ -1,4 +1,4 @@
-using CodeBrix.Imaging.Helpers;
+﻿using CodeBrix.Imaging.Helpers;
 using CodeBrix.Imaging.PixelFormats;
 using System;
 using System.IO;
@@ -47,7 +47,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            image.ExportAs8bppGrayscaleBmpFormat(null));
+            image.ExportAs8bppGrayscaleBmpFormat((Stream)null));
         _output.WriteLine("Null stream correctly rejected");
     }
 
@@ -105,7 +105,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            image.ExportAs8bppGrayscaleBmpFormat(null, BmpFormatHelper.DefaultGrayscaleColorMatrix));
+            image.ExportAs8bppGrayscaleBmpFormat((Stream)null, BmpFormatHelper.DefaultGrayscaleColorMatrix));
         _output.WriteLine("Null stream correctly rejected (ColorMatrix overload)");
     }
 
@@ -151,7 +151,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, BmpIndexingMode.Normal, TestContext.Current.CancellationToken));
         _output.WriteLine("Null image correctly rejected (async)");
     }
 
@@ -163,7 +163,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(null));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync((Stream)null, BmpIndexingMode.Normal, TestContext.Current.CancellationToken));
         _output.WriteLine("Null stream correctly rejected (async)");
     }
 
@@ -176,7 +176,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(readOnlyStream));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync(readOnlyStream, BmpIndexingMode.Normal, TestContext.Current.CancellationToken));
         Assert.Equal("stream", ex.ParamName);
         _output.WriteLine($"Non-writable stream correctly rejected (async): {ex.Message}");
     }
@@ -191,7 +191,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, invalidMode));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, invalidMode, TestContext.Current.CancellationToken));
         Assert.Equal("indexingMode", ex.ParamName);
         _output.WriteLine($"Invalid indexing mode correctly rejected (async): {ex.Message}");
     }
@@ -209,7 +209,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, BmpFormatHelper.DefaultGrayscaleColorMatrix));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, BmpFormatHelper.DefaultGrayscaleColorMatrix, BmpIndexingMode.Normal, TestContext.Current.CancellationToken));
         _output.WriteLine("Null image correctly rejected (async, ColorMatrix overload)");
     }
 
@@ -221,7 +221,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(null, BmpFormatHelper.DefaultGrayscaleColorMatrix));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync((Stream)null, BmpFormatHelper.DefaultGrayscaleColorMatrix, BmpIndexingMode.Normal, TestContext.Current.CancellationToken));
         _output.WriteLine("Null stream correctly rejected (async, ColorMatrix overload)");
     }
 
@@ -234,7 +234,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(readOnlyStream, BmpFormatHelper.DefaultGrayscaleColorMatrix));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync(readOnlyStream, BmpFormatHelper.DefaultGrayscaleColorMatrix, BmpIndexingMode.Normal, TestContext.Current.CancellationToken));
         Assert.Equal("stream", ex.ParamName);
         _output.WriteLine($"Non-writable stream correctly rejected (async, ColorMatrix overload): {ex.Message}");
     }
@@ -249,7 +249,7 @@ public class BmpFormatHelperValidationTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, BmpFormatHelper.DefaultGrayscaleColorMatrix, invalidMode));
+            await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, BmpFormatHelper.DefaultGrayscaleColorMatrix, invalidMode, TestContext.Current.CancellationToken));
         Assert.Equal("indexingMode", ex.ParamName);
         _output.WriteLine($"Invalid indexing mode correctly rejected (async, ColorMatrix overload): {ex.Message}");
     }
@@ -378,7 +378,7 @@ public class BmpFormatHelperValidationTests
         using var stream = new MemoryStream();
 
         // Act
-        await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, indexingMode);
+        await image.ExportAs8bppGrayscaleBmpFormatAsync(stream, indexingMode, TestContext.Current.CancellationToken);
         var bytes = stream.ToArray();
 
         // Assert
@@ -408,7 +408,7 @@ public class BmpFormatHelperValidationTests
 
         // Act - async
         using var asyncStream = new MemoryStream();
-        await image.ExportAs8bppGrayscaleBmpFormatAsync(asyncStream, indexingMode);
+        await image.ExportAs8bppGrayscaleBmpFormatAsync(asyncStream, indexingMode, TestContext.Current.CancellationToken);
         var asyncBytes = asyncStream.ToArray();
 
         // Assert
@@ -432,7 +432,7 @@ public class BmpFormatHelperValidationTests
 
         // Act - async
         using var asyncStream = new MemoryStream();
-        await image.ExportAs8bppGrayscaleBmpFormatAsync(asyncStream, matrix, indexingMode);
+        await image.ExportAs8bppGrayscaleBmpFormatAsync(asyncStream, matrix, indexingMode, TestContext.Current.CancellationToken);
         var asyncBytes = asyncStream.ToArray();
 
         // Assert

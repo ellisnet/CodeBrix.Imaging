@@ -152,7 +152,7 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
             var t = i / (float)BezierSegments;
             var u = 1f - t;
 
-            // Quadratic bezier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+            // Quadratic bezier: B(t) = (1-t)^2 * P0 + 2(1-t)t * P1 + t^2 * P2
             var pt = (u * u * p0) + (2f * u * t * p1) + (t * t * p2);
             _currentFigurePoints.Add(pt);
         }
@@ -174,7 +174,7 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
             var t = i / (float)BezierSegments;
             var u = 1f - t;
 
-            // Cubic bezier: B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
+            // Cubic bezier: B(t) = (1-t)^3 * P0 + 3(1-t)^2 t * P1 + 3(1-t)t^2 * P2 + t^3 * P3
             var pt = (u * u * u * p0) +
                      (3f * u * u * t * p1) +
                      (3f * u * t * t * p2) +
@@ -227,19 +227,28 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
         var supersampleCount = (int)SubpixelScale;
         var subpixelStep = 1f / supersampleCount;
 
+        // Reused across scanlines and sub-scanlines to keep this off the GC's back:
+        // a glyph is rasterized once per draw and these would otherwise be reallocated
+        // for every sub-scanline of every glyph.
+        var coverage = new float[endX - startX + 1];
+        var crossings = new List<(float X, int Direction)>();
+
         // For each scanline
         for (var y = startY; y <= endY; y++)
         {
-            // Create a coverage array for this scanline
-            var coverage = new float[endX - startX + 1];
+            Array.Clear(coverage);
 
             // Supersample vertically
             for (var subY = 0; subY < supersampleCount; subY++)
             {
                 var scanY = y + (subY + 0.5f) * subpixelStep;
 
-                // Collect all edge intersections for this sub-scanline
-                var intersections = new List<float>();
+                // Collect all edge crossings for this sub-scanline, recording the direction
+                // each edge travels. TrueType ('glyf') and CFF/Type2 outlines are specified
+                // to use the NON-ZERO WINDING rule, so a bare list of x positions is not
+                // enough: two contours wound the same way that overlap must produce a solid
+                // region, which the even-odd rule would punch a hole in.
+                crossings.Clear();
 
                 foreach (var figure in _currentGlyphFigures)
                 {
@@ -248,42 +257,45 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
                         var p1 = figure[i];
                         var p2 = figure[i + 1];
 
-                        // Check if this edge crosses the scanline
-                        if ((p1.Y <= scanY && p2.Y > scanY) || (p2.Y <= scanY && p1.Y > scanY))
+                        // Half-open test on Y keeps a vertex shared by two edges from being
+                        // counted twice.
+                        if (p1.Y <= scanY && p2.Y > scanY)
                         {
-                            // Calculate x intersection
                             var t = (scanY - p1.Y) / (p2.Y - p1.Y);
-                            var x = p1.X + t * (p2.X - p1.X);
-                            intersections.Add(x);
+                            crossings.Add((p1.X + t * (p2.X - p1.X), 1));
+                        }
+                        else if (p2.Y <= scanY && p1.Y > scanY)
+                        {
+                            var t = (scanY - p1.Y) / (p2.Y - p1.Y);
+                            crossings.Add((p1.X + t * (p2.X - p1.X), -1));
                         }
                     }
                 }
 
-                if (intersections.Count < 2)
+                if (crossings.Count < 2)
                 {
                     continue;
                 }
 
-                // Sort intersections
-                intersections.Sort();
+                crossings.Sort(static (a, b) => a.X.CompareTo(b.X));
 
-                // Fill between pairs of intersections (even-odd fill rule)
-                for (var i = 0; i < intersections.Count - 1; i += 2)
+                // Walk the crossings accumulating the winding number. A span is inside the
+                // glyph wherever the running total is non-zero.
+                var winding = 0;
+                var spanStart = 0f;
+
+                foreach (var (x, direction) in crossings)
                 {
-                    var xStart = intersections[i];
-                    var xEnd = intersections[i + 1];
+                    var previous = winding;
+                    winding += direction;
 
-                    var pixelStart = Math.Max(startX, (int)Math.Floor(xStart));
-                    var pixelEnd = Math.Min(endX, (int)Math.Ceiling(xEnd));
-
-                    for (var x = pixelStart; x <= pixelEnd; x++)
+                    if (previous == 0 && winding != 0)
                     {
-                        // Calculate coverage for this pixel
-                        var left = Math.Max(x, xStart);
-                        var right = Math.Min(x + 1, xEnd);
-                        var pixelCoverage = Math.Max(0, right - left);
-
-                        coverage[x - startX] += pixelCoverage / supersampleCount;
+                        spanStart = x;
+                    }
+                    else if (previous != 0 && winding == 0)
+                    {
+                        AccumulateSpan(coverage, startX, endX, spanStart, x, supersampleCount);
                     }
                 }
             }
@@ -302,6 +314,31 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
     }
 
     /// <summary>
+    /// Adds the horizontal coverage contributed by a single filled span on one sub-scanline.
+    /// </summary>
+    private static void AccumulateSpan(
+        float[] coverage, int startX, int endX, float xStart, float xEnd, int supersampleCount)
+    {
+        if (xEnd <= xStart)
+        {
+            return;
+        }
+
+        var pixelStart = Math.Max(startX, (int)Math.Floor(xStart));
+        var pixelEnd = Math.Min(endX, (int)Math.Ceiling(xEnd));
+
+        for (var x = pixelStart; x <= pixelEnd; x++)
+        {
+            // Exact horizontal area of the span covering this pixel cell.
+            var left = Math.Max(x, xStart);
+            var right = Math.Min(x + 1, xEnd);
+            var pixelCoverage = Math.Max(0f, right - left);
+
+            coverage[x - startX] += pixelCoverage / supersampleCount;
+        }
+    }
+
+    /// <summary>
     /// Blends the text color with the existing pixel at the specified location.
     /// </summary>
     /// <param name="x">The x coordinate.</param>
@@ -314,19 +351,32 @@ public sealed class ImageGlyphRenderer<TPixel> : IColorGlyphRenderer
             return;
         }
 
-        var existingPixel = _image[x, y];
-        var existingVector = existingPixel.ToVector4();
+        var existingVector = _image[x, y].ToVector4();
         var colorVector = _currentColor.ToVector4();
 
-        // Premultiply the source alpha with the coverage
+        // Scale the source alpha by the coverage of this pixel.
         var srcAlpha = colorVector.W * alpha;
+        var dstAlpha = existingVector.W;
 
-        // Alpha blend: out = src * srcAlpha + dst * (1 - srcAlpha)
+        // Standard "source over" compositing. TPixel formats such as Rgba32 store colour
+        // NON-premultiplied, so the premultiplied result has to be divided back out by the
+        // resulting alpha. Skipping that division is what produced dark fringes when text
+        // was drawn onto a transparent background: a half-covered pixel of opaque red came
+        // out as (128,0,0,128) instead of (255,0,0,128).
+        var outAlpha = srcAlpha + (dstAlpha * (1f - srcAlpha));
+
+        if (outAlpha <= 0f)
+        {
+            return;
+        }
+
+        var dstWeight = dstAlpha * (1f - srcAlpha);
+
         var blended = new Vector4(
-            (colorVector.X * srcAlpha) + (existingVector.X * (1f - srcAlpha)),
-            (colorVector.Y * srcAlpha) + (existingVector.Y * (1f - srcAlpha)),
-            (colorVector.Z * srcAlpha) + (existingVector.Z * (1f - srcAlpha)),
-            srcAlpha + (existingVector.W * (1f - srcAlpha))
+            ((colorVector.X * srcAlpha) + (existingVector.X * dstWeight)) / outAlpha,
+            ((colorVector.Y * srcAlpha) + (existingVector.Y * dstWeight)) / outAlpha,
+            ((colorVector.Z * srcAlpha) + (existingVector.Z * dstWeight)) / outAlpha,
+            outAlpha
         );
 
         TPixel result = default;

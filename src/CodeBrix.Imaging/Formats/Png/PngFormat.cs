@@ -10,8 +10,19 @@ namespace CodeBrix.Imaging.Formats.Png; //Was previously: namespace SixLabors.Im
 /// </summary>
 public sealed class PngFormat : IImageFormat<PngMetadata>
 {
+    /// <summary>
+    /// The display name of the PNG format, as reported by <see cref="Name"/>.
+    /// </summary>
     public const string FormatName = "PNG";
+
+    /// <summary>
+    /// The default MIME type of the PNG format, as reported by <see cref="DefaultMimeType"/>.
+    /// </summary>
     public const string FormatMimeType = "image/png";
+
+    /// <summary>
+    /// The default file extension of the PNG format, as reported by <see cref="DefaultFileExtension"/>.
+    /// </summary>
     public const string FormatDefaultExtension = ".png";
 
     private PngFormat() { }

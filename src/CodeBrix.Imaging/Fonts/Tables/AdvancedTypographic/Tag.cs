@@ -29,21 +29,43 @@ public readonly struct Tag : IEquatable<Tag>
     /// </summary>
     public uint Value { get; }
 
+    /// <summary>
+    /// Converts a 32 bit unsigned integer to a <see cref="Tag"/>.
+    /// </summary>
+    /// <param name="value">The raw tag value.</param>
+    /// <returns>The <see cref="Tag"/>.</returns>
     public static implicit operator Tag(uint value)
     {
         return new Tag(value);
     }
 
+    /// <summary>
+    /// Converts a well-known <see cref="FeatureTags"/> value to a <see cref="Tag"/>.
+    /// </summary>
+    /// <param name="value">The feature tag.</param>
+    /// <returns>The <see cref="Tag"/>.</returns>
     public static implicit operator Tag(FeatureTags value)
     {
         return new Tag((uint)value);
     }
 
+    /// <summary>
+    /// Compares two <see cref="Tag"/> values for equality.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if the two values are equal; otherwise <see langword="false"/>.</returns>
     public static bool operator ==(Tag left, Tag right)
     {
         return left.Equals(right);
     }
 
+    /// <summary>
+    /// Compares two <see cref="Tag"/> values for inequality.
+    /// </summary>
+    /// <param name="left">The left hand operand.</param>
+    /// <param name="right">The right hand operand.</param>
+    /// <returns><see langword="true"/> if the two values are not equal; otherwise <see langword="false"/>.</returns>
     public static bool operator !=(Tag left, Tag right)
     {
         return !(left == right);

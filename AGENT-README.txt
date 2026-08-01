@@ -8,8 +8,12 @@ OVERVIEW
 CodeBrix.Imaging is a fully managed, cross-platform 2D image processing and font
 handling library for .NET. It has ZERO external dependencies beyond .NET itself.
 
-It is a fork of the open source SixLabors.ImageSharp (v2.1.3) and SixLabors.Fonts
-(v1.0.0) libraries, licensed under Apache License 2.0.
+It is a fork of the open source SixLabors.ImageSharp (v2.1.13) and SixLabors.Fonts
+(v1.0.0-beta18) libraries, licensed under Apache License 2.0. The ImageSharp code
+tracks the 2.1.x release line through v2.1.13, so all seven published
+SixLabors.ImageSharp security advisories (CVE-2024-27929, CVE-2024-32035,
+CVE-2024-32036, CVE-2024-41131, CVE-2024-41132, CVE-2025-27598 and
+CVE-2025-54575) are already fixed in this code base.
 
 IMPORTANT: If you are familiar with SixLabors.ImageSharp, the API surface of
 CodeBrix.Imaging is very similar. However, ALL namespaces use "CodeBrix.Imaging"

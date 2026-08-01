@@ -10,8 +10,19 @@ namespace CodeBrix.Imaging.Formats.Bmp; //Was previously: namespace SixLabors.Im
 /// </summary>
 public sealed class BmpFormat : IImageFormat<BmpMetadata>
 {
+    /// <summary>
+    /// The display name of the BMP format, as reported by <see cref="Name"/>.
+    /// </summary>
     public const string FormatName = "BMP";
+
+    /// <summary>
+    /// The default MIME type of the BMP format, as reported by <see cref="DefaultMimeType"/>.
+    /// </summary>
     public const string FormatMimeType = "image/bmp";
+
+    /// <summary>
+    /// The default file extension of the BMP format, as reported by <see cref="DefaultFileExtension"/>.
+    /// </summary>
     public const string FormatDefaultExtension = ".bmp";
 
     private BmpFormat() { }

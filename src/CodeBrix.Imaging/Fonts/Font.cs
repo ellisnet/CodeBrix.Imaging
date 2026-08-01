@@ -28,6 +28,15 @@ public sealed class Font
     public Font(FontFamily family, float size)
         : this(family, size, FontStyle.Regular) { }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Font" /> class from an installed
+    ///     system font family name.
+    /// </summary>
+    /// <param name="name">The name of an installed font family.</param>
+    /// <param name="size">The size of the font in PT units.</param>
+    /// <param name="style">The font style.</param>
+    /// <exception cref="ArgumentException"><paramref name="name" /> is null, empty or whitespace.</exception>
+    /// <exception cref="FontFamilyNotFoundException">No installed font family matches <paramref name="name" />.</exception>
     public Font(string name, float size, FontStyle style)
         : this(FontHelper.GetFontByName(name), size, style) { }
 

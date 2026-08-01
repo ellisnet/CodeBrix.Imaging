@@ -95,6 +95,6 @@ Note that additional sample code and usage examples are available in the `CodeBr
 
 The project is licensed under the Apache License 2.0. see: https://en.wikipedia.org/wiki/Apache_License
 
-All code originating from SixLabors.ImageSharp was included as allowed by the Apache License 2.0 permissible open source software license - as of Jun 19, 2022. This project (CodeBrix.Imaging) complies with all provisions of the source code license of SixLabors.ImageSharp v2.1.3 (Apache License 2.0).
+All code originating from SixLabors.ImageSharp was included as allowed by the Apache License 2.0 permissible open source software license. The included code corresponds to SixLabors.ImageSharp v2.1.13 (released Nov 25, 2025), the most recent release of the Apache-2.0-licensed 2.1.x line. This project (CodeBrix.Imaging) complies with all provisions of the source code license of SixLabors.ImageSharp v2.1.13 (Apache License 2.0).
 
-All code originating from SixLabors.Fonts was included as allowed by the Apache License 2.0 permissible open source software license - as of Jul 22, 2022. This project (CodeBrix.Imaging) complies with all provisions of the source code license of SixLabors.Fonts v1.0.0 (Apache License 2.0).
+All code originating from SixLabors.Fonts was included as allowed by the Apache License 2.0 permissible open source software license - as of Jul 22, 2022. The included code corresponds to SixLabors.Fonts v1.0.0-beta18 (released Jul 2, 2022). This project (CodeBrix.Imaging) complies with all provisions of the source code license of SixLabors.Fonts v1.0.0-beta18 (Apache License 2.0).

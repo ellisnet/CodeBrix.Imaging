@@ -183,8 +183,18 @@ public struct FontFamily : IEquatable<FontFamily>
     }
 }
 
+/// <summary>
+///     Convenience helpers for resolving <see cref="FontFamily" /> values by name.
+/// </summary>
 public static class FontHelper
 {
+    /// <summary>
+    ///     Gets the installed system <see cref="FontFamily" /> with the given name.
+    /// </summary>
+    /// <param name="name">The name of an installed font family.</param>
+    /// <exception cref="ArgumentException"><paramref name="name" /> is null, empty or whitespace.</exception>
+    /// <exception cref="FontFamilyNotFoundException">No installed font family matches <paramref name="name" />.</exception>
+    /// <returns>The <see cref="FontFamily" />.</returns>
     public static FontFamily GetFontByName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))

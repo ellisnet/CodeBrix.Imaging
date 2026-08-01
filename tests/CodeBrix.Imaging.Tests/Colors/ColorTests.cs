@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeBrix.Imaging.PixelFormats;
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -230,5 +231,76 @@ public class ColorTests
         Assert.True(color1 != color3);
         Assert.True(color1.Equals(color2));
         Assert.False(color1.Equals(color3));
+    }
+
+    [Theory]
+    [InlineData(255)]
+    [InlineData(128)]
+    [InlineData(64)]
+    [InlineData(1)]
+    [InlineData(0)]
+    public void FromArgb_with_alpha_and_color_uses_a_byte_alpha_scale(int alpha)
+    {
+        //Arrange - alpha is a 0-255 byte here, matching the other FromArgb overloads and
+        //System.Drawing.Color.FromArgb(int alpha, Color baseColor). Treating it as a
+        //16-bit value made FromArgb(255, c) produce an alpha of 1 - very nearly invisible.
+        var baseColor = Color.FromArgb(10, 20, 30);
+
+        //Act
+        var result = Color.FromArgb(alpha, baseColor);
+        var pixel = result.ToPixel<Rgba32>();
+
+        //Assert
+        Assert.Equal(alpha, pixel.A);
+        Assert.Equal(10, pixel.R);
+        Assert.Equal(20, pixel.G);
+        Assert.Equal(30, pixel.B);
+        _output.WriteLine($"FromArgb({alpha}, color) -> RGBA({pixel.R},{pixel.G},{pixel.B},{pixel.A})");
+    }
+
+    [Fact]
+    public void FromArgb_with_alpha_and_color_matches_the_four_argument_overload()
+    {
+        //Arrange
+        var baseColor = Color.FromArgb(200, 100, 50);
+
+        //Act
+        var viaColorOverload = Color.FromArgb(180, baseColor);
+        var viaComponents = Color.FromArgb(180, 200, 100, 50);
+
+        //Assert
+        Assert.Equal(viaComponents, viaColorOverload);
+        _output.WriteLine("FromArgb(int, Color) agrees with FromArgb(int, int, int, int)");
+    }
+
+    [Theory]
+    [InlineData(256)]
+    [InlineData(65535)]
+    [InlineData(-1)]
+    public void FromArgb_with_alpha_and_color_rejects_out_of_range_alpha(int alpha)
+    {
+        //Arrange
+        var baseColor = Color.FromArgb(1, 2, 3);
+
+        //Act & Assert
+        Assert.Throws<ArgumentException>(() => Color.FromArgb(alpha, baseColor));
+        _output.WriteLine($"FromArgb({alpha}, color) correctly rejected");
+    }
+
+    [Fact]
+    public void FromArgb_packed_value_unpacks_argb_channels()
+    {
+        //Arrange
+        var packed = unchecked((int)0x80112233);
+
+        //Act
+        var pixel = Color.FromArgb(packed).ToPixel<Rgba32>();
+
+        //Assert
+        Assert.Equal(0x80, pixel.A);
+        Assert.Equal(0x11, pixel.R);
+        Assert.Equal(0x22, pixel.G);
+        Assert.Equal(0x33, pixel.B);
+        _output.WriteLine($"FromArgb(0x{packed:X8}) -> RGBA({pixel.R},{pixel.G},{pixel.B},{pixel.A})");
     }
 }

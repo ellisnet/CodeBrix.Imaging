@@ -149,6 +149,13 @@ public readonly partial struct Color
     [MethodImpl(InliningOptions.ShortMethod)]
     public static explicit operator Color(Vector4 source) => new(source);
 
+    /// <summary>
+    /// Converts this color to an <see cref="Rgba32"/> pixel, whose components are 8 bit
+    /// values in the range 0-255. Note that the <see cref="Color.R"/>, <see cref="Color.G"/>,
+    /// <see cref="Color.B"/> and <see cref="Color.A"/> properties on <see cref="Color"/>
+    /// itself are 16 bit values in the range 0-65535.
+    /// </summary>
+    /// <returns>The <see cref="Rgba32"/>.</returns>
     [MethodImpl(InliningOptions.ShortMethod)]
     public Rgba32 ToRgba32()
     {
@@ -238,6 +245,17 @@ public readonly partial struct Color
         return this.boxedHighPrecisionPixel.ToScaledVector4();
     }
 
+    /// <summary>
+    /// Packs this color into a 32 bit signed integer in ARGB order, with alpha in the most
+    /// significant byte and blue in the least significant byte. This is the inverse of
+    /// <see cref="Color.FromArgb(int)"/>.
+    /// </summary>
+    /// <remarks>
+    /// When formatting the result as hexadecimal, use <c>"X8"</c> rather than <c>"X"</c>:
+    /// alpha values below 16 produce fewer than eight digits otherwise, which breaks any
+    /// fixed-offset slicing of the resulting string.
+    /// </remarks>
+    /// <returns>The packed ARGB value.</returns>
     public int ToArgbInt32()
     {
         var argb = ToArgb32();

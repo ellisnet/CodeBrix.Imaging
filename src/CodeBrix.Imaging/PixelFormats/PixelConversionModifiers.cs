@@ -8,9 +8,9 @@ namespace CodeBrix.Imaging.PixelFormats; //Was previously: namespace SixLabors.I
 
 /// <summary>
 /// Flags responsible to select additional operations which could be efficiently applied in
-/// <see cref="PixelOperations{TPixel}.ToVector4(SixLabors.ImageSharp.Configuration,System.ReadOnlySpan{TPixel},System.Span{System.Numerics.Vector4},SixLabors.ImageSharp.PixelFormats.PixelConversionModifiers)"/>
+/// <see cref="PixelOperations{TPixel}.ToVector4(CodeBrix.Imaging.Configuration,System.ReadOnlySpan{TPixel},System.Span{System.Numerics.Vector4},CodeBrix.Imaging.PixelFormats.PixelConversionModifiers)"/>
 /// or
-/// <see cref="PixelOperations{TPixel}.FromVector4Destructive(SixLabors.ImageSharp.Configuration,System.Span{System.Numerics.Vector4},System.Span{TPixel},SixLabors.ImageSharp.PixelFormats.PixelConversionModifiers)"/>
+/// <see cref="PixelOperations{TPixel}.FromVector4Destructive(CodeBrix.Imaging.Configuration,System.Span{System.Numerics.Vector4},System.Span{TPixel},CodeBrix.Imaging.PixelFormats.PixelConversionModifiers)"/>
 /// knowing the pixel type.
 /// </summary>
 [Flags]

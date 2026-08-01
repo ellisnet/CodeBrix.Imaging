@@ -5,6 +5,7 @@ using CodeBrix.Imaging.PixelFormats;
 using System;
 using System.Buffers.Binary;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
@@ -142,7 +143,12 @@ public static class BmpFormatHelper
 
     #endregion
 
-    private static void Write8bppBmp(Image image, Stream stream, ColorMatrix colorMatrix, BmpIndexingMode indexingMode)
+    /// <summary>
+    /// Builds the BMP file header, info header and colour palette as a single contiguous
+    /// block, and reports the row stride the pixel data must use.
+    /// </summary>
+    private static byte[] BuildHeaderAndPalette(
+        Image image, BmpIndexingMode indexingMode, out int rowStride)
     {
         bool compatible = indexingMode == BmpIndexingMode.SystemDrawingCompatible;
 
@@ -150,16 +156,8 @@ public static class BmpFormatHelper
         int height = image.Height;
 
         // Calculate row stride - each row is padded to a 4-byte boundary
-        int rowStride = (width + 3) & ~3;
+        rowStride = (width + 3) & ~3;
         long pixelDataSizeLong = (long)rowStride * height;
-        if (pixelDataSizeLong > int.MaxValue)
-        {
-            throw new InvalidOperationException(
-                $"The image dimensions ({width}x{height}) are too large for the 8bpp BMP format. "
-                + $"The pixel data size ({pixelDataSizeLong:N0} bytes) exceeds the maximum of {int.MaxValue:N0} bytes.");
-        }
-
-        int pixelDataSize = (int)pixelDataSizeLong;
 
         // BMP structure sizes
         const int fileHeaderSize = 14;
@@ -167,7 +165,20 @@ public static class BmpFormatHelper
         int paletteEntryCount = compatible ? HalftonePaletteEntryCount : 256;
         int colorPaletteSize = paletteEntryCount * 4;
         int pixelDataOffset = fileHeaderSize + infoHeaderSize + colorPaletteSize;
-        int fileSize = pixelDataOffset + pixelDataSize;
+
+        // The limit is checked against the TOTAL file size, not just the pixel data: the
+        // headers and palette add ~1 KB on top, so a pixel-data size of exactly int.MaxValue
+        // would overflow the Int32 written into the BMP file-size header field.
+        long fileSizeLong = pixelDataOffset + pixelDataSizeLong;
+        if (fileSizeLong > int.MaxValue)
+        {
+            throw new InvalidOperationException(
+                $"The image dimensions ({width}x{height}) are too large for the 8bpp BMP format. "
+                + $"The resulting file size ({fileSizeLong:N0} bytes) exceeds the maximum of {int.MaxValue:N0} bytes.");
+        }
+
+        int pixelDataSize = (int)pixelDataSizeLong;
+        int fileSize = (int)fileSizeLong;
 
         // Get resolution from image metadata (BMP uses pixels per meter)
         int hResolution = 0;
@@ -194,9 +205,9 @@ public static class BmpFormatHelper
             }
         }
 
-        // Write BMP File Header (14 bytes) + Info Header V3 (40 bytes)
-        Span<byte> header = stackalloc byte[fileHeaderSize + infoHeaderSize];
-        header.Clear();
+        // Header + palette are written as one contiguous block.
+        byte[] block = new byte[pixelDataOffset];
+        Span<byte> header = block.AsSpan(0, fileHeaderSize + infoHeaderSize);
 
         // File Header
         header[0] = (byte)'B';
@@ -230,16 +241,14 @@ public static class BmpFormatHelper
             // bytes 50-53: important colors = 0 (already 0)
         }
 
-        stream.Write(header);
-
-        // Write color palette
+        // Colour palette, immediately following the headers.
+        Span<byte> palette = block.AsSpan(pixelDataOffset - colorPaletteSize, colorPaletteSize);
         if (compatible)
         {
-            stream.Write(HalftonePalette, 0, colorPaletteSize);
+            HalftonePalette.AsSpan(0, colorPaletteSize).CopyTo(palette);
         }
         else
         {
-            Span<byte> palette = stackalloc byte[colorPaletteSize];
             for (int i = 0; i < 256; i++)
             {
                 int idx = i * 4;
@@ -248,11 +257,18 @@ public static class BmpFormatHelper
                 palette[idx + 2] = (byte)i; // Red
                 palette[idx + 3] = 0;       // Reserved
             }
-
-            stream.Write(palette);
         }
 
-        // Extract color matrix weights for computing the grayscale value.
+        return block;
+    }
+
+    /// <summary>
+    /// Converts one row of pixels to 8bpp palette indices. The row buffer is the full BMP row
+    /// stride; bytes past the image width are row padding and are left at zero.
+    /// </summary>
+    private static void MapRowToPaletteIndices(
+        ReadOnlySpan<Rgba32> pixelRow, Span<byte> rowBuffer, ColorMatrix colorMatrix, bool compatible)
+    {
         // The color matrix is applied as:
         //   gray = R * M11 + G * M21 + B * M31 + A * M41 + M51 * 255
         // where R, G, B, A are byte values (0-255) and the result is clamped to [0, 255].
@@ -262,38 +278,110 @@ public static class BmpFormatHelper
         float aWeight = colorMatrix.M41;
         float translation = colorMatrix.M51 * 255f;
 
-        // Write pixel data (bottom-up row order, as required by BMP format)
-        using var rgba32Image = image.CloneAs<Rgba32>();
-        byte[] rowBuffer = new byte[rowStride]; // padding bytes are initialized to 0
-
-        for (int y = height - 1; y >= 0; y--)
+        for (int x = 0; x < pixelRow.Length; x++)
         {
-            var rowMemory = rgba32Image.DangerousGetPixelRowMemory(y);
-            var pixelRow = rowMemory.Span;
+            ref readonly var pixel = ref pixelRow[x];
+            float gray = (pixel.R * rWeight) + (pixel.G * gWeight) + (pixel.B * bWeight)
+                         + (pixel.A * aWeight) + translation;
 
-            for (int x = 0; x < width; x++)
-            {
-                ref var pixel = ref pixelRow[x];
-                float gray = (pixel.R * rWeight) + (pixel.G * gWeight) + (pixel.B * bWeight)
-                             + (pixel.A * aWeight) + translation;
+            byte grayByte = (byte)Math.Clamp((int)Math.Round(gray), 0, 255);
 
-                byte grayByte = (byte)Math.Clamp((int)Math.Round(gray), 0, 255);
+            // In Normal mode, the gray value IS the palette index (linear grayscale palette).
+            // In SystemDrawingCompatible mode, map through the halftone lookup table.
+            rowBuffer[x] = compatible ? GrayscaleToHalftoneIndex[grayByte] : grayByte;
+        }
+    }
 
-                // In Normal mode, the gray value IS the palette index (linear grayscale palette).
-                // In SystemDrawingCompatible mode, map through the halftone lookup table.
-                rowBuffer[x] = compatible ? GrayscaleToHalftoneIndex[grayByte] : grayByte;
-            }
+    /// <summary>
+    /// Writes the 8bpp pixel data in BMP bottom-up row order, converting one row at a time.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately avoids cloning the whole image to <see cref="Rgba32"/>: the extra memory
+    /// is O(width), not O(width * height), which matters for the large scans this export
+    /// exists to serve.
+    /// </remarks>
+    private sealed class PixelDataWriter : IImageVisitor, IImageVisitorAsync
+    {
+        private readonly Stream _stream;
+        private readonly ColorMatrix _colorMatrix;
+        private readonly bool _compatible;
+        private readonly int _rowStride;
 
-            // Clear any padding bytes beyond the image width
-            for (int p = width; p < rowStride; p++)
-            {
-                rowBuffer[p] = 0;
-            }
-
-            stream.Write(rowBuffer, 0, rowStride);
+        public PixelDataWriter(Stream stream, ColorMatrix colorMatrix, bool compatible, int rowStride)
+        {
+            _stream = stream;
+            _colorMatrix = colorMatrix;
+            _compatible = compatible;
+            _rowStride = rowStride;
         }
 
-        stream.Flush();
+        public void Visit<TPixel>(Image<TPixel> image)
+            where TPixel : unmanaged, IPixel<TPixel>
+        {
+            var configuration = image.GetConfiguration();
+            byte[] rowBuffer = new byte[_rowStride]; // padding bytes stay 0
+            Rgba32[] rgbaRow = new Rgba32[image.Width];
+
+            for (int y = image.Height - 1; y >= 0; y--)
+            {
+                ConvertRow(configuration, image, y, rgbaRow, rowBuffer);
+                _stream.Write(rowBuffer, 0, _rowStride);
+            }
+
+            _stream.Flush();
+        }
+
+        public async Task VisitAsync<TPixel>(Image<TPixel> image, CancellationToken cancellationToken)
+            where TPixel : unmanaged, IPixel<TPixel>
+        {
+            var configuration = image.GetConfiguration();
+            byte[] rowBuffer = new byte[_rowStride];
+            Rgba32[] rgbaRow = new Rgba32[image.Width];
+
+            for (int y = image.Height - 1; y >= 0; y--)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ConvertRow(configuration, image, y, rgbaRow, rowBuffer);
+                await _stream.WriteAsync(rowBuffer.AsMemory(0, _rowStride), cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            await _stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        private void ConvertRow<TPixel>(
+            Configuration configuration, Image<TPixel> image, int y, Rgba32[] rgbaRow, byte[] rowBuffer)
+            where TPixel : unmanaged, IPixel<TPixel>
+        {
+            var sourceRow = image.DangerousGetPixelRowMemory(y).Span;
+            PixelOperations<TPixel>.Instance.ToRgba32(configuration, sourceRow, rgbaRow);
+            MapRowToPaletteIndices(rgbaRow, rowBuffer, _colorMatrix, _compatible);
+        }
+    }
+
+    private static void Write8bppBmp(Image image, Stream stream, ColorMatrix colorMatrix, BmpIndexingMode indexingMode)
+    {
+        byte[] headerAndPalette = BuildHeaderAndPalette(image, indexingMode, out int rowStride);
+        stream.Write(headerAndPalette, 0, headerAndPalette.Length);
+
+        bool compatible = indexingMode == BmpIndexingMode.SystemDrawingCompatible;
+        image.AcceptVisitor(new PixelDataWriter(stream, colorMatrix, compatible, rowStride));
+    }
+
+    private static async Task Write8bppBmpAsync(
+        Image image,
+        Stream stream,
+        ColorMatrix colorMatrix,
+        BmpIndexingMode indexingMode,
+        CancellationToken cancellationToken)
+    {
+        byte[] headerAndPalette = BuildHeaderAndPalette(image, indexingMode, out int rowStride);
+        await stream.WriteAsync(headerAndPalette.AsMemory(), cancellationToken).ConfigureAwait(false);
+
+        bool compatible = indexingMode == BmpIndexingMode.SystemDrawingCompatible;
+        await image.AcceptVisitorAsync(
+                new PixelDataWriter(stream, colorMatrix, compatible, rowStride), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -387,14 +475,27 @@ public static class BmpFormatHelper
     /// <param name="stream">The stream to write the BMP data to.</param>
     /// <param name="colorMatrix">The color matrix used to transform pixel colors to a single grayscale value.</param>
     /// <param name="indexingMode">The palette and quantization mode to use. Defaults to <see cref="BmpIndexingMode.Normal"/>.</param>
-    public static async Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image, 
+    public static Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image,
         Stream stream, ColorMatrix colorMatrix, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
+        => ExportAs8bppGrayscaleBmpFormatAsync(image, stream, colorMatrix, indexingMode, CancellationToken.None);
+
+    /// <summary>
+    /// Asynchronously exports the image as an 8-bit-per-pixel grayscale BMP file to the specified
+    /// stream, applying the given color matrix to determine each pixel's palette index.
+    /// </summary>
+    /// <param name="image">The image to export.</param>
+    /// <param name="stream">The stream to write the BMP data to.</param>
+    /// <param name="colorMatrix">The color matrix used to transform pixel colors to a single grayscale value.</param>
+    /// <param name="indexingMode">The palette and quantization mode to use.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static async Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image,
+        Stream stream, ColorMatrix colorMatrix, BmpIndexingMode indexingMode,
+        CancellationToken cancellationToken)
     {
         ValidateExportArguments(image, stream, indexingMode);
-        using var ms = new MemoryStream();
-        Write8bppBmp(image, ms, colorMatrix, indexingMode);
-        ms.Position = 0;
-        await ms.CopyToAsync(stream);
+        await Write8bppBmpAsync(image, stream, colorMatrix, indexingMode, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -434,13 +535,101 @@ public static class BmpFormatHelper
     /// <param name="image">The image to export.</param>
     /// <param name="stream">The stream to write the BMP data to.</param>
     /// <param name="indexingMode">The palette and quantization mode to use. Defaults to <see cref="BmpIndexingMode.Normal"/>.</param>
-    public static async Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image, 
+    public static Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image,
         Stream stream, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
+        => ExportAs8bppGrayscaleBmpFormatAsync(image, stream, DefaultGrayscaleColorMatrix, indexingMode,
+            CancellationToken.None);
+
+    /// <summary>
+    /// Asynchronously exports the image as an 8-bit-per-pixel grayscale indexed BMP file to the
+    /// specified stream, using the default grayscale color matrix (R=0.3, G=0.59, B=0.11).
+    /// </summary>
+    /// <param name="image">The image to export.</param>
+    /// <param name="stream">The stream to write the BMP data to.</param>
+    /// <param name="indexingMode">The palette and quantization mode to use.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image,
+        Stream stream, BmpIndexingMode indexingMode, CancellationToken cancellationToken)
+        => ExportAs8bppGrayscaleBmpFormatAsync(image, stream, DefaultGrayscaleColorMatrix, indexingMode,
+            cancellationToken);
+
+    private static void ValidatePath(string path)
     {
-        ValidateExportArguments(image, stream, indexingMode);
-        using var ms = new MemoryStream();
-        Write8bppBmp(image, ms, DefaultGrayscaleColorMatrix, indexingMode);
-        ms.Position = 0;
-        await ms.CopyToAsync(stream);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentException("The path must not be null or whitespace.", nameof(path));
+        }
+    }
+
+    /// <summary>
+    /// Exports the image as an 8-bit-per-pixel grayscale indexed BMP file at the specified path,
+    /// using the default grayscale color matrix (R=0.3, G=0.59, B=0.11).
+    /// An existing file at that path is overwritten.
+    /// </summary>
+    /// <param name="image">The image to export.</param>
+    /// <param name="path">The file path to write the BMP data to.</param>
+    /// <param name="indexingMode">The palette and quantization mode to use. Defaults to <see cref="BmpIndexingMode.Normal"/>.</param>
+    public static void ExportAs8bppGrayscaleBmpFormat(this Image image,
+        string path, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
+        => ExportAs8bppGrayscaleBmpFormat(image, path, DefaultGrayscaleColorMatrix, indexingMode);
+
+    /// <summary>
+    /// Exports the image as an 8-bit-per-pixel grayscale BMP file at the specified path,
+    /// applying the given color matrix to determine each pixel's palette index.
+    /// An existing file at that path is overwritten.
+    /// </summary>
+    /// <param name="image">The image to export.</param>
+    /// <param name="path">The file path to write the BMP data to.</param>
+    /// <param name="colorMatrix">The color matrix used to transform pixel colors to a single grayscale value.</param>
+    /// <param name="indexingMode">The palette and quantization mode to use. Defaults to <see cref="BmpIndexingMode.Normal"/>.</param>
+    public static void ExportAs8bppGrayscaleBmpFormat(this Image image,
+        string path, ColorMatrix colorMatrix, BmpIndexingMode indexingMode = BmpIndexingMode.Normal)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ValidatePath(path);
+
+        using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+        ExportAs8bppGrayscaleBmpFormat(image, stream, colorMatrix, indexingMode);
+    }
+
+    /// <summary>
+    /// Asynchronously exports the image as an 8-bit-per-pixel grayscale indexed BMP file at the
+    /// specified path, using the default grayscale color matrix (R=0.3, G=0.59, B=0.11).
+    /// An existing file at that path is overwritten.
+    /// </summary>
+    /// <param name="image">The image to export.</param>
+    /// <param name="path">The file path to write the BMP data to.</param>
+    /// <param name="indexingMode">The palette and quantization mode to use. Defaults to <see cref="BmpIndexingMode.Normal"/>.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image,
+        string path, BmpIndexingMode indexingMode = BmpIndexingMode.Normal,
+        CancellationToken cancellationToken = default)
+        => ExportAs8bppGrayscaleBmpFormatAsync(image, path, DefaultGrayscaleColorMatrix, indexingMode,
+            cancellationToken);
+
+    /// <summary>
+    /// Asynchronously exports the image as an 8-bit-per-pixel grayscale BMP file at the specified
+    /// path, applying the given color matrix to determine each pixel's palette index.
+    /// An existing file at that path is overwritten.
+    /// </summary>
+    /// <param name="image">The image to export.</param>
+    /// <param name="path">The file path to write the BMP data to.</param>
+    /// <param name="colorMatrix">The color matrix used to transform pixel colors to a single grayscale value.</param>
+    /// <param name="indexingMode">The palette and quantization mode to use. Defaults to <see cref="BmpIndexingMode.Normal"/>.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static async Task ExportAs8bppGrayscaleBmpFormatAsync(this Image image,
+        string path, ColorMatrix colorMatrix, BmpIndexingMode indexingMode = BmpIndexingMode.Normal,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ValidatePath(path);
+
+        await using var stream = new FileStream(
+            path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+        await ExportAs8bppGrayscaleBmpFormatAsync(image, stream, colorMatrix, indexingMode, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

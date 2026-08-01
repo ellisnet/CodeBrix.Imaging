@@ -412,8 +412,8 @@ public abstract partial class Image
     /// <para>
     /// Note also that if you have a <see cref="Memory{T}"/> or an array (which can be cast to <see cref="Memory{T}"/>) of
     /// either <see cref="byte"/> or <typeparamref name="TPixel"/> values, it is highly recommended to use one of the other
-    /// available overloads of this method instead (such as <see cref="WrapMemory{TPixel}(Configuration, Memory{byte}, int, int)"/>
-    /// or <see cref="WrapMemory{TPixel}(Configuration, Memory{TPixel}, int, int)"/>, to make the resulting code less error
+    /// available overloads of this method instead (such as <see cref="WrapMemory{TPixel}(Configuration, Memory{byte}, int, int, IImageFormat)"/>
+    /// or <see cref="WrapMemory{TPixel}(Configuration, Memory{TPixel}, int, int, IImageFormat)"/>, to make the resulting code less error
     /// prone and avoid having to pin the underlying memory buffer in use. This method is primarily meant to be used when
     /// doing interop or working with buffers that are located in unmanaged memory.
     /// </para>
@@ -462,8 +462,8 @@ public abstract partial class Image
     /// <para>
     /// Note also that if you have a <see cref="Memory{T}"/> or an array (which can be cast to <see cref="Memory{T}"/>) of
     /// either <see cref="byte"/> or <typeparamref name="TPixel"/> values, it is highly recommended to use one of the other
-    /// available overloads of this method instead (such as <see cref="WrapMemory{TPixel}(Configuration, Memory{byte}, int, int)"/>
-    /// or <see cref="WrapMemory{TPixel}(Configuration, Memory{TPixel}, int, int)"/>, to make the resulting code less error
+    /// available overloads of this method instead (such as <see cref="WrapMemory{TPixel}(Configuration, Memory{byte}, int, int, IImageFormat)"/>
+    /// or <see cref="WrapMemory{TPixel}(Configuration, Memory{TPixel}, int, int, IImageFormat)"/>, to make the resulting code less error
     /// prone and avoid having to pin the underlying memory buffer in use. This method is primarily meant to be used when
     /// doing interop or working with buffers that are located in unmanaged memory.
     /// </para>
@@ -502,8 +502,8 @@ public abstract partial class Image
     /// <para>
     /// Note also that if you have a <see cref="Memory{T}"/> or an array (which can be cast to <see cref="Memory{T}"/>) of
     /// either <see cref="byte"/> or <typeparamref name="TPixel"/> values, it is highly recommended to use one of the other
-    /// available overloads of this method instead (such as <see cref="WrapMemory{TPixel}(Configuration, Memory{byte}, int, int)"/>
-    /// or <see cref="WrapMemory{TPixel}(Configuration, Memory{TPixel}, int, int)"/>, to make the resulting code less error
+    /// available overloads of this method instead (such as <see cref="WrapMemory{TPixel}(Configuration, Memory{byte}, int, int, IImageFormat)"/>
+    /// or <see cref="WrapMemory{TPixel}(Configuration, Memory{TPixel}, int, int, IImageFormat)"/>, to make the resulting code less error
     /// prone and avoid having to pin the underlying memory buffer in use. This method is primarily meant to be used when
     /// doing interop or working with buffers that are located in unmanaged memory.
     /// </para>
