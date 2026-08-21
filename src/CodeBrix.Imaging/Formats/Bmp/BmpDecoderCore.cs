@@ -1205,8 +1205,13 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     {
         Span<byte> buffer = stackalloc byte[BmpInfoHeader.MaxHeaderSize];
 
-        // Read the header size.
-        this.stream.Read(buffer, 0, BmpInfoHeader.HeaderSizeSize);
+        // Read the header size. BufferedReadStream.Read only comes up short at end of stream, so a
+        // partial read means the file is truncated - report that rather than parsing whatever was
+        // already in the destination buffer.
+        if (this.stream.Read(buffer, 0, BmpInfoHeader.HeaderSizeSize) != BmpInfoHeader.HeaderSizeSize)
+        {
+            BmpThrowHelper.ThrowInvalidImageContentException("Not enough data to read the BMP info header size.");
+        }
 
         var headerSize = BinaryPrimitives.ReadInt32LittleEndian(buffer);
         if (headerSize < BmpInfoHeader.CoreSize || headerSize > BmpInfoHeader.MaxHeaderSize)
@@ -1215,7 +1220,11 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
         }
 
         // Read the rest of the header.
-        this.stream.Read(buffer, BmpInfoHeader.HeaderSizeSize, headerSize - BmpInfoHeader.HeaderSizeSize);
+        var remainingHeaderSize = headerSize - BmpInfoHeader.HeaderSizeSize;
+        if (this.stream.Read(buffer, BmpInfoHeader.HeaderSizeSize, remainingHeaderSize) != remainingHeaderSize)
+        {
+            BmpThrowHelper.ThrowInvalidImageContentException("Not enough data to read the BMP info header.");
+        }
 
         var infoHeaderType = BmpInfoHeaderType.WinVersion2;
         if (headerSize == BmpInfoHeader.CoreSize)
@@ -1318,7 +1327,10 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
     private void ReadFileHeader()
     {
         Span<byte> buffer = stackalloc byte[BmpFileHeader.Size];
-        this.stream.Read(buffer, 0, BmpFileHeader.Size);
+        if (this.stream.Read(buffer, 0, BmpFileHeader.Size) != BmpFileHeader.Size)
+        {
+            BmpThrowHelper.ThrowInvalidImageContentException("Not enough data to read the BMP file header.");
+        }
 
         var fileTypeMarker = BinaryPrimitives.ReadInt16LittleEndian(buffer);
         switch (fileTypeMarker)
@@ -1332,7 +1344,11 @@ internal sealed class BmpDecoderCore : IImageDecoderInternals
 
                 // Because we only decode the first bitmap in the array, the array header will be ignored.
                 // The bitmap file header of the first image follows the array header.
-                this.stream.Read(buffer, 0, BmpFileHeader.Size);
+                if (this.stream.Read(buffer, 0, BmpFileHeader.Size) != BmpFileHeader.Size)
+                {
+                    BmpThrowHelper.ThrowInvalidImageContentException("Not enough data to read the BMP file header inside a BitmapArray file.");
+                }
+
                 this.fileHeader = BmpFileHeader.Parse(buffer);
                 if (this.fileHeader.Type != BmpConstants.TypeMarkers.Bitmap)
                 {

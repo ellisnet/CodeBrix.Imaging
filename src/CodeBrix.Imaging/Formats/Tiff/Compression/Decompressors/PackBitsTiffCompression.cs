@@ -39,9 +39,16 @@ internal sealed class PackBitsTiffCompression : TiffBaseDecompressor
             this.compressedDataMemory = this.Allocator.Allocate<byte>(byteCount);
         }
 
-        var compressedData = this.compressedDataMemory.GetSpan();
+        // The pooled buffer can be larger than the requested byteCount, so bound every read by
+        // byteCount rather than by the span length. Otherwise a malformed run reads stale bytes
+        // left over from a previous use of the pooled buffer and decodes them into the image.
+        var compressedData = this.compressedDataMemory.GetSpan().Slice(0, byteCount);
 
-        stream.Read(compressedData, 0, byteCount);
+        if (stream.Read(compressedData, 0, byteCount) != byteCount)
+        {
+            TiffThrowHelper.ThrowImageFormatException("Tiff packbits compression error: not enough data.");
+        }
+
         var compressedOffset = 0;
         var decompressedOffset = 0;
 
@@ -54,10 +61,12 @@ internal sealed class PackBitsTiffCompression : TiffBaseDecompressor
                 var literalOffset = compressedOffset + 1;
                 var literalLength = compressedData[compressedOffset] + 1;
 
-                if ((literalOffset + literalLength) > compressedData.Length)
+                if ((literalOffset + literalLength) > byteCount)
                 {
                     TiffThrowHelper.ThrowImageFormatException("Tiff packbits compression error: not enough data.");
                 }
+
+                CheckDestinationCapacity(buffer, decompressedOffset, literalLength);
 
                 compressedData.Slice(literalOffset, literalLength).CopyTo(buffer.Slice(decompressedOffset));
 
@@ -70,14 +79,36 @@ internal sealed class PackBitsTiffCompression : TiffBaseDecompressor
             }
             else
             {
+                // A repeat run is a header byte plus the value byte it repeats; both must be
+                // present in the compressed data actually supplied.
+                if (compressedOffset + 1 >= byteCount)
+                {
+                    TiffThrowHelper.ThrowImageFormatException("Tiff packbits compression error: not enough data.");
+                }
+
                 var repeatData = compressedData[compressedOffset + 1];
                 var repeatLength = 257 - headerByte;
+
+                CheckDestinationCapacity(buffer, decompressedOffset, repeatLength);
 
                 ArrayCopyRepeat(repeatData, buffer, decompressedOffset, repeatLength);
 
                 compressedOffset += 2;
                 decompressedOffset += repeatLength;
             }
+        }
+    }
+
+    /// <summary>
+    /// Ensures a decoded run fits the destination strip buffer. A hostile TIFF can declare runs
+    /// whose total length exceeds the buffer sized from the image dimensions; without this check
+    /// the copy below runs off the end of the buffer.
+    /// </summary>
+    private static void CheckDestinationCapacity(Span<byte> buffer, int offset, int length)
+    {
+        if (offset < 0 || (long)offset + length > buffer.Length)
+        {
+            TiffThrowHelper.ThrowImageFormatException("Tiff packbits compression error: decoded data exceeds the strip buffer size.");
         }
     }
 

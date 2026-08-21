@@ -1290,7 +1290,13 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
                     JpegThrowHelper.ThrowInvalidImageContentException($"Bad huffman table index: {tableIndex}.");
                 }
 
-                stream.Read(huffmanLegthsSpan, 1, 16);
+                // The destination is a pooled buffer that is not cleared on rent, so ignoring a
+                // short read would build the table from bytes left behind by a previously decoded
+                // image. BufferedReadStream.Read only returns short at end of stream.
+                if (stream.Read(huffmanLegthsSpan, 1, 16) != 16)
+                {
+                    JpegThrowHelper.ThrowInvalidImageContentException("Not enough data to read the huffman code lengths.");
+                }
 
                 var codeLengthSum = 0;
                 for (var j = 1; j < 17; j++)
@@ -1305,7 +1311,10 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
                     JpegThrowHelper.ThrowInvalidImageContentException("Huffman table has excessive length.");
                 }
 
-                stream.Read(huffmanValuesSpan, 0, codeLengthSum);
+                if (stream.Read(huffmanValuesSpan, 0, codeLengthSum) != codeLengthSum)
+                {
+                    JpegThrowHelper.ThrowInvalidImageContentException("Not enough data to read the huffman code values.");
+                }
 
                 i += 17 + codeLengthSum;
 

@@ -184,7 +184,10 @@ internal sealed class TiffLzwDecoder
 
     private void AddStringToTable(LzwString lzwString)
     {
-        if (this.tableLength > this.table.Length)
+        // Off-by-one guard: the write below is at index tableLength, so the table is already full
+        // once tableLength equals its capacity. A ">" test here let a crafted code stream that
+        // never emits a clear code write one entry past the end of the array.
+        if (this.tableLength >= this.table.Length)
         {
             TiffThrowHelper.ThrowImageFormatException($"TIFF LZW with more than {MaxBits} bits per code encountered (table overflow)");
         }

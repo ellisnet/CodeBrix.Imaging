@@ -9,6 +9,21 @@ internal static class BitWriterUtils
 {
     public static void WriteBits(Span<byte> buffer, int pos, uint count, byte value)
     {
+        if (count == 0)
+        {
+            return;
+        }
+
+        // Guard against writing past the destination buffer. A malformed / hostile CCITT fax
+        // (T4 / Modified Huffman) TIFF can declare pixel runs whose accumulated length exceeds the
+        // decoded strip buffer; without this check the loop below indexes out of range. Surface it
+        // as a catchable ImageFormatException instead of leaking an IndexOutOfRangeException.
+        // See GHSA-jj3q-cwqj-842r.
+        if (pos < 0 || (long)pos + count > (long)buffer.Length * 8)
+        {
+            TiffThrowHelper.ThrowImageFormatException("ccitt fax compression parsing error, decoded run exceeds the strip buffer size");
+        }
+
         var bitPos = pos % 8;
         var bufferPos = pos / 8;
         var startIdx = bufferPos + bitPos;

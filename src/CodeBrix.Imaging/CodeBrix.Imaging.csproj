@@ -75,6 +75,16 @@
     <DefineConstants>$(DefineConstants);NULLABLE_ATTRIBUTES;SUPPORTS_ENCODING_STRING;SUPPORTS_HASHCODE;SUPPORTS_MATHF;SUPPORTS_CODECOVERAGE</DefineConstants>
   </PropertyGroup>
 
+  <!--
+    Expose internal types to the test project so security-sensitive helpers
+    (e.g. BitWriterUtils and the format decoders/decompressors) can be tested
+    directly, without reflection. The SDK turns this item into an
+    [assembly: InternalsVisibleTo(...)] attribute at build time.
+  -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="CodeBrix.Imaging.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="..\..\icon-codebrix-128.png" Pack="true" PackagePath="" />
     <None Include="..\..\README.md" Pack="true" PackagePath="" />

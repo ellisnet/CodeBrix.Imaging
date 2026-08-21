@@ -70,6 +70,14 @@ public class LzwString
             return 0;
         }
 
+        // The run is written at buffer[offset + i], so the destination check has to account for
+        // the offset as well as the length - comparing the length alone lets a run starting near
+        // the tail of the buffer overrun it.
+        if (offset < 0 || (long)offset + this.Length > buffer.Length)
+        {
+            TiffThrowHelper.ThrowImageFormatException("Error reading lzw compressed stream. Either pixel buffer to write to is to small or code length is invalid!");
+        }
+
         if (this.Length == 1)
         {
             buffer[offset] = this.value;
@@ -78,10 +86,6 @@ public class LzwString
 
         var e = this;
         var endIdx = this.Length - 1;
-        if (endIdx >= buffer.Length)
-        {
-            TiffThrowHelper.ThrowImageFormatException("Error reading lzw compressed stream. Either pixel buffer to write to is to small or code length is invalid!");
-        }
 
         for (var i = endIdx; i >= 0; i--)
         {

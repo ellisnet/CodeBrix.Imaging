@@ -5,6 +5,8 @@ using CodeBrix.Imaging.Formats.Jpeg;
 using CodeBrix.Imaging.Formats.Png;
 using CodeBrix.Imaging.Formats.Tga;
 using CodeBrix.Imaging.Formats.Tiff;
+using CodeBrix.Imaging.Formats.Tiff.Compression;
+using CodeBrix.Imaging.Formats.Tiff.Constants;
 using CodeBrix.Imaging.Formats.Webp;
 using CodeBrix.Imaging.PixelFormats;
 using CodeBrix.Imaging.Tests.Helpers;
@@ -1582,6 +1584,211 @@ public class ImageSecurityTests
         var pixel = image[width - 1, height - 1];
         Assert.Equal(new Rgba32(42, 42, 42, 255), pixel);
         _output.WriteLine($"Max valid index ({width - 1}, {height - 1}) accessed successfully");
+    }
+
+    #endregion
+
+    #region CCITT Fax (T4 / Modified Huffman) Out-of-bounds Write Guard (GHSA-jj3q-cwqj-842r)
+
+    // A hostile CCITT fax TIFF can declare pixel runs whose accumulated length exceeds the decoded
+    // strip buffer. Every fax write funnels through BitWriterUtils.WriteBits, so a single bounds
+    // check there neutralizes the overflow for the T4 and Modified Huffman decompressors alike.
+    // These tests exercise that guard directly (via InternalsVisibleTo) and confirm the happy path
+    // still fills the buffer exactly.
+
+    [Fact]
+    public void BitWriterUtils_WriteBits_FillingBufferExactly_DoesNotThrow()
+    {
+        // Arrange - 2 bytes == 16 bits of capacity.
+        var buffer = new byte[2];
+
+        // Act - write 16 one-bits, exactly filling the buffer.
+        BitWriterUtils.WriteBits(buffer, 0, 16, 1);
+
+        // Assert - every bit set, no overflow.
+        Assert.Equal(0xFF, buffer[0]);
+        Assert.Equal(0xFF, buffer[1]);
+        _output.WriteLine("WriteBits filled the buffer exactly without throwing");
+    }
+
+    [Fact]
+    public void BitWriterUtils_WriteBits_OnePastCapacity_ThrowsImageFormatException()
+    {
+        // Arrange - 1 byte == 8 bits of capacity.
+        var buffer = new byte[1];
+
+        // Act & Assert - asking for 9 bits must be rejected as malformed input, NOT leak an
+        // IndexOutOfRangeException (the pre-fix behavior) or corrupt adjacent memory.
+        var ex = Assert.Throws<ImageFormatException>(() => BitWriterUtils.WriteBits(buffer, 0, 9, 1));
+        Assert.IsNotType<IndexOutOfRangeException>(ex);
+        _output.WriteLine($"Over-length run rejected: {ex.Message}");
+    }
+
+    [Fact]
+    public void BitWriterUtils_WriteBits_RunStartingInsideButEndingPastCapacity_ThrowsImageFormatException()
+    {
+        // Arrange - start writing near the end so the overflow happens mid-run.
+        var buffer = new byte[2]; // 16 bits
+
+        // Act & Assert - start at bit 12, write 8 bits -> ends at bit 20, 4 past capacity.
+        Assert.Throws<ImageFormatException>(() => BitWriterUtils.WriteBits(buffer, 12, 8, 1));
+        _output.WriteLine("Run overrunning the tail of the buffer rejected");
+    }
+
+    [Fact]
+    public void BitWriterUtils_WriteBits_ZeroCount_IsNoOp()
+    {
+        // Arrange
+        var buffer = new byte[1];
+
+        // Act - a zero-length run touches nothing, even at the very end of the buffer.
+        BitWriterUtils.WriteBits(buffer, 8, 0, 1);
+
+        // Assert
+        Assert.Equal(0, buffer[0]);
+        _output.WriteLine("Zero-length run was a no-op");
+    }
+
+    [Theory]
+    [InlineData(TiffCompression.Ccitt1D)]       // Modified Huffman
+    [InlineData(TiffCompression.CcittGroup3Fax)] // T4 (Group 3 1D)
+    public void CcittFax_ValidBilevelImage_RoundTrips(TiffCompression compression)
+    {
+        // Arrange - a small bilevel pattern. Valid fax data fills the strip buffer exactly, so the
+        // new bounds guard must not disturb legitimate decoding.
+        using var source = new Image<Rgba32>(37, 21);
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < source.Width; x++)
+            {
+                source[x, y] = ((x + y) % 3 == 0) ? new Rgba32(0, 0, 0, 255) : new Rgba32(255, 255, 255, 255);
+            }
+        }
+
+        var encoder = new TiffEncoder { Compression = compression, BitsPerPixel = TiffBitsPerPixel.Bit1 };
+
+        // Act
+        using var ms = new MemoryStream();
+        source.Save(ms, encoder);
+        ms.Position = 0;
+        using var decoded = Image.Load<Rgba32>(ms);
+
+        // Assert - dimensions preserved and the bilevel content survives the round trip.
+        Assert.Equal(source.Width, decoded.Width);
+        Assert.Equal(source.Height, decoded.Height);
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < source.Width; x++)
+            {
+                var expectedBlack = source[x, y].R == 0;
+                var actualBlack = decoded[x, y].R < 128;
+                Assert.Equal(expectedBlack, actualBlack);
+            }
+        }
+
+        _output.WriteLine($"{compression} bilevel image round-tripped ({ms.Length} bytes) with the OOB guard in place");
+    }
+
+    #endregion
+
+    #region Short-read handling in header parsing (stale buffer reuse)
+
+    // These decoders read fixed-size header fields with stream.Read but ignored the returned
+    // count. BufferedReadStream.Read only returns short at genuine EOF, so a truncated file left
+    // the tail of the destination holding whatever was there before - for the JPEG Huffman table
+    // that is a pooled buffer carrying bytes from a previously decoded image.
+
+    [Fact]
+    public void Load_WithJpegTruncatedInsideHuffmanTable_ThrowsImageFormatException()
+    {
+        // Arrange - encode a real JPEG, then cut the file a few bytes into its first DHT segment
+        // so the code-lengths / code-values reads run past the end of the data.
+        var encoded = EncodeSample(new JpegEncoder());
+        var dhtIndex = FindJpegMarker(encoded, 0xC4);
+        Assert.True(dhtIndex > 0, "Expected the encoded JPEG to contain a DHT (0xFFC4) marker.");
+
+        var truncated = new byte[dhtIndex + 8];
+        Array.Copy(encoded, truncated, truncated.Length);
+
+        // Act & Assert - a truncated Huffman table must be reported, not silently built from
+        // whatever the pooled buffer happened to contain.
+        var ex = Assert.ThrowsAny<Exception>(() => Image.Load(truncated));
+        _output.WriteLine($"JPEG truncated inside DHT threw {ex.GetType().Name}: {ex.Message}");
+        Assert.IsAssignableFrom<ImageFormatException>(ex);
+    }
+
+    [Theory]
+    [InlineData(2)]  // partway through the 14 byte file header
+    [InlineData(10)] // file header incomplete
+    [InlineData(16)] // file header complete, info header truncated
+    [InlineData(20)] // info header size read, remainder truncated
+    public void Load_WithBmpTruncatedInsideHeaders_ThrowsImageFormatException(int keepBytes)
+    {
+        // Arrange
+        var encoded = EncodeSample(new BmpEncoder());
+        Assert.True(encoded.Length > keepBytes);
+
+        var truncated = new byte[keepBytes];
+        Array.Copy(encoded, truncated, keepBytes);
+
+        // Act & Assert - every truncation point inside the headers must surface as a format error.
+        var ex = Assert.ThrowsAny<Exception>(() => Image.Load(truncated));
+        _output.WriteLine($"BMP truncated to {keepBytes} bytes threw {ex.GetType().Name}");
+        Assert.IsAssignableFrom<ImageFormatException>(ex);
+    }
+
+    [Fact]
+    public void Load_JpegAfterDecodingAnotherImage_DoesNotInheritPooledBufferContents()
+    {
+        // Arrange - decode a valid JPEG first so the shared Huffman-table buffer is returned to
+        // the pool holding real data, then feed a JPEG truncated inside its DHT. If the short
+        // read is ignored, the second decode builds its table from the first image's bytes.
+        var valid = EncodeSample(new JpegEncoder());
+        using (var warmup = Image.Load<Rgba32>(valid))
+        {
+            Assert.Equal(120, warmup.Width);
+        }
+
+        var dhtIndex = FindJpegMarker(valid, 0xC4);
+        var truncated = new byte[dhtIndex + 8];
+        Array.Copy(valid, truncated, truncated.Length);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAny<Exception>(() => Image.Load(truncated));
+        _output.WriteLine($"Second (truncated) JPEG decode threw {ex.GetType().Name}");
+        Assert.IsAssignableFrom<ImageFormatException>(ex);
+    }
+
+    private static byte[] EncodeSample(IImageEncoder encoder)
+    {
+        using var source = new Image<Rgba32>(120, 90);
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < source.Width; x++)
+            {
+                source[x, y] = new Rgba32((byte)(x * 2 % 256), (byte)(y * 3 % 256), (byte)((x + y) % 256), 255);
+            }
+        }
+
+        using var ms = new MemoryStream();
+        source.Save(ms, encoder);
+        return ms.ToArray();
+    }
+
+    /// <summary>
+    /// Returns the index of the first byte of the payload of the given JPEG marker, or -1.
+    /// </summary>
+    private static int FindJpegMarker(byte[] data, byte marker)
+    {
+        for (var i = 0; i < data.Length - 1; i++)
+        {
+            if (data[i] == 0xFF && data[i + 1] == marker)
+            {
+                return i + 2;
+            }
+        }
+
+        return -1;
     }
 
     #endregion

@@ -53,6 +53,14 @@ internal sealed class ModifiedHuffmanTiffCompression : TiffBaseDecompressor
 
             if (bitReader.RunLength > 0)
             {
+                // Validate the run stays within the current row before writing it. Doing the width
+                // check up-front (rather than after the write) prevents an oversized run from
+                // overflowing the strip buffer. See GHSA-jj3q-cwqj-842r.
+                if (pixelsWritten + bitReader.RunLength > this.Width)
+                {
+                    TiffThrowHelper.ThrowImageFormatException("ccitt compression parsing error, decoded more pixels then image width");
+                }
+
                 if (bitReader.IsWhiteRun)
                 {
                     BitWriterUtils.WriteBits(buffer, (int)bitsWritten, bitReader.RunLength, this.whiteValue);
@@ -78,11 +86,6 @@ internal sealed class ModifiedHuffmanTiffCompression : TiffBaseDecompressor
                     BitWriterUtils.WriteBits(buffer, (int)bitsWritten, pad, 0);
                     bitsWritten += pad;
                 }
-            }
-
-            if (pixelsWritten > this.Width)
-            {
-                TiffThrowHelper.ThrowImageFormatException("ccitt compression parsing error, decoded more pixels then image width");
             }
         }
     }
