@@ -48,8 +48,9 @@ IPTC, XMP), PixelFormats (PixelBlenders, PixelImplementations, Utils),
 Primitives, Processing (Extensions, Processors).
 
 The solution's "Solution Items" folder carries .gitignore, AGENT-README.txt,
-icon-codebrix-128.png, LICENSE, README.md and THIRD-PARTY-NOTICES.txt; the
-"Tests" folder carries the test project.
+EXTRAS-README.txt, global.json, icon-codebrix-128.png, LICENSE,
+MAINTAINER-README.txt, README-INDEX.txt, README.md and
+THIRD-PARTY-NOTICES.txt; the "Tests" folder carries the test project.
 
 BUILDING
 ========

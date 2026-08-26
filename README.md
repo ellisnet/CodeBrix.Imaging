@@ -1,6 +1,6 @@
 # CodeBrix.Imaging
 
-A fully managed, cross-platform 2D image processing and font handling library for .NET.
+A fully managed, cross-platform 2D image processing, font handling and text rendering library for .NET.
 
 CodeBrix.Imaging has no dependencies other than .NET, and is provided as a .NET 10 library and associated `CodeBrix.Imaging.ApacheLicenseForever` NuGet package.
 
@@ -10,19 +10,36 @@ Please update your C#/.NET code and projects to the latest LTS version of Micros
 
 CodeBrix.Imaging is a fork of the code of the open source SixLabors.ImageSharp and SixLabors.Fonts libraries - see below for licensing details.
 
+## Installation
+
+```
+dotnet add package CodeBrix.Imaging.ApacheLicenseForever
+```
+
+Note that the NuGet package ID and the namespace are different - there is no package named plain `CodeBrix.Imaging`:
+
+* NuGet package ID: `CodeBrix.Imaging.ApacheLicenseForever`
+* Root namespace: `CodeBrix.Imaging` - i.e. `using CodeBrix.Imaging;`
+
+The package has no NuGet dependencies, no native libraries and no platform-specific packages; it depends only on the .NET base class library. XML documentation (IntelliSense) ships alongside the assembly.
+
 ## CodeBrix.Imaging supports:
 
 * Image formats: BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, WebP
 * Image processing: resizing, cropping, rotating, flipping, and more
 * Filters: brightness, contrast, saturation, hue, grayscale, sepia, and more
 * Effects: Gaussian blur, Bokeh blur, edge detection, and more
-* Drawing and text rendering
-* Font handling (TrueType fonts)
+* Text rendering directly onto images, with `DrawText` and `MeasureText`
+* Font handling: TrueType and OpenType/CFF fonts, variable fonts, colour (COLR/CPAL) fonts, and system fonts
+* Image compositing (drawing one image onto another)
 * Color spaces and pixel formats
 * Image metadata (EXIF, IPTC, XMP)
 * Quantization and dithering
+* Animated GIF frames
 * 8bpp grayscale BMP export (with optional System.Drawing-compatible mode)
 * Many more...
+
+CodeBrix.Imaging is a raster imaging and text rasterization library; it does not provide vector shape drawing (there are no `DrawLine`/`DrawPolygon`/`FillPath`/`Brush`/`Pen` APIs), SVG or PDF rendering, or GPU-accelerated processing. Compositing and text are the ways to draw onto an image.
 
 ## Sample Code
 
@@ -78,6 +95,24 @@ image.Mutate(x => x.Crop(new Rectangle(100, 100, 500, 400)));
 image.Save("photo-cropped.jpg");
 ```
 
+### Draw Text on an Image
+
+```csharp
+using CodeBrix.Imaging;
+using CodeBrix.Imaging.Fonts;
+using CodeBrix.Imaging.Fonts.Rendering;
+
+using var image = Image.Load("photo.jpg");
+
+var font = SystemFonts.CreateFont("Arial", 36f);
+
+image.DrawText("Hello, world!", font, Color.White, 10f, 10f);
+
+image.Save("photo-with-text.jpg");
+```
+
+Note that `DrawText` is an extension method on the image itself - not on the `Mutate()` processing context - and that there is no `CodeBrix.Imaging.Drawing` namespace.
+
 ### Export as 8bpp Grayscale BMP
 
 ```csharp
@@ -89,7 +124,12 @@ await using var fs = new FileStream("grayscale-8bpp.bmp", FileMode.Create);
 await image.ExportAs8bppGrayscaleBmpFormatAsync(fs);
 ```
 
-Note that additional sample code and usage examples are available in the `CodeBrix.Imaging.Tests` project.
+## Documentation
+
+The NuGet package includes `AGENT-README.txt`, a complete API reference and usage guide written for AI coding agents - point your agent at that file when it is writing code against this library.
+
+Additional sample code and usage examples are available in the `CodeBrix.Imaging.Tests` project:
+https://github.com/ellisnet/CodeBrix.Imaging/tree/main/tests/CodeBrix.Imaging.Tests
 
 ## License
 
