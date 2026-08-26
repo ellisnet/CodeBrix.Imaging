@@ -35,8 +35,13 @@ wrong is the single most common failure mode:
   * Text rendering lives in CodeBrix.Imaging.Fonts.Rendering, and DrawText is
     an extension method on Image / Image<TPixel> — NOT on the Mutate() context.
     See "TEXT AND FONT RENDERING" below.
-  * There is NO `CodeBrix.Imaging.Drawing` namespace. If you have seen that
-    using directive in older documentation, it is wrong and will not compile.
+  * This package has NO `CodeBrix.Imaging.Drawing` namespace. That namespace
+    is real, but it belongs to a SEPARATE NuGet package: reference
+    CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed) or
+    CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully managed) to
+    get it. Without one of those referenced, `using CodeBrix.Imaging.Drawing;`
+    does not compile. It is a drawing-session API over a canvas, NOT a
+    Mutate() shape API on an image -- see "WHAT THIS PACKAGE DOES NOT DO".
 
 Source repository: https://github.com/ellisnet/CodeBrix.Imaging
 
@@ -1321,7 +1326,9 @@ READ THIS FIRST. Two rules decide whether your code compiles:
   1. The using directives are
          using CodeBrix.Imaging.Fonts;            // Font, SystemFonts, TextOptions
          using CodeBrix.Imaging.Fonts.Rendering;  // DrawText, MeasureText
-     There is NO `CodeBrix.Imaging.Drawing` namespace.
+     Text rendering is NOT under a `CodeBrix.Imaging.Drawing` namespace.
+     That namespace is not part of this package; it ships in the separate
+     CodeBrix.Imaging.Drawing NuGet packages and does not do text rendering.
 
   2. DrawText is an extension method ON THE IMAGE, not on the Mutate()
      processing context:
@@ -2548,9 +2555,11 @@ PERFORMANCE TIPS
 
 COMMON PITFALLS TO AVOID
 ========================
- 1. DO NOT write `using CodeBrix.Imaging.Drawing;`. That namespace does NOT
-    exist. Text rendering is `using CodeBrix.Imaging.Fonts;` plus
-    `using CodeBrix.Imaging.Fonts.Rendering;`.
+ 1. DO NOT write `using CodeBrix.Imaging.Drawing;` for text rendering. That
+    namespace is not part of THIS package and the using directive does not
+    compile unless the consuming project also references one of the separate
+    CodeBrix.Imaging.Drawing packages (see pitfall 21). Text rendering here is
+    `using CodeBrix.Imaging.Fonts;` plus `using CodeBrix.Imaging.Fonts.Rendering;`.
 
  2. DO NOT call DrawText inside Mutate(). `image.Mutate(x => x.DrawText(...))`
     does not compile — DrawText is an extension on Image / Image<TPixel>:
@@ -2625,6 +2634,19 @@ COMMON PITFALLS TO AVOID
     first, and set `GifDecoder.MaxFrames` / `FrameDecodingMode.First` for
     multi-frame formats.
 
+21. DO NOT try to draw shapes or freehand strokes with this package. There is
+    no DrawLine / DrawPolygon / FillPath / Brush / Pen here, and adding a
+    `using CodeBrix.Imaging.Drawing;` does not create one. That namespace
+    ships in a separate NuGet package, and the consuming project must
+    reference it: CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-
+    backed) or CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully
+    managed, no native dependency). Its entry point is DrawingSession, its
+    model types live in CodeBrix.Imaging.Drawing.Models, and the bridge back
+    to this package is `using CodeBrix.Imaging.Drawing.Extensions;` plus
+    session.ExportImagingImage(), which returns an Image<Rgba32>. Both
+    packages carry all three namespaces. Read that package's own
+    AGENT-README.txt before using it.
+
 ================================================================================
 
 WHAT THIS PACKAGE DOES NOT DO
@@ -2633,7 +2655,16 @@ It is a raster imaging + text-rasterization library. It does NOT provide:
 
   - Vector shape drawing. There are no DrawLine / DrawPolygon / FillPath /
     Brush / Pen APIs. Compositing (DrawImage) and text (DrawText) are the only
-    ways to draw onto an image.
+    ways to draw onto an image IN THIS PACKAGE.
+    For shapes and freehand strokes, the CodeBrix family provides a separate
+    package -- CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed)
+    or CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully managed,
+    no native dependency). Reference one of them, then use its DrawingSession:
+    DrawLine, DrawArrow, DrawCircle, DrawEllipse, DrawRectangle and
+    DrawPolyline draw onto a calibrated canvas, and ExportImagingImage()
+    hands the result back to this package as an Image<Rgba32>. Read that
+    package's own AGENT-README.txt; it is a session-based API, not a set of
+    Mutate() extensions.
   - SVG parsing or rendering.
   - PDF reading, writing or rendering.
   - RAW camera formats (.CR2, .NEF, .ARW, .DNG) or HEIF/HEIC/AVIF.

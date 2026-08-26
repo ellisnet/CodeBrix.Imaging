@@ -257,7 +257,18 @@ NOTES
     Text rendering in particular is a CodeBrix addition — upstream splits it
     into a separate drawing package. Keep AGENT-README.txt loudly correct
     about the namespaces, because agents guess "CodeBrix.Imaging.Drawing"
-    from upstream habit and it does not exist here.
+    from upstream habit and reach for it to do text rendering. That namespace
+    is NOT in this package, but it is not fictional either: it ships in the
+    sibling CodeBrix.Imaging.Drawing repository, as two either/or packages,
+    CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed) and
+    CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully managed).
+    Both take a dependency on this package and bridge back to it through
+    CodeBrix.Imaging.Drawing.Extensions.ExportImagingImage(), which returns
+    an Image<Rgba32>. So the correction to make in AGENT-README.txt is
+    "not part of this package, reference that one" — never "does not exist",
+    which was true before those packages shipped and is now wrong and
+    actively unhelpful. AGENT-README.txt pitfall 21 carries the long form;
+    if the sibling package ids or bridge API change, update it here too.
   * Image.LoadPixelData REQUIRES the IImageFormat argument in this fork; that
     divergence from upstream is deliberate.
   * The 8bpp BMP export is verified byte-for-byte against embedded reference
