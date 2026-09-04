@@ -8,8 +8,6 @@ CodeBrix.Imaging supports applications and assemblies that target Microsoft .NET
 Microsoft .NET version 10.0 is a Long-Term Supported (LTS) version of .NET, and was released on Nov 11, 2025; and will be actively supported by Microsoft until Nov 14, 2028.
 Please update your C#/.NET code and projects to the latest LTS version of Microsoft .NET.
 
-CodeBrix.Imaging is a fork of the code of the open source SixLabors.ImageSharp and SixLabors.Fonts libraries - see below for licensing details.
-
 ## Installation
 
 ```
@@ -133,8 +131,8 @@ https://github.com/ellisnet/CodeBrix.Imaging/tree/main/tests/CodeBrix.Imaging.Te
 
 ## License
 
-The project is licensed under the Apache License 2.0. see: https://en.wikipedia.org/wiki/Apache_License
+CodeBrix.Imaging is licensed under the Apache License, Version 2.0 - see the
+[LICENSE](https://github.com/ellisnet/CodeBrix.Imaging/blob/main/LICENSE) file.
 
-All code originating from SixLabors.ImageSharp was included as allowed by the Apache License 2.0 permissible open source software license. The included code corresponds to SixLabors.ImageSharp v2.1.13 (released Nov 25, 2025), the most recent release of the Apache-2.0-licensed 2.1.x line. This project (CodeBrix.Imaging) complies with all provisions of the source code license of SixLabors.ImageSharp v2.1.13 (Apache License 2.0).
-
-All code originating from SixLabors.Fonts was included as allowed by the Apache License 2.0 permissible open source software license - as of Jul 22, 2022. The included code corresponds to SixLabors.Fonts v1.0.0-beta18 (released Jul 2, 2022). This project (CodeBrix.Imaging) complies with all provisions of the source code license of SixLabors.Fonts v1.0.0-beta18 (Apache License 2.0).
+For licensing and provenance information about the open source code included in
+this package, see [THIRD-PARTY-NOTICES.txt](https://github.com/ellisnet/CodeBrix.Imaging/blob/main/THIRD-PARTY-NOTICES.txt).

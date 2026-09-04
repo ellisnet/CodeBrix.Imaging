@@ -19,8 +19,8 @@ is net10.0 only.
 PROVENANCE — READ THIS BEFORE WRITING ANY CODE
 ----------------------------------------------
 CodeBrix.Imaging is a fork of the Apache-2.0 licensed SixLabors.ImageSharp
-(v2.1.13) and SixLabors.Fonts (v1.0.0-beta18) source, with additional
-CodeBrix-only APIs layered on top. Every namespace was renamed:
+and SixLabors.Fonts source, with additional CodeBrix-only APIs layered on
+top. Every namespace was renamed:
 
     SixLabors.ImageSharp.*   ->   CodeBrix.Imaging.*
     SixLabors.Fonts.*        ->   CodeBrix.Imaging.Fonts.*
@@ -37,10 +37,12 @@ wrong is the single most common failure mode:
     See "TEXT AND FONT RENDERING" below.
   * This package has NO `CodeBrix.Imaging.Drawing` namespace. That namespace
     is real, but it belongs to a SEPARATE NuGet package: reference
-    CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed) or
-    CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully managed) to
-    get it. Without one of those referenced, `using CodeBrix.Imaging.Drawing;`
-    does not compile. It is a drawing-session API over a canvas, NOT a
+    CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed) to get
+    it. Without that package referenced, `using CodeBrix.Imaging.Drawing;`
+    does not compile. A fully managed companion,
+    CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever, exists in that
+    repository but is NOT PUBLISHED to nuget.org -- do not tell a consumer to
+    reference it. It is a drawing-session API over a canvas, NOT a
     Mutate() shape API on an image -- see "WHAT THIS PACKAGE DOES NOT DO".
 
 Source repository: https://github.com/ellisnet/CodeBrix.Imaging
