@@ -252,7 +252,7 @@ NOTES
             overloads, with and without a ColorMatrix)
         CodeBrix.Imaging.Helpers.BmpIndexingMode
         CodeBrix.Imaging.Fonts.Rendering.TextRenderingExtensions
-            (DrawText / MeasureText)
+            (DrawText extension methods / static MeasureText helper)
         CodeBrix.Imaging.Fonts.Rendering.ImageGlyphRenderer<TPixel>
     Text rendering in particular is a CodeBrix addition — upstream splits it
     into a separate drawing package. Keep AGENT-README.txt loudly correct
@@ -263,8 +263,9 @@ NOTES
     CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed) and
     CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully managed).
     Both take a dependency on this package and bridge back to it through
-    CodeBrix.Imaging.Drawing.Extensions.ExportImagingImage(), which returns
-    an Image<Rgba32>. So the correction to make in AGENT-README.txt is
+    CodeBrix.Imaging.Drawing.Extensions.ExportImagingImage(outputSize),
+    which returns an Image<Rgba32> (the output size is required; there is no
+    parameterless overload). So the correction to make in AGENT-README.txt is
     "not part of this package, reference that one" — never "does not exist",
     which was true before those packages shipped and is now wrong and
     actively unhelpful. AGENT-README.txt pitfall 21 carries the long form;

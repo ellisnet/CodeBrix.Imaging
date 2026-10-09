@@ -109,7 +109,7 @@ image.DrawText("Hello, world!", font, Color.White, 10f, 10f);
 image.Save("photo-with-text.jpg");
 ```
 
-Note that `DrawText` is an extension method on the image itself - not on the `Mutate()` processing context - and that there is no `CodeBrix.Imaging.Drawing` namespace.
+Note that `DrawText` is an extension method on the image itself - not on the `Mutate()` processing context - and that the `CodeBrix.Imaging.Drawing` namespace is not part of this package.
 
 ### Export as 8bpp Grayscale BMP
 

@@ -40,9 +40,9 @@ wrong is the single most common failure mode:
     CodeBrix.Imaging.Drawing.ApacheLicenseForever (SkiaSharp-backed) to get
     it. Without that package referenced, `using CodeBrix.Imaging.Drawing;`
     does not compile. A fully managed companion,
-    CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever, exists in that
-    repository but is NOT PUBLISHED to nuget.org -- do not tell a consumer to
-    reference it. It is a drawing-session API over a canvas, NOT a
+    CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever, is published from
+    the same repository and carries the same namespaces with no native
+    dependency. Either one is a drawing-session API over a canvas, NOT a
     Mutate() shape API on an image -- see "WHAT THIS PACKAGE DOES NOT DO".
 
 Source repository: https://github.com/ellisnet/CodeBrix.Imaging
@@ -118,7 +118,8 @@ KEY NAMESPACES / USINGS
         MissingFontTableException.
 
     CodeBrix.Imaging.Fonts.Rendering
-        TextRenderingExtensions — DrawText(...) and MeasureText(...).
+        TextRenderingExtensions — the DrawText(...) extension methods and the
+        static MeasureText(...) helper.
         ImageGlyphRenderer<TPixel> (the scanline rasterizer).
 
     CodeBrix.Imaging.Metadata
@@ -710,6 +711,10 @@ RESIZE
     Resize(Size size)
     Resize(Size size, bool compand)
     Resize(Size size, IResampler sampler, bool compand)
+    Resize(int width, int height, IResampler sampler,
+           Rectangle targetRectangle, bool compand)
+    Resize(int width, int height, IResampler sampler,
+           Rectangle sourceRectangle, Rectangle targetRectangle, bool compand)
     Resize(ResizeOptions options)
 
 Passing 0 for one dimension preserves aspect ratio for that axis.
@@ -1372,6 +1377,8 @@ the colour you passed.
 
 MEASURING
 ---------
+    // Plain static methods on TextRenderingExtensions, NOT extension methods:
+    // call TextRenderingExtensions.MeasureText(text, font).
     public static FontRectangle MeasureText(string text, Font font)
     public static FontRectangle MeasureText(string text, TextOptions options)
 
@@ -2645,7 +2652,9 @@ COMMON PITFALLS TO AVOID
     managed, no native dependency). Its entry point is DrawingSession, its
     model types live in CodeBrix.Imaging.Drawing.Models, and the bridge back
     to this package is `using CodeBrix.Imaging.Drawing.Extensions;` plus
-    session.ExportImagingImage(), which returns an Image<Rgba32>. Both
+    session.ExportImagingImage(session.DefaultExportSize), which returns an
+    Image<Rgba32> (the output size is required; there is no parameterless
+    overload). Both
     packages carry all three namespaces. Read that package's own
     AGENT-README.txt before using it.
 
@@ -2663,9 +2672,10 @@ It is a raster imaging + text-rasterization library. It does NOT provide:
     or CodeBrix.Imaging.Drawing.NoSkia.ApacheLicenseForever (fully managed,
     no native dependency). Reference one of them, then use its DrawingSession:
     DrawLine, DrawArrow, DrawCircle, DrawEllipse, DrawRectangle and
-    DrawPolyline draw onto a calibrated canvas, and ExportImagingImage()
-    hands the result back to this package as an Image<Rgba32>. Read that
-    package's own AGENT-README.txt; it is a session-based API, not a set of
+    DrawPolyline draw onto a calibrated canvas, and
+    ExportImagingImage(session.DefaultExportSize) hands the result back to
+    this package as an Image<Rgba32>. Read that package's own
+    AGENT-README.txt; it is a session-based API, not a set of
     Mutate() extensions.
   - SVG parsing or rendering.
   - PDF reading, writing or rendering.
