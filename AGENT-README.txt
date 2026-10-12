@@ -58,6 +58,9 @@ NuGet dependencies: none — the package depends only on the .NET base class
                   library.
 Requirements:     .NET 10.0 or later. No native/OS packages, no runtime
                   identifiers, no extra deployment steps.
+Trimming:         trim-clean - a fully trimmed publish (PublishTrimmed, and
+                  Android Release builds) reports no trim warnings for this
+                  assembly.
 
     dotnet add package CodeBrix.Imaging.ApacheLicenseForever
 

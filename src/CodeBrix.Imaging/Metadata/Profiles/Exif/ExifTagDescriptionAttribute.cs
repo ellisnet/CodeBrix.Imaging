@@ -32,7 +32,8 @@ internal sealed class ExifTagDescriptionAttribute : Attribute
     public static string GetDescription(ExifTag tag, object value)
     {
         var tagValue = (ExifTagValue)(ushort)tag;
-        var field = tagValue.GetType().GetTypeInfo().GetDeclaredField(tagValue.ToString());
+        // The enum type is named statically so the trimmer can see which fields are read (IL2075 otherwise).
+        var field = typeof(ExifTagValue).GetField(tagValue.ToString(), BindingFlags.Public | BindingFlags.Static); //Was previously: tagValue.GetType().GetTypeInfo().GetDeclaredField(tagValue.ToString());
 
         if (field is null)
         {

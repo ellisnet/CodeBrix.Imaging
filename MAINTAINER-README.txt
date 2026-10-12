@@ -125,6 +125,9 @@ BEFORE RUNNING THE TESTS ON A NEW MACHINE:
 
 The Windows default is what the csproj ships with, so a fresh clone on Linux
 or macOS fails those tests until step 1 is done. That is expected, not a bug.
+Note that the DefineConstants line sits in the Debug|AnyCPU PropertyGroup: a
+Release test run always uses C:\Temp, so on Linux or macOS those tests fail in
+Release even after step 1 - run them in Debug.
 
 Some font tests skip themselves when the host has no system fonts installed
 (containers, minimal CI images). A skipped font test is not a failure.
@@ -244,6 +247,18 @@ CODING CONVENTIONS
 
 NOTES
 =====
+  * TRIMMING: the assembly is trim-clean. The trim analyzer
+    (-p:EnableTrimAnalyzer=true -p:IsTrimmable=true) reports nothing, and a
+    fully trimmed publish of a small console app referencing the project
+    (PublishTrimmed=true, TrimmerSingleWarn=false, -r linux-x64) reports no
+    ILLink warnings. The one warning that publish used to report - IL2075 in
+    ExifTagDescriptionAttribute.GetDescription, which looked the enum field up
+    through tagValue.GetType() - surfaced as "IL2104: Assembly
+    'CodeBrix.Imaging' produced trim warnings" in every trimmed consumer (an
+    Android Release build, for one); it now names typeof(ExifTagValue). The
+    descriptions worked even before (the trimmer keeps enum fields), so this
+    removed a warning, not a malfunction; ExifProfileTests ToString_* fence
+    the lookup. Re-run that trimmed publish after adding reflection.
   * CodeBrix-only public API that does NOT exist upstream, and therefore has
     no upstream documentation to fall back on:
         Image.LoadPixelDataFromBgra (4 overloads, SIMD channel reorder)

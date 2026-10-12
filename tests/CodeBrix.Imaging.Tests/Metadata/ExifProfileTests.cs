@@ -308,4 +308,36 @@ public class ExifProfileTests
         Assert.Contains(snapshot, v => v.Tag == ExifTag.Orientation);
         Assert.Contains(snapshot, v => v.Tag == ExifTag.Make);
     }
+
+    // ExifValue.ToString reads the tag's ExifTagDescription attributes by reflection; the lookup names the
+    // ExifTagValue enum statically so a trimmed application keeps working (and gets no IL2075 trim warning).
+    [Theory]
+    [InlineData((ushort)1, "Horizontal (normal)")]
+    [InlineData((ushort)6, "Rotate 90 CW")]
+    [InlineData((ushort)8, "Rotate 270 CW")]
+    public void ToString_ReturnsTheTagDescription_ForADescribedOrientation(ushort orientation, string expected)
+    {
+        var profile = new ExifProfile();
+        profile.SetValue(ExifTag.Orientation, orientation);
+
+        Assert.Equal(expected, profile.GetValue(ExifTag.Orientation).ToString());
+    }
+
+    [Fact]
+    public void ToString_ReturnsTheTagDescription_ForADescribedSubfileType()
+    {
+        var profile = new ExifProfile();
+        profile.SetValue(ExifTag.SubfileType, 1U);
+
+        Assert.Equal("Reduced-resolution image", profile.GetValue(ExifTag.SubfileType).ToString());
+    }
+
+    [Fact]
+    public void ToString_ReturnsTheRawValue_WhenTheValueHasNoDescription()
+    {
+        var profile = new ExifProfile();
+        profile.SetValue(ExifTag.Orientation, (ushort)42);
+
+        Assert.Equal("42", profile.GetValue(ExifTag.Orientation).ToString());
+    }
 }
