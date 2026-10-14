@@ -4,11 +4,9 @@ Samples, tools and other content in this repository that is not part of a
 NuGet package
 ================================================================================
 
-This repository has no samples folder, no tools folder and no demo
-applications. Everything that ships is in src/CodeBrix.Imaging, and everything
-else in the repository is either documentation or test material.
-
-The only non-package content is the test project.
+Everything that ships is in src/CodeBrix.Imaging. Non-package content consists
+of the test project, documentation and optional JPEG XL fixture-maintenance
+utilities in tools/jpeg-xl. Those utilities are not required to run the tests.
 
 TEST PROJECT
 ============
@@ -22,7 +20,12 @@ package: AGENT-README.txt's "WORKING EXAMPLES ON GITHUB" section maps each
 feature area to the test file that exercises it. Anyone learning the API
 should read those files.
 
-    dotnet test CodeBrix.Imaging.slnx
+    dotnet test --solution CodeBrix.Imaging.slnx
+
+The same tests run in Visual Studio 2026 Test Explorer. JPEG XL acceptance
+checks, including the optional playback timing gate, are in this test project.
+See "JPEG XL TESTS AND FIXTURE TOOLS" in MAINTAINER-README.txt for commands
+and environment-variable opt-ins.
 
 NOTE: several tests write their output images to a scratch folder chosen at
 compile time by a TESTING_ON_<OS>_<USER>_USER preprocessor constant, and they
@@ -33,8 +36,10 @@ OPTIONAL / EMBEDDED TEST DATA
 =============================
     tests/CodeBrix.Imaging.Tests/SampleFiles/
 
-All of these are EmbeddedResource items compiled into the test assembly, so
-the suite does not read them from disk.
+The images and fonts listed below are embedded in the test assembly. JPEG XL
+resources in JxlConformance and JxlSynthetic are copied to the test output
+directory; ordinary tests read only those repository fixtures. External
+reference tests are skipped unless explicitly enabled as documented above.
 
   Source images (one of each, in three formats, used across the manipulation,
   format-detection and export tests):

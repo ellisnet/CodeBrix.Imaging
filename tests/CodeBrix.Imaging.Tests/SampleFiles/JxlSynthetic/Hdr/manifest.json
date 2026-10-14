@@ -1,0 +1,88 @@
+{
+  "license": "Apache-2.0",
+  "copyright": "Copyright (c) 2026 Jeremy Ellis and contributors",
+  "format": "little-endian binary32 RGB, row-major top-to-bottom",
+  "displayReference": "djxl linear-sRGB output + libjxl scalar tone mapper + exact sRGB transfer equation",
+  "encoder": "cjxl v0.13.0 ef67fde2 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}\nCopyright (c) the JPEG XL Project",
+  "decoder": "djxl v0.13.0 ef67fde2 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}\nCopyright (c) the JPEG XL Project",
+  "cases": [
+    {
+      "name": "peq-1000-modular",
+      "width": 17,
+      "height": 5,
+      "encoding": "RGB_D65_202_Rel_PeQ",
+      "intensityTarget": 1000,
+      "inputSha256": "33de35c67a3053f27b5a369ba4b8cc9c1aed69d4ff786c3355fa9fedbda42d75",
+      "references": {
+        "srgb": "ef9d450679f36b0bc83b5c1642ced79702e71df9724228736ffa8ea5bb408737",
+        "sdr": "b89ddf9d02e2f84a0d49e8a7b4239ea9be6f4126aaf1f5b4f1eff2e538a28811",
+        "original": "ebe32f152d1a9a66d7676212718ed7f316e724461cc64da537202abf12694191"
+      }
+    },
+    {
+      "name": "peq-1000-xyb",
+      "width": 17,
+      "height": 5,
+      "encoding": "RGB_D65_202_Rel_PeQ",
+      "intensityTarget": 1000,
+      "inputSha256": "bb50ab918d1b2d3055ea73b25ca8d19d7a1b40dc8d310abaad748921f867c0b2",
+      "references": {
+        "srgb": "16b1c9405a6ec1e191661406f1bf49fb09a71b920bc511b762e07743a16e29d3",
+        "sdr": "95af10b3034d211086b7604eee89fe45a28f48b217b831718045f7df823c409f",
+        "original": "a2cf590037606b611ae3ae2af492a45cd1cb3539fb93b6ab779a31de6601d3df"
+      }
+    },
+    {
+      "name": "peq-10000-modular",
+      "width": 17,
+      "height": 5,
+      "encoding": "RGB_D65_202_Rel_PeQ",
+      "intensityTarget": 10000,
+      "inputSha256": "ec3465422b79492f1d0e6ccd897951febf80f55402fcf211c56492e082f933f9",
+      "references": {
+        "srgb": "57be4c4ed3359ecef7ac14902a387a5a54f456f22dcb3e06a86616ef3d01c947",
+        "sdr": "4ddb7976600f1cc27174c5bf39607874bec5bee70b3814441bcaef80ff70a310",
+        "original": "ebe32f152d1a9a66d7676212718ed7f316e724461cc64da537202abf12694191"
+      }
+    },
+    {
+      "name": "peq-10000-xyb",
+      "width": 17,
+      "height": 5,
+      "encoding": "RGB_D65_202_Rel_PeQ",
+      "intensityTarget": 10000,
+      "inputSha256": "a8489585738b11bc0c3756e9ea4ff27282e668c90078e3ec632880b5456aa505",
+      "references": {
+        "srgb": "a707e1042c7c02850129fa1d2c653f7b5da5f0cfb949c02b70001e0074c73f8d",
+        "sdr": "391848c5f5765ab906a19d5f8a6569926b6a7e7e41a50e1832d60ce75769c5a1",
+        "original": "be8cbb38a0cfee1a92ccf0a58af44422dbac25b6ced0e4ddd1a6fb3f6c22b07d"
+      }
+    },
+    {
+      "name": "hlg-1000-modular",
+      "width": 17,
+      "height": 5,
+      "encoding": "RGB_D65_202_Rel_HLG",
+      "intensityTarget": 1000,
+      "inputSha256": "60a99b60e5f6e814729f0f59690767f87373557c10f90a8f755e0ffec9462f91",
+      "references": {
+        "srgb": "9a2e7ef5798a4f1913742e787d6110dbc34321fc65d724f26cdfa3e9c93e3867",
+        "sdr": "2f3c275190d9bccac03ee726ad2bed850c9e55fcf36c4365cc99e817fbaa6d6f",
+        "original": "ebe32f152d1a9a66d7676212718ed7f316e724461cc64da537202abf12694191"
+      }
+    },
+    {
+      "name": "hlg-1000-xyb",
+      "width": 17,
+      "height": 5,
+      "encoding": "RGB_D65_202_Rel_HLG",
+      "intensityTarget": 1000,
+      "inputSha256": "a3d160dd89f5b383e5e459246ab00b90f925dbbba32a8c1df1d2af6ef77f354a",
+      "references": {
+        "srgb": "e9a60429c4f881a785dfd302b640c47b11dfad2c376606fb03f95f46a3f72bbd",
+        "sdr": "e6c4bad660398c1e8d68165ecac437afff83836d5cdcc087cdccd47574bb8572",
+        "original": "f21d5afe896647d3cd98c5e2aba7afeb561b0848abab793a69148bfde0a626be"
+      }
+    }
+  ]
+}

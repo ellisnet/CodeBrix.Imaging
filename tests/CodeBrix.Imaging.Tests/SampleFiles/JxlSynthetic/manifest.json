@@ -1,0 +1,104 @@
+{
+  "license": "Apache-2.0",
+  "copyright": "Copyright (c) 2026 Jeremy Ellis and contributors",
+  "encoder": "cjxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "decoder": "djxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "cases": [
+    {
+      "name": "rgb-1x1-up2",
+      "width": 1,
+      "height": 1,
+      "upsampling": 2,
+      "inputSha256": "5df4d0258ff5e7d516c862ad5e7b755bc8d2a19158bf83897296940c81fc031a",
+      "referenceSha256": "85df04e10287a5e22852e0461e88917a89ca6d9a36308c1b6c20a58029a0fb5e"
+    },
+    {
+      "name": "rgb-1x1-up4",
+      "width": 1,
+      "height": 1,
+      "upsampling": 4,
+      "inputSha256": "d3bd8d58d9634b81b2b4c37be14bcb2a0d2c614db057b4012276718b084734b1",
+      "referenceSha256": "85df04e10287a5e22852e0461e88917a89ca6d9a36308c1b6c20a58029a0fb5e"
+    },
+    {
+      "name": "rgb-1x1-up8",
+      "width": 1,
+      "height": 1,
+      "upsampling": 8,
+      "inputSha256": "c546aafc47d7a20e00af04074c34ffb5c8f65f3ec0f17d4ec290b7587b527033",
+      "referenceSha256": "85df04e10287a5e22852e0461e88917a89ca6d9a36308c1b6c20a58029a0fb5e"
+    },
+    {
+      "name": "rgb-1x7-up2",
+      "width": 1,
+      "height": 7,
+      "upsampling": 2,
+      "inputSha256": "298cccd83e9a495881a207b48e706973070f377241894126809f4087bf01a67b",
+      "referenceSha256": "cb49a7dc604bb0785130c62acc836791f3fabe2754b53a6aa8bc177e94087f85"
+    },
+    {
+      "name": "rgb-1x7-up4",
+      "width": 1,
+      "height": 7,
+      "upsampling": 4,
+      "inputSha256": "67686766c4c671f5fae7b71211e9d865019bc4027f4732f3926a9703ac6e0d6d",
+      "referenceSha256": "8361f624e78ef295f21fba02123c2e757ccda2426d1e59616bd1634dc391b43c"
+    },
+    {
+      "name": "rgb-1x7-up8",
+      "width": 1,
+      "height": 7,
+      "upsampling": 8,
+      "inputSha256": "9e94db92d5fadc9855955616e86e41103ddd82a01fc158fc642eb0fbdfaf09fd",
+      "referenceSha256": "ed4a18144e3264e737ff418b8ed60d0617e543ad387d48ef4912010e1760091c"
+    },
+    {
+      "name": "rgb-9x1-up2",
+      "width": 9,
+      "height": 1,
+      "upsampling": 2,
+      "inputSha256": "a880a193fa50e9f43fa46bef1003b7e11c3627d70b30491a159fb2dab7915b40",
+      "referenceSha256": "a4ffe7ef80db88b0b01a433c5f7c78b3fe9e7479ffc95d07c5e244b5719aac40"
+    },
+    {
+      "name": "rgb-9x1-up4",
+      "width": 9,
+      "height": 1,
+      "upsampling": 4,
+      "inputSha256": "b0100949fac5565ed03528dfbe41713426f9a40e8c3e8b3d187ebdc1002633b3",
+      "referenceSha256": "7fdc6b57b0d232b2f3934e09dbe70ff5912e0a20c24b4bb0047e76dfa76fc058"
+    },
+    {
+      "name": "rgb-9x1-up8",
+      "width": 9,
+      "height": 1,
+      "upsampling": 8,
+      "inputSha256": "f23e98a8aa80a922bdfec889836d51b47499cbb73cdf0e1d16f772eb0709b2da",
+      "referenceSha256": "b4e999444be5c456e31dfb6bd883259d00b5a4b5542739f7c71c7aee13e8e2e3"
+    },
+    {
+      "name": "rgb-19x13-up2",
+      "width": 19,
+      "height": 13,
+      "upsampling": 2,
+      "inputSha256": "df02b680c2e64955734b06caf1633546aa7e804538f27c8b24c7b6c56b17026d",
+      "referenceSha256": "f9c8c389497ef80889d199de1b88e426f3fc264c00dc23aee7ebbe33b6b9dc94"
+    },
+    {
+      "name": "rgb-19x13-up4",
+      "width": 19,
+      "height": 13,
+      "upsampling": 4,
+      "inputSha256": "9e8cac07c508c059ce13812de1abe4bdaed3276e6248078db8f7d8d6c9b3691f",
+      "referenceSha256": "a8325fab4bebd5c3b5148197dd1380ce0f31b0a586c366c966599be9112278b8"
+    },
+    {
+      "name": "rgb-19x13-up8",
+      "width": 19,
+      "height": 13,
+      "upsampling": 8,
+      "inputSha256": "41f521df740b38a38d47c90b27a7cd1da4c2356d13e6e011483081a816c53364",
+      "referenceSha256": "2c1053413721a3793d1d8b2f811c2428b2885365e3e0ac5257499730dca067fc"
+    }
+  ]
+}

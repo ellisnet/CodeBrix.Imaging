@@ -91,4 +91,16 @@ public sealed class ImageFrameMetadata : IDeepCloneable<ImageFrameMetadata>
         this.formatMetadata[key] = newMeta;
         return newMeta;
     }
+
+    // CodeBrix addition: reads format metadata without creating a default entry,
+    // so an encoder can tell metadata decoded from a file apart from defaults.
+    internal bool TryGetFormatMetadata<TFormatMetadata, TFormatFrameMetadata>(IImageFormat<TFormatMetadata, TFormatFrameMetadata> key,
+        out TFormatFrameMetadata metadata)
+        where TFormatMetadata : class
+        where TFormatFrameMetadata : class, IDeepCloneable
+    {
+        bool found = this.formatMetadata.TryGetValue(key, out var meta);
+        metadata = found ? (TFormatFrameMetadata)meta : null;
+        return found;
+    }
 }

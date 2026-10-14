@@ -1,4 +1,5 @@
 // Copyright (c) Six Labors.
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System;
@@ -24,11 +25,6 @@ namespace CodeBrix.Imaging.Formats.Jpeg; //Was previously: namespace SixLabors.I
 /// </summary>
 internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
 {
-    /// <summary>
-    /// The number of quantization tables.
-    /// </summary>
-    private const int QuantizationTableCount = 2;
-
     /// <summary>
     /// A scratch buffer to reduce allocations.
     /// </summary>
@@ -57,10 +53,11 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
     {
         this.quality = options.Quality;
 
-        if (IsSupportedColorType(options.ColorType))
-        {
-            this.colorType = options.ColorType;
-        }
+        if (options.ColorType.HasValue && !Enum.IsDefined(options.ColorType.Value))
+        { throw new ArgumentOutOfRangeException(nameof(options.ColorType), options.ColorType, "Unknown JPEG color type."); }
+        if (options.ColorType.HasValue && !IsSupportedColorType(options.ColorType))
+        { throw new NotSupportedException($"JPEG encoding does not support {options.ColorType}. Choose Luminance, Rgb, YCbCrRatio444 or YCbCrRatio420."); }
+        this.colorType = options.ColorType;
     }
 
     /// <summary>
@@ -97,7 +94,6 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
         var componentCount = (this.colorType == JpegColorType.Luminance) ? 1 : 3;
         var componentIds = this.GetComponentIds();
 
-        // TODO: Right now encoder writes both quantization tables for grayscale images - we shouldn't do that
         // Initialize the quantization tables.
         this.InitQuantizationTables(componentCount, jpegMetadata, out var luminanceQuantTable, out var chrominanceQuantTable);
 
@@ -329,18 +325,21 @@ internal sealed unsafe class JpegEncoderCore : IImageEncoderInternals
     /// </summary>
     private void WriteDefineQuantizationTables(ref Block8x8F luminanceQuantTable, ref Block8x8F chrominanceQuantTable)
     {
+        // Grayscale and RGB use table zero exclusively. In particular, the
+        // uninitialized grayscale chrominance table contains invalid zeroes.
+        int tableCount = this.colorType is JpegColorType.Luminance or JpegColorType.Rgb ? 1 : 2;
         // Marker + quantization table lengths.
-        var markerlen = 2 + (QuantizationTableCount * (1 + Block8x8F.Size));
+        var markerlen = 2 + (tableCount * (1 + Block8x8F.Size));
         this.WriteMarkerHeader(JpegConstants.Markers.DQT, markerlen);
 
         // Loop through and collect the tables as one array.
         // This allows us to reduce the number of writes to the stream.
-        var dqtCount = (QuantizationTableCount * Block8x8F.Size) + QuantizationTableCount;
+        var dqtCount = tableCount * (Block8x8F.Size + 1);
         var dqt = new byte[dqtCount];
         var offset = 0;
 
         WriteDataToDqt(dqt, ref offset, QuantIndex.Luminance, ref luminanceQuantTable);
-        WriteDataToDqt(dqt, ref offset, QuantIndex.Chrominance, ref chrominanceQuantTable);
+        if (tableCount == 2) { WriteDataToDqt(dqt, ref offset, QuantIndex.Chrominance, ref chrominanceQuantTable); }
 
         this.outputStream.Write(dqt, 0, dqtCount);
     }

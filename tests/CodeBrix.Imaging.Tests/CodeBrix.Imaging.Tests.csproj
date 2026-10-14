@@ -62,6 +62,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="SharpFuzz" Version="2.3.0" PrivateAssets="all" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -71,6 +72,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CodeBrix.Imaging\CodeBrix.Imaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SampleFiles\JxlConformance\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SampleFiles\JxlSynthetic\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

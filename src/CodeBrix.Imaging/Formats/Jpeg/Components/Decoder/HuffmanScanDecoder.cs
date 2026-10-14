@@ -1,4 +1,5 @@
 // Copyright (c) Six Labors.
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System;
@@ -120,6 +121,10 @@ internal class HuffmanScanDecoder
         this.scanComponentCount = scanComponentCount;
 
         this.scanBuffer = new HuffmanScanBuffer(this.stream);
+        // Every SOS starts a fresh entropy scan. The restart countdown, DC
+        // predictors and EOB run must not leak from the preceding scan.
+        this.todo = this.restartInterval;
+        this.Reset();
 
         var fullScan = this.frame.Progressive || this.frame.MultiScan;
         this.frame.AllocateComponents(fullScan);

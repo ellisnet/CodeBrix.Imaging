@@ -23,7 +23,8 @@ The package has no NuGet dependencies, no native libraries and no platform-speci
 
 ## CodeBrix.Imaging supports:
 
-* Image formats: BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, WebP
+* Image formats: BMP, GIF, JPEG, JPEG XL (JXL), PBM, PNG, TGA, TIFF, WebP
+* JPEG XL: lossy and lossless encoding and decoding, animation (with a streaming playback reader), HDR and wide-gamut color, and lossless JPEG to JPEG XL transcoding that restores the original JPEG byte for byte
 * Image processing: resizing, cropping, rotating, flipping, and more
 * Filters: brightness, contrast, saturation, hue, grayscale, sepia, and more
 * Effects: Gaussian blur, Bokeh blur, edge detection, and more
@@ -33,7 +34,7 @@ The package has no NuGet dependencies, no native libraries and no platform-speci
 * Color spaces and pixel formats
 * Image metadata (EXIF, IPTC, XMP)
 * Quantization and dithering
-* Animated GIF frames
+* Animated GIF and JPEG XL frames
 * 8bpp grayscale BMP export (with optional System.Drawing-compatible mode)
 * Many more...
 
@@ -91,6 +92,37 @@ using var image = Image.Load("photo.jpg");
 image.Mutate(x => x.Crop(new Rectangle(100, 100, 500, 400)));
 
 image.Save("photo-cropped.jpg");
+```
+
+### Save as JPEG XL
+
+```csharp
+using CodeBrix.Imaging;
+using CodeBrix.Imaging.Formats.Jxl;
+
+using var image = Image.Load("photo.png");
+
+image.Save("photo.jxl");                                              // lossy, visually near-lossless
+image.SaveAsJxl("photo-lossless.jxl", new JxlEncoder { Lossless = true });
+image.SaveAsJxl("photo-small.jxl", new JxlEncoder { Quality = 75 });
+```
+
+### Recompress a JPEG as JPEG XL Without Loss
+
+```csharp
+using CodeBrix.Imaging.Formats.Jxl;
+
+using (var jpeg = File.OpenRead("photo.jpg"))
+using (var jxl = File.Create("photo.jxl"))
+{
+    JxlJpegTranscoder.JpegToJxl(jpeg, jxl);   // usually smaller, no pixel re-encoding
+}
+
+using (var jxl = File.OpenRead("photo.jxl"))
+using (var jpeg = File.Create("restored.jpg"))
+{
+    JxlJpegTranscoder.JxlToJpeg(jxl, jpeg);   // byte-for-byte identical to photo.jpg
+}
 ```
 
 ### Draw Text on an Image

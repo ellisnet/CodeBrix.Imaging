@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Six Labors.
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System.Runtime.CompilerServices;
@@ -107,6 +108,12 @@ internal static class HalfTypeHelper
             {
                 result = (uint)((value & 0x8000) << 16);
             }
+        }
+        else if ((value & 0x7c00) == 0x7c00)
+        {
+            // IEEE binary16 reserves exponent 31 for infinity and NaN.
+            // Preserve the sign and payload while widening to binary32.
+            result = (((uint)value & 0x8000) << 16) | 0x7f800000 | (mantissa << 13);
         }
         else
         {

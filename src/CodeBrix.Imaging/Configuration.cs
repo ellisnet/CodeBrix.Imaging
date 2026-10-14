@@ -13,6 +13,7 @@ using CodeBrix.Imaging.Formats.Png;
 using CodeBrix.Imaging.Formats.Tga;
 using CodeBrix.Imaging.Formats.Tiff;
 using CodeBrix.Imaging.Formats.Webp;
+using CodeBrix.Imaging.Formats.Jxl;
 using CodeBrix.Imaging.IO;
 using CodeBrix.Imaging.Memory;
 using CodeBrix.Imaging.Processing;
@@ -260,7 +261,8 @@ public sealed class Configuration
     /// <see cref="PbmConfigurationModule"/>.
     /// <see cref="TgaConfigurationModule"/>.
     /// <see cref="TiffConfigurationModule"/>.
-    /// <see cref="WebpConfigurationModule"/>.
+    /// <see cref="WebpConfigurationModule"/>,
+    /// <see cref="JxlConfigurationModule"/>.
     /// </summary>
     /// <returns>The default configuration of <see cref="Configuration"/>.</returns>
     internal static Configuration CreateDefaultInstance() => new(
@@ -271,5 +273,6 @@ public sealed class Configuration
         new PbmConfigurationModule(),
         new TgaConfigurationModule(),
         new TiffConfigurationModule(),
-        new WebpConfigurationModule());
+        new WebpConfigurationModule(),
+        new JxlConfigurationModule());
 }

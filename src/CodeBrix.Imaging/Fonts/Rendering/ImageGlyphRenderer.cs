@@ -1,4 +1,4 @@
-// Copyright (c) Ellisnet
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System;

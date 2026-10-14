@@ -1,0 +1,29 @@
+{
+  "jxl-oxide": {
+    "url": "https://github.com/tirr-c/jxl-oxide",
+    "revision": "f8ae722ef2d6b782941c89517d19cfbf605c4a9d",
+    "tag": "0.12.6",
+    "license": "Apache-2.0"
+  },
+  "libjxl": {
+    "url": "https://github.com/libjxl/libjxl",
+    "revision": "ef67fde2ec16d52e644c5a0969230b9a85e3eb31",
+    "license": "BSD-3-Clause",
+    "additionalNotice": "PATENTS"
+  },
+  "skcms": {
+    "url": "https://skia.googlesource.com/skcms",
+    "revision": "7e572ada698a60ff50bd9038fd6e01e44f40868a",
+    "license": "BSD-3-Clause"
+  },
+  "conformance": {
+    "url": "https://github.com/libjxl/conformance",
+    "revision": "b1d0f990b03e57bf6d137c365cd5dc8b470b9191",
+    "license": "BSD-3-Clause with per-image licenses; test data only"
+  },
+  "libjxl-reference-build-dependencies": {
+    "runtimeDependency": false,
+    "highway": { "revision": "457c891775a7397bdb0376bb1031e6e027af1c48", "license": "Apache-2.0" },
+    "skcms": { "revision": "96d9171c94b937a1b5f0293de7309ac16311b722", "license": "BSD-3-Clause" }
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "license": "Apache-2.0",
+  "copyright": "Copyright (c) 2026 Jeremy Ellis and contributors",
+  "encoder": "cjxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "decoder": "djxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "cases": [
+    {
+      "name": "vardct-1x1-up1",
+      "width": 1,
+      "height": 1,
+      "upsampling": 1,
+      "inputSha256": "65fb4b9c3e25abaa2df1887752dbb97fc8502db1f087cb436423b44eafd3bbbf",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "vardct-1x1-up2",
+      "width": 1,
+      "height": 1,
+      "upsampling": 2,
+      "inputSha256": "742b14b1618cd0116a1bfee27d5b7d4096a6d61e72953f77897ef4c3f507a231",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "vardct-1x1-up4",
+      "width": 1,
+      "height": 1,
+      "upsampling": 4,
+      "inputSha256": "14f8df5516286250a6cb4b8af48fb57214e4e4da0392c420c1bedb231268f67c",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "vardct-1x1-up8",
+      "width": 1,
+      "height": 1,
+      "upsampling": 8,
+      "inputSha256": "9e6c02ce816fe1744c436b6920b0e3225f941c2266b57be3091bb11727b896fe",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "vardct-1x7-up1",
+      "width": 1,
+      "height": 7,
+      "upsampling": 1,
+      "inputSha256": "9e59a19e45de8ec8419d30cea86ad250a16a6a96d5beaa5224eb526bda3b858f",
+      "referenceSha256": "813bef488bd22ecd323d522fdae0fa21fde039467403a4c09e07e791e0b75bb8"
+    },
+    {
+      "name": "vardct-1x7-up2",
+      "width": 1,
+      "height": 7,
+      "upsampling": 2,
+      "inputSha256": "cb5af198769abd838811bbf3dafaffe0c247ffa028ea09c2c3368d5b9f774e01",
+      "referenceSha256": "3b89f615beddacb85ffa057b2761bb07c424acd42f0800b1346d016e31538667"
+    },
+    {
+      "name": "vardct-1x7-up4",
+      "width": 1,
+      "height": 7,
+      "upsampling": 4,
+      "inputSha256": "3b40ed090713bb2f22d7351e101dc22927d5b453b00f2f180d22ec7ed9e74f2f",
+      "referenceSha256": "ace04f48394064d53f1613f03f2dc78c152d0ae8316c35c63cfb2c43a9f3c70f"
+    },
+    {
+      "name": "vardct-1x7-up8",
+      "width": 1,
+      "height": 7,
+      "upsampling": 8,
+      "inputSha256": "ec4c26923c86e426c61dbdbd0df8974a5867410794434c2571480bdcbe7fcad9",
+      "referenceSha256": "b92ed1586acfd28cd052a0e25e7dc0d97d0aa97ab4f5afa50169f5058fc5f783"
+    },
+    {
+      "name": "vardct-9x1-up1",
+      "width": 9,
+      "height": 1,
+      "upsampling": 1,
+      "inputSha256": "5a30e26e1431c66ae4734a7498468361ae44c8be0287f942f8fa7e7fd5b8fcf5",
+      "referenceSha256": "e86885c7e1371cdc1627a35aa2611afa1a0aa9f7b21a2f1e94b52b943717628b"
+    },
+    {
+      "name": "vardct-9x1-up2",
+      "width": 9,
+      "height": 1,
+      "upsampling": 2,
+      "inputSha256": "64c7d36a5f7937c8872f49aea27d937db0f44a27bc27adf78cefdf6d0fd1f173",
+      "referenceSha256": "65ce55652e7b7614236fef9d22575fe06af29c0430337b75deefc443b1ddc0dd"
+    },
+    {
+      "name": "vardct-9x1-up4",
+      "width": 9,
+      "height": 1,
+      "upsampling": 4,
+      "inputSha256": "35293f6106b683c7f94637ac0391edcbb8f0076a77b98bd3032b310c0a60bda2",
+      "referenceSha256": "a3c01d97e6bd76c887f814d296862ad1e3801e26074ae3e7cfcb5c038b11e47c"
+    },
+    {
+      "name": "vardct-9x1-up8",
+      "width": 9,
+      "height": 1,
+      "upsampling": 8,
+      "inputSha256": "6049eff6debadb1477e68c2c53d409fa14a910ad51a23b672b0197cc4609bb2f",
+      "referenceSha256": "3e3e9d4eea6df0634d034c6ca650482f4c48ed104db599e9d89611427835a679"
+    },
+    {
+      "name": "vardct-19x13-up1",
+      "width": 19,
+      "height": 13,
+      "upsampling": 1,
+      "inputSha256": "54286e051e13528c6e0c8587228812823522d1fc656d8fc7e346b9512a27f514",
+      "referenceSha256": "279ac1fb2c351eb2a6f8d344d7ea824e1c3e15a4842c383ffb9d4f213e3e93d1"
+    },
+    {
+      "name": "vardct-19x13-up2",
+      "width": 19,
+      "height": 13,
+      "upsampling": 2,
+      "inputSha256": "66f481b295756a6fe01117cdd2cebe324c04d1beb969159d847c3f4b7c2edd51",
+      "referenceSha256": "d31a89c0853b5224fb126070c46ebcec203ee026f59e6043fb1b36710ec0bfd9"
+    },
+    {
+      "name": "vardct-19x13-up4",
+      "width": 19,
+      "height": 13,
+      "upsampling": 4,
+      "inputSha256": "d9c2e9df3bacfd062ee7e90407fddba0396787d71ca0b63fb01ff4f747357ddf",
+      "referenceSha256": "b5ed0c0eed1510db29fc80aedc69e4ac16a5f670cf4d9061149a98736f1db140"
+    },
+    {
+      "name": "vardct-19x13-up8",
+      "width": 19,
+      "height": 13,
+      "upsampling": 8,
+      "inputSha256": "23713fadd639d18e1e83940e69e98f432af15491dd200a5ed829d10f746231a4",
+      "referenceSha256": "56834ca88806f677439de7a0029ba35f935fb8d63736205e60c687f84b555e0f"
+    },
+    {
+      "name": "vardct-263x17-up1",
+      "width": 263,
+      "height": 17,
+      "upsampling": 1,
+      "inputSha256": "8f8787ba35b5b58336fcca94d43205765d3b9ccb2a54fa82f92993e6be63893b",
+      "referenceSha256": "ff132fdbb4faad57b280df84270c3017605adb6e85a30ef024de5bc033ad4c92"
+    },
+    {
+      "name": "vardct-263x17-up2",
+      "width": 263,
+      "height": 17,
+      "upsampling": 2,
+      "inputSha256": "57ced06bc452b31e74d72d0ea17bc9f3a3e61e471e562d7d28691c1777af67f8",
+      "referenceSha256": "ee82027b60a14979b123cee0459b6280b885f1ff78749793c258ae00b425b292"
+    },
+    {
+      "name": "vardct-263x17-up4",
+      "width": 263,
+      "height": 17,
+      "upsampling": 4,
+      "inputSha256": "09ee829c5e2dc807caa315fb02f2b70585f0a8896a4790ac0a850a22f5c586a6",
+      "referenceSha256": "7b4a606c39419142a1b6ff8565dace3f945765ce74ae184f027352492de9210b"
+    },
+    {
+      "name": "vardct-263x17-up8",
+      "width": 263,
+      "height": 17,
+      "upsampling": 8,
+      "inputSha256": "f1a7452812917c3bc58ffacabb11cc2c4cb06e6f005a50028e8d2b9984040e13",
+      "referenceSha256": "fb0fe1456e92d3522cec29653b6e9564c75d1f5d6684cb0fd8355cf708896f97"
+    }
+  ]
+}

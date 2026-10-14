@@ -1,4 +1,5 @@
 // Copyright (c) Six Labors.
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System;
@@ -8,9 +9,11 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using CodeBrix.Imaging.ColorSpaces.Icc;
 using CodeBrix.Imaging.Common.Helpers;
 using CodeBrix.Imaging.Formats.Jpeg.Components;
 using CodeBrix.Imaging.Formats.Jpeg.Components.Decoder;
+using CodeBrix.Imaging.Formats.Jpeg.Components.Decoder.ColorConverters;
 using CodeBrix.Imaging.IO;
 using CodeBrix.Imaging.Memory;
 using CodeBrix.Imaging.Metadata;
@@ -191,27 +194,58 @@ internal sealed class JpegDecoderCore : IRawJpegData, IImageDecoderInternals
     public Image<TPixel> Decode<TPixel>(BufferedReadStream stream, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixel<TPixel>
     {
-        using var spectralConverter = new SpectralConverter<TPixel>(this.Configuration);
+        using var spectralConverter = new SpectralConverter<TPixel>(this.Configuration, this.ConfigureColorConverter);
 
         var scanDecoder = new HuffmanScanDecoder(stream, spectralConverter, cancellationToken);
 
         this.ParseStream(stream, scanDecoder, cancellationToken);
+        if (this.Frame is null)
+        {
+            // A stream can end (EOI) before any frame header or scan.
+            JpegThrowHelper.ThrowInvalidImageContentException("No readable SOFn (Start Of Frame) marker found.");
+        }
+
+        if (Array.Exists(this.Frame.Components, component => component.SpectralBlocks is null))
+        {
+            // Component storage is allocated by the first scan; a frame header alone has no pixel data.
+            JpegThrowHelper.ThrowInvalidImageContentException("No readable SOS (Start Of Scan) marker found.");
+        }
+
         this.InitExifProfile();
         this.InitIccProfile();
         this.InitIptcProfile();
         this.InitXmpProfile();
         this.InitDerivedMetadataProperties();
 
+        Buffer2D<TPixel> pixels = spectralConverter.GetPixelBuffer(cancellationToken);
+        // CMYK/YCCK decoding produces RGB samples. A source CMYK profile cannot
+        // describe those pixels; managed ICC conversion targets untagged sRGB.
+        // Identify still reports the original source profile without conversion.
+        if (this.ColorSpace is JpegColorSpace.Cmyk or JpegColorSpace.Ycck) { this.Metadata.IccProfile = null; }
         return new Image<TPixel>(
             this.Configuration,
-            spectralConverter.GetPixelBuffer(cancellationToken),
+            pixels,
             this.Metadata);
+    }
+
+    private JpegColorConverterBase ConfigureColorConverter(JpegColorConverterBase converter)
+    {
+        if (this.ColorSpace is not (JpegColorSpace.Cmyk or JpegColorSpace.Ycck) ||
+            this.iccData is not { Length: >= 132 } || !this.iccData.AsSpan(16, 4).SequenceEqual("CMYK"u8))
+        { return converter; }
+        return new JpegColorConverterBase.FromCmykIcc(this.ColorSpace, this.Frame.Precision, IccColorProfile.Read(this.iccData));
     }
 
     /// <inheritdoc/>
     public IImageInfo Identify(BufferedReadStream stream, CancellationToken cancellationToken)
     {
         this.ParseStream(stream, scanDecoder: null, cancellationToken);
+        if (this.Frame is null)
+        {
+            // Identify skips scan data, so a stream without a frame header can reach here.
+            JpegThrowHelper.ThrowInvalidImageContentException("No readable SOFn (Start Of Frame) marker found.");
+        }
+
         this.InitExifProfile();
         this.InitIccProfile();
         this.InitIptcProfile();

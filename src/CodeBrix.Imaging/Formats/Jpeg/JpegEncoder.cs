@@ -1,4 +1,5 @@
 // Copyright (c) Six Labors.
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System.IO;
@@ -16,7 +17,11 @@ public sealed class JpegEncoder : IImageEncoder, IJpegEncoderOptions
     /// <inheritdoc/>
     public int? Quality { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the output color type. Supported values are luminance, RGB,
+    /// YCbCr 4:4:4 and YCbCr 4:2:0. Unsupported explicit values throw when encoding.
+    /// A null value chooses a supported representation from image metadata or pixels.
+    /// </summary>
     public JpegColorType? ColorType { get; set; }
 
     /// <summary>

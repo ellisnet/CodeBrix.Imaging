@@ -1,0 +1,44 @@
+JPEG XL conformance test resources
+=================================
+Upstream: https://github.com/libjxl/conformance
+Revision: b1d0f990b03e57bf6d137c365cd5dc8b470b9191
+
+LICENSE contains the upstream BSD-3-Clause license for the conformance
+repository. UPSTREAM-README.md records the individual image licenses.
+These resources are used for testing only and are never packed into NuGet.
+Images retain their own licenses; they are not relicensed as Apache-2.0.
+CodeBrix's C# implementation does not derive code from these images.
+
+CC0: alpha_nonpremultiplied, alpha_premultiplied, alpha_triangles,
+animation_icos4d, animation_spline, bench_oriented_brg, bicycles, blendmodes,
+cmyk_layers, delta_palette, grayscale, grayscale_jpeg, lossless_pfm,
+lz77_flower, mul_no_extra_channels, noise, opsin_inverse, patches,
+patches_lossless, spot, sunset_logo.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+CC BY-SA 3.0:
+* animation_newtons_cradle: Dominique Toussaint, Newton's cradle animation.
+  https://commons.wikimedia.org/wiki/File:Newtons_cradle_animation_book_2.gif
+* upsampling: PNG transparency demonstration, Daniel G. (2005), Ed g2s
+  (2009), CyberShadow (2019), and file optimization contributors.
+  https://commons.wikimedia.org/wiki/File:PNG_transparency_demonstration_1.png
+License: https://creativecommons.org/licenses/by-sa/3.0/
+The JPEG XL Project adapted these source images into test bitstreams and
+decoded previews. CodeBrix copies the upstream test files without alteration.
+Those images and adaptations remain under CC BY-SA 3.0.
+
+CC BY 3.0: grayscale_public_university, Arnold and Richter Cine Technik GmbH.
+See grayscale_public_university/source for the source URL and attribution.
+https://creativecommons.org/licenses/by/3.0/
+
+Microsoft custom license: progressive. All Images Copyright (c) 2003-2007
+Microsoft Corporation. The original grant and notice are in progressive/source.
+
+The bike and cafe bitstreams and previews are NOT included. Their tests
+require the explicit external-test environment gate before downloading them.
+Full floating-point, ICC and reconstructed JPEG references are likewise
+external and SHA-256 verified. Their hashes remain in upstream test.json.
+
+Level 5 cases share base-case inputs/previews where upstream does so.
+manifest.json retains all 24 Level 5 and 27 Level 10 test records. Metadata
+and licenses count toward the aggregate 100,000,000-byte resource budget.

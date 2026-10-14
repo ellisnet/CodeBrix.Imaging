@@ -109,6 +109,13 @@ KEY NAMESPACES / USINGS
     CodeBrix.Imaging.Formats.Webp
         Per-format Format singleton, Encoder, Decoder and Metadata types.
 
+    CodeBrix.Imaging.Formats.Jxl
+        JxlFormat, JxlEncoder, JxlDecoder, JxlMetadata, JxlFrameMetadata, plus
+        the JPEG XL-only APIs: JxlJpegTranscoder (lossless JPEG <-> JPEG XL),
+        JxlAnimationReader/JxlAnimationFrame (streaming playback) and the raw
+        plane API (JxlRawImage, JxlRawFrame, JxlRawPlane). See the
+        "JPEG XL (.jxl)" section.
+
     CodeBrix.Imaging.Fonts
         Font, FontFamily, FontCollection, SystemFonts, FontStyle, FontMetrics,
         FontDescription, FontRectangle, TextOptions, TextMeasurer,
@@ -185,6 +192,7 @@ format singleton:
     using CodeBrix.Imaging.Formats.Tiff;
     using CodeBrix.Imaging.Formats.Tga;
     using CodeBrix.Imaging.Formats.Pbm;
+    using CodeBrix.Imaging.Formats.Jxl;   // also JPEG transcoding and animation playback
 
 Text rendering (BOTH lines are required):
 
@@ -226,6 +234,12 @@ Read and write, all registered in Configuration.Default:
     TIFF    TiffFormat.Instance   TiffEncoder    TiffDecoder    TiffMetadata +
                                                                 TiffFrameMetadata
     WebP    WebpFormat.Instance   WebpEncoder    WebpDecoder    WebpMetadata
+    JPEG XL JxlFormat.Instance    JxlEncoder     JxlDecoder     JxlMetadata +
+                                                                JxlFrameMetadata
+
+JPEG XL (.jxl, image/jxl) supports lossy and lossless encoding, animation,
+HDR and wide gamut, and byte-exact lossless JPEG transcoding; see the
+"JPEG XL (.jxl)" section.
 
 Each format singleton exposes `Name`, `DefaultMimeType`, `MimeTypes`,
 `FileExtensions` and `DefaultFileExtension`, plus const `FormatName`,
@@ -381,8 +395,8 @@ Extension methods in CodeBrix.Imaging (ImageExtensions):
                           CancellationToken cancellationToken = default)
 
 Per-format shorthands (also in CodeBrix.Imaging) — SaveAsBmp, SaveAsGif,
-SaveAsJpeg, SaveAsPbm, SaveAsPng, SaveAsTga, SaveAsTiff, SaveAsWebp, each with
-an Async twin, and each with four shapes:
+SaveAsJpeg, SaveAsJxl, SaveAsPbm, SaveAsPng, SaveAsTga, SaveAsTiff, SaveAsWebp,
+each with an Async twin, and each with four shapes:
 
     SaveAsPng(this Image source, string path)
     SaveAsPng(this Image source, string path, PngEncoder encoder)
@@ -404,11 +418,12 @@ Examples:
     image.Save(stream, new PngEncoder());         // instance method
     image.Save(stream, PngFormat.Instance);       // format -> default encoder
     await image.SaveAsync(stream, new WebpEncoder(), cancellationToken);
+    image.SaveAsJxl("out.jxl", new JxlEncoder { Lossless = true });
     byte[] png = image.ToByteArray(PngFormat.Instance);
     string dataPayload = image.ToBase64String(JpegFormat.Instance);
 
 `Save(path)` throws NotSupportedException if the extension is not one of the
-eight supported formats. Use `DetectEncoder` to test first.
+nine supported formats. Use `DetectEncoder` to test first.
 
 4. FORMAT DETECTION AND IDENTIFICATION
 --------------------------------------
@@ -585,9 +600,11 @@ JpegEncoder (CodeBrix.Imaging.Formats.Jpeg)
     int? Quality                           1..100; null = keep the source
                                            image's JpegMetadata.Quality
     JpegColorType? ColorType               YCbCrRatio420 | YCbCrRatio444 |
-                                           YCbCrRatio422 | YCbCrRatio411 |
-                                           YCbCrRatio410 | Luminance | Rgb |
-                                           Cmyk
+                                           Luminance | Rgb
+    Explicit CMYK/4:2:2/4:1:1/4:1:0 requests throw NotSupportedException before
+    output; unknown enum values throw ArgumentOutOfRangeException. With a null
+    option, unsupported source metadata falls back to a supported representation.
+    Grayscale and RGB write only the single quantization table they use.
 
     image.Save("out.jpg", new JpegEncoder
     {
@@ -596,6 +613,12 @@ JpegEncoder (CodeBrix.Imaging.Formats.Jpeg)
     });
 
 JpegDecoder     bool IgnoreMetadata
+    CMYK/YCCK with a supported CMYK ICC profile converts through the managed CMS
+    to sRGB. The decoded RGB buffer does not retain an incompatible CMYK profile;
+    Identify retains the original profile. IgnoreMetadata uses the existing
+    unprofiled conversion. JPEG chroma upsampling uses nearest-neighbor sample
+    replication, corresponding to libjpeg's -nosmooth option; default libjpeg
+    smoothing can produce different pixels on subsampled color edges.
 
 GifEncoder (CodeBrix.Imaging.Formats.Gif)
     IQuantizer Quantizer                            default KnownQuantizers.Octree
@@ -667,6 +690,43 @@ PbmEncoder (CodeBrix.Imaging.Formats.Pbm)
     PbmComponentType? ComponentType        Bit | Byte | Short
 
 TgaDecoder and PbmDecoder take no options.
+
+JxlEncoder (CodeBrix.Imaging.Formats.Jxl) — full detail in "JPEG XL (.jxl)"
+    bool Lossless                          default false (lossy)
+    float Distance                         default 1; 0 = lossless; up to 25
+                                           (larger = smaller, lower quality)
+    int? Quality                           0..100; overrides Distance;
+                                           100 = lossless
+    int Effort                             1..10, default 7; higher = smaller
+                                           and much slower (see PERFORMANCE)
+    bool AllowExpertEffort                 required for lossless Effort 11
+    JxlProgressiveMode Progressive         None | Dc | Ac | Full (default None)
+    bool? Modular                          null = automatic; true forces lossy
+                                           Modular instead of VarDCT
+    JxlTransparentColorMode TransparentColorMode   Preserve (default) | Clear
+    float PhotonNoiseIso                   0 = off; simulated film grain
+    bool NoiseModeling                     default false
+    bool? Patches, Dots                    null = automatic by effort/distance
+    int Resampling                         1 (default) | 2 | 4 | 8
+    int FasterDecoding                     0..4, default 0
+    bool? UseContainer                     null = container only when needed
+    bool CompressMetadataBoxes             default true (Brotli)
+    int BrotliEffort                       0..11, default 6
+
+JxlDecoder
+    bool IgnoreMetadata
+    bool ApplyOrientation                  default true
+    JxlTargetColor TargetColor             Auto (default) | Original | Srgb
+    float TargetDisplayLuminance           0 (default) keeps the HDR range
+    FrameDecodingMode DecodingMode         All | First (default All)
+    uint MaxFrames                         default uint.MaxValue
+    bool RenderSpotColors                  default true
+    bool Coalesce                          default true (DecodeRaw only)
+    long MaxPixels / MaxTotalPixels        default 100 million each
+    long MaxDecodedPixels                  default one billion
+    uint MaxCodedFrames                    default 10,000
+    long MaxModularBytes                   default 2 GiB
+    long MaxMetadataBytes                  default 64 MiB
 
 ================================================================================
 
@@ -1596,8 +1656,10 @@ in the per-format namespaces):
     metadata.GetTiffMetadata()  -> TiffMetadata
     metadata.GetTgaMetadata()   -> TgaMetadata
     metadata.GetPbmMetadata()   -> PbmMetadata
+    metadata.GetJxlMetadata()   -> JxlMetadata
     frameMetadata.GetGifMetadata()  -> GifFrameMetadata
     frameMetadata.GetTiffMetadata() -> TiffFrameMetadata
+    frameMetadata.GetJxlMetadata()  -> JxlFrameMetadata
 
 PngMetadata:  BitDepth, ColorType, InterlaceMethod, Gamma, TransparentRgb24,
               TransparentRgb48, TransparentL8, TransparentL16, HasTransparency,
@@ -1607,6 +1669,15 @@ GifMetadata:  ushort RepeatCount (default 1), GifColorTableMode ColorTableMode,
               int GlobalColorTableLength, IList<string> Comments
 GifFrameMetadata: int ColorTableLength, int FrameDelay (hundredths of a
               second), GifDisposalMethod DisposalMethod
+JxlMetadata:  int BitsPerSample, int ExponentBitsPerSample (non-zero = float),
+              bool IsAnimated, uint TicksPerSecondNumerator/Denominator
+              (default 100/1), uint LoopCount (0 = forever), int? FrameCount,
+              bool HasContainer, bool HasJpegReconstruction,
+              float IntensityTarget (nits, default 255), int Level (5 or 10),
+              int Orientation, byte[] Jumbf
+JxlFrameMetadata: uint Duration (ticks), string Name, uint Timecode,
+              bool IsKeyframe, crop/blend/reference fields (layer details,
+              mainly meaningful from DecodeRaw)
 
 EXIF
 ----
@@ -1767,9 +1838,18 @@ metadata, and the loop count on the image's GIF metadata:
     }
     animation.SaveAsGif("animation.gif");
 
-To decode only the first frame of a multi-frame GIF or TIFF, set
-`DecodingMode = FrameDecodingMode.First` on GifDecoder / TiffDecoder, or cap
-GifDecoder.MaxFrames.
+Animated JPEG XL works the same way: Image.Load returns one full canvas per
+displayed frame, and saving a multi-frame image as .jxl writes an animation.
+Frame durations are JxlFrameMetadata.Duration ticks at
+JxlMetadata.TicksPerSecondNumerator/Denominator (default 100 per second);
+JxlMetadata.LoopCount 0 loops forever. An image without JPEG XL metadata that
+was loaded from an animated GIF keeps its GIF delays and repeat count when
+saved as .jxl. For playback without holding every frame in memory, use
+JxlAnimationReader (see "JPEG XL (.jxl)").
+
+To decode only the first frame of a multi-frame GIF, TIFF or JPEG XL, set
+`DecodingMode = FrameDecodingMode.First` on GifDecoder / TiffDecoder /
+JxlDecoder, or cap MaxFrames on GifDecoder / JxlDecoder.
 
 ImageFrame<TPixel> itself exposes Width, Height, Metadata, PixelBuffer, the
 [x, y] indexer, ProcessPixelRows, CopyPixelDataTo and
@@ -1853,6 +1933,403 @@ BmpIndexingMode.
     await image.ExportAs8bppGrayscaleBmpFormatAsync(ms,
         BmpIndexingMode.SystemDrawingCompatible);
     byte[] bmpBytes = ms.ToArray();
+
+================================================================================
+
+JPEG XL (.jxl)
+==============
+JPEG XL is registered in Configuration.Default for the .jxl extension and the
+image/jxl MIME type, so Image.Load, Image.Identify, Save("x.jxl") and SaveAsJxl
+work like every other format. Everything is in CodeBrix.Imaging.Formats.Jxl
+(the SaveAsJxl and GetJxlMetadata extensions are in CodeBrix.Imaging).
+
+Beyond ordinary load/save, JPEG XL adds: lossless and lossy encoding, animation
+(with a streaming playback reader), HDR and wide-gamut color with managed ICC
+conversion, byte-exact lossless JPEG transcoding, and a raw plane API for
+integer/float samples, extra channels and layers.
+
+QUICK START
+-----------
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.Formats.Jxl;
+
+    using var image = Image.Load("photo.jxl");     // format auto-detected
+    image.Save("photo.png");
+
+    using var source = Image.Load("input.png");
+    source.Save("default.jxl");                    // lossy: Distance 1, Effort 7
+    source.SaveAsJxl("exact.jxl", new JxlEncoder { Lossless = true });
+    source.SaveAsJxl("smaller.jxl", new JxlEncoder { Quality = 75 });
+    source.SaveAsJxl("fast.jxl", new JxlEncoder { Effort = 3 });
+
+    IImageInfo info = Image.Identify("animation.jxl");   // header scan only
+    JxlMetadata jxl = info.Metadata.GetJxlMetadata();
+    Console.WriteLine($"{info.Width}x{info.Height}, {jxl.FrameCount} frames, "
+        + $"{jxl.BitsPerSample}-bit, animated: {jxl.IsAnimated}");
+
+DECODING (JxlDecoder)
+---------------------
+Image.Identify reads raw codestreams and containers, reports size and
+precision, and scans frame tables without decoding pixels.
+Metadata.GetJxlMetadata().FrameCount counts display frames, excluding previews
+and hidden reference layers. Embedded original ICC, Exif, XMP and JUMBF
+metadata are preserved; Brotli-compressed metadata boxes are supported.
+
+Image.Load supports Modular and VarDCT reconstruction, restoration filters,
+channel upsampling, XYB-to-sRGB, reference patches, splines, deterministic
+noise, low-frequency reference frames, cropped-layer composition and
+animation; it returns one full canvas per displayed frame. DecodingMode and
+MaxFrames limit displayed frames; RenderSpotColors controls display painting.
+Floating-point RgbaVector output retains values outside 0..1. The decoder
+leaves the caller's stream open, and forward-only (non-seekable) input is
+supported.
+
+Pass a configured decoder explicitly to change options:
+
+    var decoder = new JxlDecoder
+    {
+        TargetColor = JxlTargetColor.Srgb,   // convert wide-gamut/HDR to sRGB
+        TargetDisplayLuminance = 255,        // tone-map HDR for an SDR display
+        MaxPixels = 50_000_000,              // reject larger canvases early
+    };
+    using var image = Image.Load<Rgba32>("hdr-photo.jxl", decoder);
+
+Resource limits (all checked before the corresponding allocation; exceeding
+one rejects the input with an exception). The defaults suit untrusted input;
+raise them explicitly for trusted, larger images and animations:
+
+    ApplyOrientation      default true; dimensions and pixels use the display
+                          orientation.
+    MaxPixels             100 million: canvas or frame size.
+    MaxTotalPixels        100 million across frames retained by Image.Load or
+                          DecodeRaw (each full canvas when coalescing, each
+                          layer otherwise).
+    MaxDecodedPixels      one billion across all decoded frames, including
+                          hidden/reference work; normal frames count the larger
+                          of layer and canvas. Patch destinations additionally
+                          count their clipped area at coded color resolution,
+                          with at least one pixel charged per target.
+    MaxCodedFrames        10,000, including previews and hidden frames; also
+                          bounds Identify.
+    MaxModularBytes       2 GiB of simultaneous integer-plane storage per
+                          frame, shared across parallel Modular workspaces
+                          (also inside VarDCT, whose coefficients use about
+                          12 bytes per pixel; the default admits any canvas
+                          within MaxPixels). It excludes compressed data,
+                          floating-point rendering and retained output;
+                          allocator limits and MaxPixels still bound
+                          individual plane allocations.
+    MaxMetadataBytes      64 MiB of retained metadata.
+
+Streaming animation (JxlAnimationReader) uses a bounded queue instead of
+MaxTotalPixels; work and frame budgets reset per playback pass.
+
+COLOR, ICC AND HDR
+------------------
+JxlDecoder.TargetColor is Auto (sRGB for XYB-coded images, original
+otherwise), Original or Srgb. Original output keeps the embedded ICC profile
+or synthesizes one for an enumerated encoding. Srgb output converts pixels and
+drops the profile. The managed CMS supports RGB/gray matrices, sampled and
+parametric curves, A2B/B2A LUTs, Lab PCS, CMYK and PQ/HLG CICP profiles. CMYK
+display pixels default to sRGB; use DecodeRaw for original CMYK including its
+K plane. LUT color conversion applies XYZ scaling at the PCS boundary and
+honors legacy lut16Type Lab encodings and XYZ input matrices. The undefined
+legacy lut8Type XYZ case retains unit scaling; use a 16-bit LUT for an
+unambiguous XYZ profile.
+
+TargetDisplayLuminance defaults to zero, preserving the source HDR range. Set
+it to a display peak in nits (for example, 255) with sRGB output to apply PQ
+tone mapping or HLG display adaptation and gamut mapping. Original-color
+output is unaffected by this setting; RgbaVector can retain unclamped HDR
+values.
+
+RAW DECODING (DecodeRaw)
+------------------------
+JxlDecoder.DecodeRaw returns owned typed planes including every extra channel.
+Dispose the JxlRawImage when finished. Untransformed integer planes retain
+exact integers through 31 bits; rendering that requires fractional arithmetic
+returns floating-point planes. Raw spot and associated alpha channels remain
+separate. GetIntegerRowSpan/GetFloatRowSpan expose the corresponding sample
+type without an implicit conversion.
+
+Coalesce=false applies only to DecodeRaw: it exposes all coded layers, their
+original crop bounds and blend metadata in coded orientation. Coalesced raw
+images use ApplyOrientation. Raw Coalesce=false with TargetColor=Auto
+preserves the coded color representation of each layer.
+
+    using var stream = File.OpenRead("layers.jxl");
+    using JxlRawImage raw = new JxlDecoder { Coalesce = false }
+        .DecodeRaw(Configuration.Default, stream);
+    foreach (JxlRawFrame frame in raw.Frames)
+    {
+        JxlFrameMetadata layer = frame.Metadata;   // crop, blending, duration
+        foreach (JxlRawPlane plane in frame.Planes)
+        {
+            if (plane.SampleType == JxlSampleType.Integer)
+            {
+                ReadOnlySpan<int> row = plane.GetIntegerRowSpan(0);
+            }
+            else
+            {
+                ReadOnlySpan<float> row = plane.GetFloatRowSpan(0);
+            }
+        }
+    }
+
+LOSSLESS JPEG TRANSCODING (JxlJpegTranscoder)
+---------------------------------------------
+JpegToJxl recompresses an existing JPEG without decoding it to pixels (no
+generation loss), usually making it smaller; JxlToJpeg restores
+the ORIGINAL JPEG file byte for byte. JxlMetadata.HasJpegReconstruction tells
+you whether a .jxl file can be turned back into its JPEG.
+
+    using (var jpeg = File.OpenRead("photo.jpg"))
+    using (var jxl = File.Create("photo.jxl"))
+    {
+        JxlJpegTranscoder.JpegToJxl(jpeg, jxl);
+    }
+
+    using (var jxl = File.OpenRead("photo.jxl"))
+    using (var jpeg = File.Create("restored.jpg"))   // identical to photo.jpg
+    {
+        JxlJpegTranscoder.JxlToJpeg(jxl, jpeg);
+    }
+
+JpegToJxl preserves original JPEG bytes through coefficient recompression and
+jbrd metadata. It supports 8-bit sequential/progressive Huffman JPEGs with one
+or three components, including restart markers and original padding.
+JxlJpegTranscodeOptions controls Effort (default 7), expert effort 11,
+MaxPixels (100 million), MaxInputBytes (512 MiB) and MaxScans (500). The scan
+limit is checked before coefficient parsing or pixel fallback. Unsupported
+JPEG coding processes throw NotSupportedException by default.
+AllowPixelFallback=true explicitly allows decoding supported JPEGs to pixels
+and encoding those pixels losslessly; that fallback cannot reconstruct the
+original JPEG file. Unrepresentable final DC coefficients, too many
+quantization/Huffman table definitions, and reconstruction trailer/reset-point
+limits fail with NotSupportedException before output, or use the explicitly
+enabled pixel fallback. Invalid used quantizers and invalid Huffman codes
+remain errors. Working storage is admitted against the configuration's
+MemoryAllocator limit before output; it grows with the JPEG's coefficient
+content, not just its pixel count. Both streams stay open and can be
+forward-only. The coefficient path never renders pixels.
+
+JxlToJpeg reconstructs the original JPEG bytes from a container carrying jbrd
+data, without rendering pixels. It supports sequential/progressive scans,
+restart markers, original quantization/Huffman tables, padding, APP/COM
+markers, split ICC segments, Exif, XMP and post-EOI bytes. Source and
+destination streams stay open; input may be forward-only. Invalid input or
+cancellation may leave partial destination output.
+JxlJpegReconstructionOptions supplies caller-controlled MaxPixels
+(100 million), MaxMetadataBytes (64 MiB), MaxModularBytes (2 GiB across
+integer workspaces), MaxScans (500), MaxScanBlocks (100 million 8x8
+component-block visits across all scans), and MaxOutputBytes (512 MiB). The
+output limit counts only bytes produced by the current call; limit failures
+can leave partial output.
+
+ANIMATION
+---------
+Image.Load decodes every displayed frame into memory, and saving a
+multi-frame image writes an animation. Frame durations are
+JxlFrameMetadata.Duration ticks at JxlMetadata.TicksPerSecondNumerator/
+TicksPerSecondDenominator (default 100 per second); LoopCount 0 loops forever.
+An image without JPEG XL metadata that came from an animated GIF keeps its GIF
+delays and repeat count.
+
+    using var animation = new Image<Rgba32>(200, 200);
+    animation.Metadata.GetJxlMetadata().LoopCount = 0;              // forever
+    animation.Frames.RootFrame.Metadata.GetJxlMetadata().Duration = 10; // 0.1 s
+    foreach (Image<Rgba32> source in frameImages)
+    {
+        ImageFrame<Rgba32> added =
+            animation.Frames.AddFrame(source.Frames.RootFrame);
+        added.Metadata.GetJxlMetadata().Duration = 10;
+    }
+    animation.SaveAsJxl("animation.jxl",
+        new JxlEncoder { Lossless = true, Effort = 3 });
+
+STREAMING PLAYBACK (JxlAnimationReader)
+---------------------------------------
+JxlAnimationReader decodes ahead on a background task and hands out owned
+full-canvas frames through a bounded queue, so long animations play without
+holding every frame in memory.
+
+    using var stream = File.OpenRead("animation.jxl");
+    using var reader = JxlAnimationReader.Open(stream, new JxlAnimationReaderOptions
+    {
+        DecodeAhead = 3,
+        PixelFormat = JxlPixelFormat.Bgra32,
+        Loop = false,
+    });
+    while (reader.TryGetNextFrame(out JxlAnimationFrame frame))
+    {
+        using (frame)
+        {
+            // frame.Pixels: frame.Height rows of frame.Stride bytes (BGRA).
+            Present(frame.Pixels, frame.Width, frame.Height);
+            WaitUntil(frame.Timestamp + frame.Duration);   // caller schedules
+        }
+    }
+
+    // Or asynchronously:
+    await foreach (JxlAnimationFrame frame in
+                   reader.ReadFramesAsync(cancellationToken))
+    {
+        using (frame) { /* present */ }
+    }
+
+Open defaults to straight-alpha sRGB output. TryGetNextFrame blocks until a
+frame is available or playback ends; ReadFramesAsync and await foreach provide
+asynchronous consumption. Dispose each frame after presenting its
+Pixels/PixelMemory. A delivered buffer remains valid when the reader is
+disposed, until that frame itself is disposed. Duration and Timestamp are
+TimeSpan values; the caller schedules presentation. Loop defaults to true and
+follows the encoded loop count (zero means infinite); set Loop=false for one
+pass. Cancellation passed to Open ends playback. LeaveOpen defaults to true.
+Configuration can specify the allocator and maximum parallelism. DecodeAhead
+bounds queued frames; one additional frame may be in progress, and retained
+consumer frames remain the consumer's responsibility. Options.Decoder carries
+the JxlDecoder settings (default TargetColor = Srgb).
+
+SeekToKeyframe replays preceding dependencies and returns the displayed frame
+containing a time within the animation. Seeking requires exclusive access.
+Seekable streams rewind directly. Forward-only input with looping enabled uses
+a compressed replay cache bounded by MaxBufferedInputBytes (default 64 MiB).
+Forward-only input with Loop=false is not cached and cannot seek. Exceeding
+the cache limit throws InvalidImageContentException. Dispose/DisposeAsync
+cancel queued work and release buffers; a stream blocked in its own
+synchronous Read must return before shutdown can finish. Image-level metadata
+after the image data, and the full frame count, become available after the
+first complete pass.
+
+LOSSLESS ENCODING
+-----------------
+Request lossless output with JxlEncoder { Lossless = true }, Distance = 0 or
+Quality = 100. It preserves common 8/16-bit integer pixels and RgbaVector
+sample bits, including the colors of fully transparent pixels by default
+(TransparentColorMode.Clear discards them for smaller files). It writes full
+display canvases for animations, preserving durations, names, timecodes and
+loop timing. Embedded ICC and Exif/XMP/JUMBF metadata are supported; a
+container is selected when required, with optional Brotli metadata
+compression. Streams remain open. Effort 11 requires AllowExpertEffort = true.
+
+  * Invalid Exif orientation values fall back to JPEG XL orientation metadata,
+    whose default is normal orientation, without changing the source metadata.
+  * ICC transport is prepared before writing the container. Profiles over
+    4 MiB require Level 10 and a container.
+  * GRAY profiles are accepted with RGB(A) buffers when every frame has equal
+    color samples. Validation occurs before output and preserves exact
+    floating-point bits; colored samples with a gray profile are rejected,
+    except transparent colors explicitly discarded by
+    TransparentColorMode.Clear. The source is not modified.
+  * HalfSingle, HalfVector2 and HalfVector4 use their IEEE binary16 sample
+    values directly, matching RgbaVector's floating-point semantics; signed
+    zeros, subnormals, infinities and NaN payloads are retained. This bypasses
+    those pixel types' generic signed-to-scaled color conversion; other pixel
+    types use their scaled color vectors. The signed normalized pixel formats
+    retain their full packed integer range.
+  * Effort 1 uses a dedicated fast path for 1-16-bit integer grayscale/RGB
+    with optional alpha. Other eligible frames larger than 2048 pixels in
+    either dimension are encoded in bounded chunks at efforts 1-9; efforts
+    10/11 retain the complete sample planes for global searches.
+  * At efforts 5+, eligible integer images can use exact repeated-tile
+    patches when the complete encoded result is smaller. Palette, color
+    transform and predictor searches grow with effort; effort 11 compares
+    many complete configurations and is very slow.
+
+LOSSY ENCODING
+--------------
+The default JxlEncoder is lossy (Distance 1, visually near-lossless). Set
+Distance (0..25; larger = smaller and lower quality) or Quality (0..100,
+overriding Distance; 100 = lossless). Positive distances below 0.05 use 0.05.
+Lossy encoding imports finite RGB/grayscale and floating-point colors through
+managed ICC/XYB conversion and keeps alpha lossless at full resolution. ICC
+SDR/HDR profiles and animations are supported.
+
+  * Progressive = Ac writes three frequency passes; Dc writes a separate
+    low-frequency frame; Full combines both.
+  * Efforts 5+ choose variable DCT block sizes (up to 64x64), estimate chroma
+    from luma, and adapt quantization to local image content; efforts 8-10
+    additionally refine quantization with Butteraugli perceptual comparisons
+    against the original.
+  * PhotonNoiseIso adds deterministic film-grain noise while preserving alpha.
+    NoiseModeling = true estimates a noise model from flat noisy regions (off
+    by default, as in libjxl).
+  * Patches controls text-like repeated-content searches (automatic at effort
+    5+); Dots controls isolated-dot detection (automatic at effort 7+ and
+    distance 3+).
+  * At efforts 5+ with Distance above 0.5, inverse Gaborish preprocessing is
+    paired with the decoder's Gaborish restoration filter.
+  * Resampling = 2, 4 or 8 reduces color and alpha resolution while keeping
+    the canvas size (for very low bitrates).
+  * FasterDecoding = 1..4 trades compression for less decoder work. Exact
+    lossless samples remain exact.
+  * Modular = true selects lossy Modular (XYB/Squeeze) instead of VarDCT.
+
+ENCODER SPEED AND EFFORT
+------------------------
+Encoding is far more CPU-intensive than decoding. The encoder splits each
+image into independent tiles, groups and candidate searches and runs them on
+up to Configuration.MaxDegreeOfParallelism threads (all cores by default);
+the output bytes are identical for any degree of parallelism. Effort
+(1..10, default 7) trades encoding time for file size:
+
+  * On a multi-core machine the default Effort 7 encodes a multi-megapixel
+    photo in seconds; the Butteraugli efforts 8-10 and lossless efforts 9-11
+    take considerably longer. Run large encodes off the UI thread
+    (SaveAsJxlAsync).
+  * On one or two cores, or when encoding many images concurrently, consider
+    a lower effort: Effort 3 lossy is several times faster than Effort 7 with
+    a modestly larger file, and lossless Effort 1 is the fastest lossless mode.
+  * Decoding is fast at every effort; animations decode in real time.
+  * JxlJpegTranscoder.JpegToJxl does not re-encode pixels and is much faster
+    than encoding a decoded JPEG; its pixel fallback is a full lossless
+    encode.
+
+Encoder working storage is checked before output against
+Configuration.MemoryAllocator's AllocationLimitMegabytes (4 GiB by default on
+64-bit processes, 1 GiB on 32-bit). This is a conservative estimate of
+encoder-owned storage (token/histogram arrays, retained compressed candidates,
+imported planes, metadata) excluding caller-owned input/output and runtime
+overhead; it is not a process RSS cap. It can reject highly compressible
+images whose actual requirements would be smaller. Raise the allocator limit
+to admit the same requested search; the encoder never silently lowers effort
+to fit. Rejections throw InvalidMemoryOperationException before any output is
+written. Frame and extra-channel names must fit in 1071 UTF-8 bytes and
+contain no unpaired surrogates; they are validated before output.
+
+ADVANCED: RAW ENCODING (EncodeRaw)
+----------------------------------
+JxlEncoder.EncodeRaw accepts owned integer/float planes constructed with
+JxlRawPlane.FromIntegers/FromFloats, JxlRawFrame and JxlRawImage. It retains
+all extra-channel roles (alpha, depth, spot colors, CFA, thermal, ...) and
+supports explicit cropped layers, blends and reference slots.
+
+    int[] red = ..., green = ..., blue = ...;    // width * height samples
+    using var image = new JxlRawImage(width, height,
+    [
+        new JxlRawFrame(
+        [
+            JxlRawPlane.FromIntegers(width, height, red, 12, colorChannelIndex: 0),
+            JxlRawPlane.FromIntegers(width, height, green, 12, colorChannelIndex: 1),
+            JxlRawPlane.FromIntegers(width, height, blue, 12, colorChannelIndex: 2),
+        ]),
+    ]);   // 12 = bitsPerSample
+    using var output = File.Create("twelve-bit.jxl");
+    new JxlEncoder { Lossless = true }.EncodeRaw(image, output);
+
+JxlRawFrame.Encoding accepts explicit patches, quantized splines and an
+eight-value noise LUT; these features are applied to the supplied residual
+samples during decoding. All 27 DCT transforms are available through
+JxlRawFrame.Encoding.Transform, and JxlQuantizationMatrix.CreateDefault
+returns editable weight copies for custom per-frame matrices (transposed
+transforms and AFV orientations share families; the encoder uses the rounded
+matrices throughout). UseLowFrequencyFrame writes a separate LF frame.
+JxlRawImage.Encoding supports a borrowed preview frame, intrinsic dimensions,
+tone metadata, enumerated color coordinates, and custom opsin and upsampling
+weights. The caller owns the preview and disposes it separately from the main
+image.
+
+Source provenance is in THIRD-PARTY-NOTICES.txt.
 
 ================================================================================
 
@@ -2472,6 +2949,32 @@ Example 14: 8bpp grayscale BMP for a document-imaging system
     // The in-memory image is untouched and still Rgba-based:
     image.Save("scan-copy.png");
 
+Example 15: Convert a photo library to JPEG XL
+----------------------------------------------
+    using CodeBrix.Imaging;
+    using CodeBrix.Imaging.Formats.Jpeg;
+    using CodeBrix.Imaging.Formats.Jxl;
+
+    foreach (string path in Directory.EnumerateFiles("photos"))
+    {
+        string target = Path.ChangeExtension(path, ".jxl");
+        if (Image.DetectFormat(path) is JpegFormat)
+        {
+            // JPEG input: lossless recompression; the original JPEG can be
+            // restored byte for byte later with JxlJpegTranscoder.JxlToJpeg.
+            using var jpeg = File.OpenRead(path);
+            using var jxl = File.Create(target);
+            JxlJpegTranscoder.JpegToJxl(jpeg, jxl,
+                new JxlJpegTranscodeOptions { AllowPixelFallback = true });
+        }
+        else
+        {
+            // Other formats: visually near-lossless at a quick effort.
+            using var image = Image.Load(path);
+            await image.SaveAsJxlAsync(target, new JxlEncoder { Effort = 3 });
+        }
+    }
+
 ================================================================================
 
 MINIMUM VIABLE PROJECT
@@ -2562,6 +3065,13 @@ PERFORMANCE TIPS
 13. NO NATIVE DEPENDENCIES, NO WARM-UP. There is nothing to install and
     nothing to initialize; the same code runs identically on Windows, Linux
     and macOS.
+
+14. PICK A JPEG XL EFFORT DELIBERATELY. JxlEncoder uses all cores by
+    default (Configuration.MaxDegreeOfParallelism) and Effort 7 encodes a large
+    photo in seconds; efforts 8-10 cost much more. When throughput across many
+    concurrent encodes matters, lower the effort or the per-encode
+    parallelism. Use JxlJpegTranscoder.JpegToJxl (no pixel re-encode) for JPEG
+    input. Decoding is fast at every effort.
 
 ================================================================================
 
@@ -2661,6 +3171,15 @@ COMMON PITFALLS TO AVOID
     packages carry all three namespaces. Read that package's own
     AGENT-README.txt before using it.
 
+22. DO NOT expect JxlJpegTranscoder.JxlToJpeg to work on every .jxl file. Only
+    files produced from a JPEG by JpegToJxl carry reconstruction data; check
+    JxlMetadata.HasJpegReconstruction first. For any other .jxl, decode with
+    Image.Load and re-encode with JpegEncoder (lossy).
+
+23. DO NOT keep JxlAnimationFrame objects alive. Each frame owns a pooled
+    buffer; dispose it after presenting, or the reader's memory grows with
+    every retained frame.
+
 ================================================================================
 
 WHAT THIS PACKAGE DOES NOT DO
@@ -2683,16 +3202,19 @@ It is a raster imaging + text-rasterization library. It does NOT provide:
   - SVG parsing or rendering.
   - PDF reading, writing or rendering.
   - RAW camera formats (.CR2, .NEF, .ARW, .DNG) or HEIF/HEIC/AVIF.
-  - JPEG 2000, JPEG XL, ICO, PSD or DICOM.
+  - JPEG 2000, ICO, PSD or DICOM.
   - Animated WebP. WebP encoding is single-frame only, and decoding an
-    animated WebP throws NotSupportedException. Use GIF for animation.
+    animated WebP throws NotSupportedException. Use GIF or JPEG XL for
+    animation.
   - Video decoding, encoding or frame extraction; camera/webcam capture.
   - OCR, barcode reading, face/object detection or any ML inference.
   - GPU-accelerated processing. Everything is CPU SIMD (AVX2/SSSE3) plus
     parallel row iteration.
   - Any UI, window, or screen-capture surface.
-  - Colour management beyond carrying the ICC profile bytes: the ICC profile
-    is read, written and validated, but pixels are not transformed through it.
+  - General colour-management operations for arbitrary loaded images. The
+    JPEG XL codec and CMYK JPEG decoding have their own managed color
+    conversion; the other codecs carry ICC profile bytes without transforming
+    pixels.
   - Rich text layout beyond a single TextOptions block — no HTML/RTF, no
     tables, no inline images (TextRun gives per-range font and decoration
     only).
@@ -2784,6 +3306,20 @@ Feature-to-test-file map (all paths under tests/CodeBrix.Imaging.Tests/):
   Primitives — Point, Rectangle, Size:
     Primitives/PointTests.cs, Primitives/RectangleTests.cs, Primitives/SizeTests.cs
 
+  JPEG XL (all under Formats/Jxl/):
+    Identify, metadata and frame counts:     JxlHeaderTests.cs
+    Lossless SaveAsJxl, metadata, animation
+    and GIF timing:                          JxlPublicEncoderTests.cs
+    Lossy encoding options (distance,
+    quality, progressive, noise, ICC/HDR):   JxlPublicLossyEncoderTests.cs
+    JPEG <-> JXL lossless transcoding:       JxlJpegTranscoderTests.cs,
+                                             JxlJpegReconstructionTests.cs
+    Streaming playback (JxlAnimationReader): JxlAnimationTests.cs
+    Color targets, ICC and HDR tone mapping: JxlColorTests.cs, JxlHdrTests.cs
+    Raw planes, layers and EncodeRaw:        JxlRawTests.cs, JxlRawEncoderTests.cs
+    Decoder resource limits:                 JxlDecodeBudgetTests.cs
+    Encoder memory limits:                   JxlEncoderMemoryLimitTests.cs
+
 Raw file content can be fetched from:
 
     https://raw.githubusercontent.com/ellisnet/CodeBrix.Imaging/main/<path>
@@ -2805,6 +3341,8 @@ LOAD / SAVE
     WrapMemory      Image.WrapMemory<Rgba32>(memory, w, h, PngFormat.Instance)
     Save            image.Save("f.png") | image.Save(stream, new PngEncoder())
     SaveAs*         image.SaveAsJpeg(stream, new JpegEncoder { Quality = 85 })
+    JPEG XL         image.SaveAsJxl("f.jxl", new JxlEncoder { Lossless = true })
+                    new JxlEncoder { Quality = 80, Effort = 3 }   (lossy, fast)
     Bytes/base64    image.ToByteArray(PngFormat.Instance) | ToBase64String(...)
     DetectFormat    Image.DetectFormat(stream)      (reset Position after!)
     Identify        Image.Identify(stream)          -> IImageInfo
@@ -2869,6 +3407,15 @@ FRAMES
                        | ExportFrame(i) (removes!) | RemoveFrame(i)
     frame.Metadata.GetGifMetadata().FrameDelay = 8      // hundredths of a second
     image.Metadata.GetGifMetadata().RepeatCount = 0     // loop forever
+    frame.Metadata.GetJxlMetadata().Duration = 10       // ticks (100/s default)
+
+JPEG XL   (using CodeBrix.Imaging.Formats.Jxl;)
+    JPEG -> JXL     JxlJpegTranscoder.JpegToJxl(jpegStream, jxlStream)  (lossless)
+    JXL -> JPEG     JxlJpegTranscoder.JxlToJpeg(jxlStream, jpegStream)  (original bytes)
+    Playback        JxlAnimationReader.Open(stream) + TryGetNextFrame(out frame)
+    HDR to SDR      new JxlDecoder { TargetColor = JxlTargetColor.Srgb,
+                                     TargetDisplayLuminance = 255 }
+    Raw planes      new JxlDecoder().DecodeRaw(config, stream) | encoder.EncodeRaw(raw, s)
 
 8BPP BMP   (using CodeBrix.Imaging.Helpers;)
     image.ExportAs8bppGrayscaleBmpFormat(stream[, matrix][, indexingMode])
@@ -2880,7 +3427,7 @@ CONFIG
     config.MaxDegreeOfParallelism | .PreferContiguousImageBuffers
     MemoryAllocator.Default.ReleaseRetainedResources()
 
-Formats     BMP, GIF, JPEG, PBM, PNG, TGA, TIFF, WebP
+Formats     BMP, GIF, JPEG, JPEG XL, PBM, PNG, TGA, TIFF, WebP
 Pixel types Rgba32 Rgb24 Bgra32 Bgr24 Argb32 Abgr32 Byte4 L8 L16 La16 La32 A8
             Rgb48 Rgba64 Rg32 RgbaVector HalfSingle HalfVector2 HalfVector4
             Bgr565 Bgra4444 Bgra5551 Rgba1010102 NormalizedByte2

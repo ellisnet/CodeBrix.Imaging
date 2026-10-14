@@ -15,6 +15,7 @@ using CodeBrix.Imaging.Advanced;
         "Bmp",
         "Gif",
         "Jpeg",
+        "Jxl",
         "Pbm",
         "Png",
         "Tga",

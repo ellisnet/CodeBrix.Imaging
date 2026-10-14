@@ -1,0 +1,30 @@
+{
+  "referenceTool": "djxl 0.11.2 image.pfm --orig_icc_out",
+  "sha256": {
+    "alpha_nonpremultiplied": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "alpha_premultiplied": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "alpha_triangles": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "animation_icos4d": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "animation_newtons_cradle": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "animation_spline": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "bench_oriented_brg": "6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc",
+    "bicycles": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "blendmodes": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "cmyk_layers": "4855b8fabb96bdc6495d45d089bb8c8efb1ae18389e0dc9e75a5f701a9c0b662",
+    "delta_palette": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "grayscale": "3f62598dfd40d6642ca5fd962559bb6615af15448a57a3972a4089c109e62fbd",
+    "grayscale_jpeg": "78001f4bf342ecf417b8dac5e3c7cf8da3ee25701951bc2a7e0868bc6dc81cac",
+    "grayscale_public_university": "48d006762d583f6e354a3223c0a5aeaff7f45a324e229d237d69630bcc170241",
+    "lossless_pfm": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "lz77_flower": "c102d13c98a6a9f47c2cbf9d45f40350c2b9fd45009bb501537b95601f086f28",
+    "mul_no_extra_channels": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "noise": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "opsin_inverse": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "patches": "3a10bcd8e4c39d12053ebf66d18075c7ded4fd6cf78d26d9c47bdc0cde215115",
+    "patches_lossless": "3a10bcd8e4c39d12053ebf66d18075c7ded4fd6cf78d26d9c47bdc0cde215115",
+    "progressive": "bef95ce5cdb139325f2a299b943158e00e39a7ca3cf597ab3dfa3098e42fc707",
+    "spot": "ce0caee9506116ea94d7367d646f7fd6d0b7e82feb8d1f3de4edb3ba57bae07e",
+    "sunset_logo": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+    "upsampling": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51"
+  }
+}

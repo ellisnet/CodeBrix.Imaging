@@ -1,0 +1,321 @@
+{
+  "license": "Apache-2.0",
+  "copyright": "Copyright (c) 2026 Jeremy Ellis and contributors",
+  "jpegEncoder": "libjpeg-turbo version 2.1.5 (build 20250503)",
+  "jxlEncoder": "cjxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "jxlDecoder": "djxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "cases": [
+    {
+      "name": "baseline-444",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-sample",
+        "1x1,1x1,1x1"
+      ],
+      "inputSha256": "2f29234c2f785bf540fc90c60de856bf19be78b1e083acb3c23fc3df40343237",
+      "referenceSha256": "b25133ab89dea352d169613312226a906fc0fcf4fe14eb75aedbb4176ceffeac"
+    },
+    {
+      "name": "baseline-422",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-sample",
+        "2x1,1x1,1x1"
+      ],
+      "inputSha256": "077d99511b6476459ca814fddd7a0764d8302de05bace1fddb98c9283557731f",
+      "referenceSha256": "5b94f7c330882a24aaf6daee058509e7e67726217346e2ceb554ba4336aaccbb"
+    },
+    {
+      "name": "baseline-440",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-sample",
+        "1x2,1x1,1x1"
+      ],
+      "inputSha256": "6e223c427900b5cfcde26d926a80ba9d6547fb44ef6b55295245f35b009d1175",
+      "referenceSha256": "09861671b50f8d27987e1e29ea084d4636b12dc42b2223a5f4c3a24916c27198"
+    },
+    {
+      "name": "baseline-420",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "e23f50c1c111994e58b61c0c5a675e0e757bd93e6d0958ff2870b6fbb698ab86",
+      "referenceSha256": "52dd42227a517b114a86909fba6374b0cd16f60dc6f4da3b4c096b7ae4756aa5"
+    },
+    {
+      "name": "one-pixel",
+      "width": 1,
+      "height": 1,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "1fe0c509a2217c75e389211c1648710df1bca13f6183f7ffcf6ac42a3f4dd90e",
+      "referenceSha256": "d21297422048413b034462a20137b4c858e2ba6f4aa8caa44a2a992ba38bb087"
+    },
+    {
+      "name": "one-column",
+      "width": 1,
+      "height": 19,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "7f6eb5f5ffcfdd2a7636e5d24cc5e4bfe3311521ed1eda1845862c9241a94f83",
+      "referenceSha256": "1ede309b13894f9d1b37e68db622db5c02bc1d648e3044e3e2e87a0fd9a84aff"
+    },
+    {
+      "name": "one-row",
+      "width": 19,
+      "height": 1,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "ddcae802b2da6bb499c6278f49c69d5516ff4d1e384ba417006e5c0118597258",
+      "referenceSha256": "6776fe4c47bc44b8315b8501fee0eaa153768b73b745a701c300a074d600a135"
+    },
+    {
+      "name": "optimized",
+      "width": 263,
+      "height": 17,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-optimize"
+      ],
+      "inputSha256": "1bc40b418aed1f7a94767c6fdec073b97dec5c16ac8f1d3fa464b29f4fd3803f",
+      "referenceSha256": "2fca9f5cdcc3913292916999e1cdbc6e62c8e498e8065234b415c64a2daaf614"
+    },
+    {
+      "name": "restart",
+      "width": 65,
+      "height": 49,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-restart",
+        "3B"
+      ],
+      "inputSha256": "3762bc544b21100c64d79e0468d792b3bd5523c86e9d3919616b9d568085b01c",
+      "referenceSha256": "c7c7d8205c547fe6ac5e2f31ae131013dcdd4256dc72ac80d485ff9d5a705fa8"
+    },
+    {
+      "name": "restart-optimized",
+      "width": 65,
+      "height": 49,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-restart",
+        "1B",
+        "-optimize"
+      ],
+      "inputSha256": "c80ab1440c55dcfa99144c4364c81291b647e860b7554c3e2aa80a95a10d544d",
+      "referenceSha256": "1016e5fecca66bdb9ec90b8cc57eec05a4f8c2e2e2a3bfd954ad85c78b8189d3"
+    },
+    {
+      "name": "progressive-444",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-progressive",
+        "-sample",
+        "1x1,1x1,1x1"
+      ],
+      "inputSha256": "a02fa9eecb91cc742f17342e05a4918ea71a5c443435a2baea022aaf54972c27",
+      "referenceSha256": "450f933f17a1b258e85cc17dc8e5b87b78d6855c7880a1de9c2221a58c797732"
+    },
+    {
+      "name": "progressive-422",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-progressive",
+        "-sample",
+        "2x1,1x1,1x1"
+      ],
+      "inputSha256": "dcba9997a6c2150001693a8f40e4a31d0de075b3ebf31040edfc17eb0f43d410",
+      "referenceSha256": "5ecf7cc6106fb362d1a322f145bc2ca189fe5573ae342c3abf1b9972fab5fc04"
+    },
+    {
+      "name": "progressive-440",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-progressive",
+        "-sample",
+        "1x2,1x1,1x1"
+      ],
+      "inputSha256": "4edccdeec1cf179fc34a22058ac21fa91ea300cd943746d6ca6bcad3d7ed63db",
+      "referenceSha256": "35bad303e4111cfc4edf8b66dafb01d634e1218e10d7b1e0d86033469982e73e"
+    },
+    {
+      "name": "progressive-420",
+      "width": 263,
+      "height": 17,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-progressive"
+      ],
+      "inputSha256": "82cd4f98158f309a4620398e1b2937af2b1da9c54f45c3a9818d44b2fda46cf8",
+      "referenceSha256": "532c95922448aa370cbab972cc204f1aff9a266fb226f5cd0b7f6661a50ee223"
+    },
+    {
+      "name": "progressive-restart",
+      "width": 65,
+      "height": 49,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-progressive",
+        "-restart",
+        "3B"
+      ],
+      "inputSha256": "169d12ca9d4d0152fedea022654db8cb06b1b018573aba58fe19a93ac709e028",
+      "referenceSha256": "453b094cbbe52dac57e9da8948cf364d7a5cd528a41c39639e99b9b53cb468bd"
+    },
+    {
+      "name": "gray",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-grayscale"
+      ],
+      "inputSha256": "59ead2a5060fb8babfd56bea5fc1448513ba2794a887ac164075e7878907fefa",
+      "referenceSha256": "991f2fe03437b6809dae4a3627e7448aab714396196fd9593d1ed74bfeb0fad5"
+    },
+    {
+      "name": "gray-progressive",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-grayscale",
+        "-progressive"
+      ],
+      "inputSha256": "1ca0e88287ffb4ce2fdda0b4f442099a5c422a36bcfd590907320ad899fd3e5e",
+      "referenceSha256": "532d26d982760e8e7fa42e2ff2f8b624128354c0f62c46d47976b402163f1f4b"
+    },
+    {
+      "name": "rgb",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-rgb"
+      ],
+      "inputSha256": "07369b6c737f7904aa89fcc6bfd5339cc4a5a1b2b9bdeeabf1d13c8983290604",
+      "referenceSha256": "fe91339124dee47309276c48859b46fbc43e2443bc55bc9af8d6f389b58c66f8"
+    },
+    {
+      "name": "rgb-progressive",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-rgb",
+        "-progressive"
+      ],
+      "inputSha256": "5421df2733698315e750a5028d426a95cd013923a703369a3e06810e6da0cafa",
+      "referenceSha256": "f5a9e309e2c8882b465fa3640488cc1107f381d32b9b995cf3146a6ebab84da9"
+    },
+    {
+      "name": "quant16",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-quality",
+        "1"
+      ],
+      "inputSha256": "e43074dc0c767a27575d496e2bae4d0b453402feeae2434b2da30a9b56162573",
+      "referenceSha256": "9e283cfb761b638873cba7265d6ecc4c4338e1d03e1725827b7243d3a34b1546"
+    },
+    {
+      "name": "metadata",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "87d0f76221ebd4c18a9f9da02fe715edc85d21d3635f81e0f106838545885183",
+      "referenceSha256": "de3448e02b34efcd48a5955dc1508224a163132790427be3cbc4f8378a084cef"
+    },
+    {
+      "name": "padding",
+      "width": 1,
+      "height": 1,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "effa97daaeae0cd599ebdaa1b68ce49528b8e8db32348cec12157edf9e37f065",
+      "referenceSha256": "5095f4f9eb03277d839b3c3369804e2211fd486dfa1605f19282be00a81297f3"
+    },
+    {
+      "name": "fill-bytes",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "fabee5dd1e249c944f8fdaf8be6c80a4c8d13561e5243ab3b48c47994d06684c",
+      "referenceSha256": "f8121d09c12e6f99fff88ef4c0b6c90b20ed8258af8cb4331a97274340b5fd7f"
+    },
+    {
+      "name": "split-icc",
+      "width": 19,
+      "height": 13,
+      "jpegFlags": [
+        "-quality",
+        "83"
+      ],
+      "inputSha256": "f2295d4b8965ba7f086689575e8aa290c7cc605a00dea29431185ae84662205b",
+      "referenceSha256": "e933e841d5fe02d899d38294e6ccb6a41bf9e924255d0153f81aa80a5419c423"
+    },
+    {
+      "name": "sequential-multiscan",
+      "width": 65,
+      "height": 49,
+      "jpegFlags": [
+        "-quality",
+        "83",
+        "-scans",
+        "scans.txt",
+        "-restart",
+        "3B"
+      ],
+      "inputSha256": "7c937ff48d41c9e771fece8765d88c8fa4ebb27e419ba6f4f8c20953edf40ce0",
+      "referenceSha256": "f5ededbfbc2bd46715a010ce178b46aba331976574a634a8d7219459663d2555"
+    }
+  ]
+}

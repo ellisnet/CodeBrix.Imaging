@@ -37,12 +37,13 @@ REPOSITORY LAYOUT
     src/CodeBrix.Imaging/   The library project.
     tests/CodeBrix.Imaging.Tests/
                             The xUnit v3 test project.
+    tools/jpeg-xl/          Optional JPEG XL fixture-maintenance tools.
 
 Source folders under src/CodeBrix.Imaging/ mirror the namespace tree:
-Advanced, Color, ColorSpaces (Companding, Conversion), Common (Exceptions,
+Advanced, Color, ColorSpaces (Companding, Conversion, Icc), Common (Exceptions,
 Extensions, Helpers, Tuples), Compression/Zlib, Diagnostics, Fonts
 (Exceptions, IO, Native, Rendering, Tables, Unicode, Utilities, WellKnownIds),
-Formats (Bmp, Gif, Jpeg, Pbm, Png, Tga, Tiff, Webp), Helpers, Infrastructure,
+Formats (Bmp, Gif, Jpeg, Jxl, Pbm, Png, Tga, Tiff, Webp), Helpers, Infrastructure,
 IO, Memory (Allocators, DiscontiguousBuffers), Metadata (Profiles/Exif, ICC,
 IPTC, XMP), PixelFormats (PixelBlenders, PixelImplementations, Utils),
 Primitives, Processing (Extensions, Processors).
@@ -77,12 +78,16 @@ reflection.
 
 TESTING
 =======
-    dotnet test CodeBrix.Imaging.slnx
+    dotnet test --solution CodeBrix.Imaging.slnx
 
 The test project uses xunit.v3 with Microsoft.Testing.Platform (selected by
-global.json) and xunit.runner.visualstudio. Sample images and fonts are
-compiled in as EmbeddedResource items, so the tests do not depend on files on
-disk for their inputs.
+global.json) and xunit.runner.visualstudio. Run the same tests from Visual
+Studio 2026 Test Explorer on Windows. Most sample images and fonts are embedded;
+JPEG XL fixtures are copied from the repository into the test output directory.
+Ordinary JPEG XL tests need no native tools, external reference files or network.
+
+Optional JPEG XL external-reference, timing and size/quality tests are
+described in "JPEG XL TESTS AND FIXTURE TOOLS" below.
 
 THE TESTING_ON_<OS>_<USER>_USER CONSTANT CONVENTION
 ---------------------------------------------------
@@ -131,6 +136,141 @@ Release even after step 1 - run them in Debug.
 
 Some font tests skip themselves when the host has no system fonts installed
 (containers, minimal CI images). A skipped font test is not a failure.
+
+JPEG XL TESTS AND FIXTURE TOOLS
+===============================
+All JPEG XL tests, including conformance, timing and size/quality checks, are
+xUnit tests in CodeBrix.Imaging.Tests, run through dotnet test or Visual Studio
+2026 Test Explorer. Commands below run from the repository root. Debug and
+Release both support correctness testing.
+
+Run only the JPEG XL tests:
+
+    dotnet test --project tests/CodeBrix.Imaging.Tests/CodeBrix.Imaging.Tests.csproj -c Release -p:GeneratePackageOnBuild=false --filter-class '*Jxl*'
+
+Resources. JPEG XL fixtures live in tests/CodeBrix.Imaging.Tests/SampleFiles/
+JxlConformance and JxlSynthetic and are copied (not embedded) to the test
+output directory. Together they must stay below 100,000,000 bytes. Each folder
+has a NOTICE.txt carrying the image-specific licenses and attributions; keep
+those files beside the images and in step with THIRD-PARTY-NOTICES.txt.
+Ordinary JPEG XL tests read only these fixtures and need no native tools,
+downloads, network or fixture generators. Optional checks report Skipped.
+
+In Visual Studio, set any environment variables below before launching it so
+the test host inherits them, and relaunch after changing them.
+
+External-reference checks
+-------------------------
+Set CODEBRIX_IMAGING_RUN_JXL_EXTERNAL_TESTS=1 to enable external reference
+images and native-codec comparisons. Tests check this gate before reading a
+cache or accessing anything outside the repository. References are downloaded
+into a hash-verified temporary cache; CODEBRIX_IMAGING_JXL_REFERENCE_CACHE
+overrides its directory. For native comparisons, also set
+CODEBRIX_IMAGING_JXL_NATIVE_TOOLS to an absolute directory containing the
+pinned libjxl tools (djxl, cjxl, butteraugli_main; .exe on Windows). There is
+no PATH or shared-temp fallback; a missing tool or unset directory reports
+Skipped. Native tools are test-only and never dependencies of the library.
+
+  * --filter-class '*JxlFullConformanceTests' runs the full conformance suite.
+  * DOTNET_EnableHWIntrinsic=0, set before starting the test process, gives a
+    scalar (non-SIMD) correctness run.
+
+Playback and lossless timing checks
+-----------------------------------
+Set CODEBRIX_IMAGING_RUN_JXL_PERFORMANCE_TESTS=1 and run in Release on an
+otherwise idle machine (timing tests skip in Debug):
+
+    dotnet test --project tests/CodeBrix.Imaging.Tests/CodeBrix.Imaging.Tests.csproj -c Release -p:GeneratePackageOnBuild=false --filter-class '*JxlPlaybackPerformanceTests' --output Detailed
+
+JxlPlaybackPerformanceTests uses only the repository's animation inputs. Each
+animation gets two warm-up passes and five measured passes; the pass rule is
+median(frame.DecodeTime / frame.Duration) <= 0.5. DecodeTime includes decoding,
+rendering and packing (including hidden dependencies) but excludes output-queue
+waits, header setup and the final container drain. The collection disables
+parallel execution with other tests. The reference host for this rule is an
+Intel Core i7-12850HX (24 logical processors), LMDE 7 x64, .NET 10, normal SIMD
+and configured parallelism; timings on other hosts or under QEMU do not
+replace it.
+
+With the same opt-in, JxlLosslessPerformanceTests encodes generated screenshots,
+blank images and checkerboards losslessly, verifies exact round trips, and
+fails any encode exceeding a 60-second regression ceiling.
+
+Encoder size/quality checks
+---------------------------
+Set CODEBRIX_IMAGING_RUN_JXL_SIZE_TESTS=1 (plus the external-reference variables
+above) and run in Release:
+
+    dotnet test --solution CodeBrix.Imaging.slnx -c Release --no-build --filter-class '*JxlEncoderSizeTests' --parallel all --max-threads 4 --output Detailed
+
+This compares the managed lossy encoder with native cjxl at efforts 1-10 and
+nominal distances 0.5, 1, 2 and 3 on six repository images, with identical
+pixels, metadata and container settings. Managed distance is searched until
+its Butteraugli score is within 0.5% of native. Each point requires a geometric
+mean managed/native size ratio <= 1.10 and every individual ratio <= 1.20.
+These are long-running tests. The traits JxlEffort, JxlDistance and
+JxlQualityPoint select subsets (for example --filter-trait JxlQualityPoint=7:1).
+CODEBRIX_IMAGING_JXL_SIZE_REPORT_DIRECTORY names a fresh folder for per-point
+JSON-lines records. CODEBRIX_IMAGING_RUN_JXL_SIZE_PROBE=1 enables a separate
+diagnostic fact (not part of the size check), adjusted with
+CODEBRIX_IMAGING_JXL_SIZE_PROBE_POINT (effort:distance, e.g. 7:3),
+CODEBRIX_IMAGING_JXL_SIZE_PROBE_IMAGE (one of the six image names) and
+CODEBRIX_IMAGING_JXL_SIZE_PROBE_DOTS (true/false); with a report directory it
+also saves the source and both codestreams.
+
+Fuzzing
+-------
+JxlFuzzTests (trait Category=JxlFuzz) runs a coverage-guided, in-process
+SharpFuzz campaign over the decoder entry points on every test run, with
+256 mutations by default. Set CODEBRIX_IMAGING_JXL_FUZZ_ITERATIONS (1 through
+100000) for a longer campaign before a release. Each case is limited to
+twenty million instrumented branch visits and 128 MiB of managed allocation;
+seekable and forward-only reads must agree. Failing inputs are saved under
+.jxl-fuzz-failures in the test output directory.
+
+Fixture-maintenance tools (tools/jpeg-xl/)
+------------------------------------------
+Optional utilities for regenerating checked-in fixtures; no test invokes them,
+and they are not needed to build or test. All of them check
+CODEBRIX_IMAGING_RUN_JXL_EXTERNAL_TESTS=1 before touching external checkouts or
+native tools. Run them manually only when intentionally regenerating assets.
+
+  upstream.json             Pins the reviewed upstream revisions: jxl-oxide,
+                            libjxl (and its Highway/skcms submodules used by
+                            the native reference build), skcms, conformance.
+  vendor-conformance.py     Copies conformance assets from a local checkout at
+                            the pinned revision (never downloads); also needs
+                            CODEBRIX_IMAGING_JXL_NATIVE_TOOLS. Checks the
+                            100,000,000-byte aggregate cap.
+  generate-render-fixtures.py
+                            Small RGB sampling images run through cjxl/djxl,
+                            written as .jxl plus float .npy references and
+                            hashes. Default is Modular; --vardct, --noise and
+                            --progressive generate separate fixture families.
+  generate-jpeg-fixtures.py JPEG/JXL pairs for byte-exact reconstruction tests
+                            (cjpeg, cjxl, djxl). Checks the aggregate cap
+                            before writing.
+  generate-hdr-fixtures.py  PQ/HLG original, sRGB and SDR float references.
+                            Pass --cjxl/--djxl for the pinned libjxl build
+                            (djxl 0.11.2 ignores non-XYB color requests and is
+                            rejected) and --tone-reference for a compiled
+                            tone-reference.cc (C++17, -O2 -DNDEBUG, include
+                            paths for the pinned libjxl source and its
+                            build/lib/include).
+  GeneratePrecisionFixture.cs
+                            Builds the 31-bit integer31.jxl fixture without
+                            native tools.
+  GenerateCmsFixtures.cs    Runs a compiled skcms-reference.cc to produce the
+                            color-conversion fixtures. Build that wrapper with
+                            skcms.cc and src/skcms_TransformBaseline.cc,
+                            defining SKCMS_DISABLE_HSW and SKCMS_DISABLE_SKX.
+
+The two .cs generators run from a temporary .NET 10 console project outside the
+repository that references src/CodeBrix.Imaging/CodeBrix.Imaging.csproj, sets
+AssemblyName to CodeBrix.Imaging.Tests (for internal access) and
+GeneratePackageOnBuild=false, and includes the generator source.
+GeneratePrecisionFixture takes the destination integer31.jxl path;
+GenerateCmsFixtures takes the repository root and the skcms-reference path.
 
 PACKAGING AND PUBLISHING
 ========================
@@ -199,6 +339,57 @@ THIRD-PARTY-NOTICES.txt): SharpZipLib (MIT) for the Deflate implementation,
 Chromium (BSD-3-Clause) for the Crc32/Adler32 SIMD implementations, and .NET
 CoreFX (MIT) for the Stream read/write extensions.
 
+JPEG XL UPSTREAMS AND RE-SYNC PROCEDURE
+---------------------------------------
+Formats/Jxl and ColorSpaces/Icc are C# ports of three upstreams, pinned to
+the exact revisions recorded in tools/jpeg-xl/upstream.json (with the libjxl
+native reference build's Highway and skcms submodule revisions):
+
+  * jxl-oxide (MIT OR Apache-2.0; Apache-2.0 selected) — the decoder.
+  * libjxl (BSD-3-Clause plus the PATENTS grant) — the encoder, JPEG
+    reconstruction and several decoder corrections.
+  * skcms (BSD-3-Clause) — the managed ICC color management.
+  * libjxl/conformance (BSD-3-Clause, per-image licenses) — test data only;
+    see the NOTICE.txt files beside the fixtures.
+
+Every ported file starts with a provenance header naming its upstream
+file(s) and pinned revision ("Adapted from <upstream> <path>, <revision>").
+Files without such a header are original CodeBrix code. THIRD-PARTY-NOTICES.txt carries the
+upstream notices, the PATENTS grant and a record of each adaptation.
+
+To pick up upstream fixes:
+
+ 1. Check out the old (pinned) and the new upstream revision OUTSIDE the
+    repository. Confirm the new revision's license is still compatible with
+    Apache-2.0; never port from a differently licensed revision.
+ 2. List the ported files and their sources:
+        grep -rn -A2 "Adapted from" src/CodeBrix.Imaging/Formats/Jxl \
+            src/CodeBrix.Imaging/ColorSpaces/Icc
+    and diff each named upstream file between the two revisions
+    (git diff <old>..<new> -- <paths>).
+ 3. Port the relevant changes, keeping upstream operation order (floating-
+    point drift breaks conformance limits). Update the revision in each
+    touched file's provenance header, in tools/jpeg-xl/upstream.json and in
+    THIRD-PARTY-NOTICES.txt together.
+ 4. Rebuild the native reference tools at the new libjxl revision (outside
+    the repository, e.g. ~/Temp/codebrix-jxl-reference-build):
+        git clone https://github.com/libjxl/libjxl.git src
+        git -C src checkout <revision>
+        git -C src submodule update --init --recursive
+        cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+            -DJPEGXL_ENABLE_DEVTOOLS=ON -DJPEGXL_ENABLE_BENCHMARK=OFF \
+            -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_MANPAGES=OFF \
+            -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_OPENEXR=OFF \
+            -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_JNI=OFF \
+            -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_JPEGLI=OFF
+        make -C build -j cjxl djxl butteraugli_main
+    then copy build/tools/{cjxl,djxl,butteraugli_main} plus a djpeg into one
+    directory for CODEBRIX_IMAGING_JXL_NATIVE_TOOLS.
+ 5. Regenerate fixtures only where upstream behaviour intentionally changed
+    (tools/jpeg-xl generators), then run the ordinary suite, the external-
+    reference suite, the timing checks and the encoder size/quality checks
+    described in "JPEG XL TESTS AND FIXTURE TOOLS".
+
 VENDORED PER-FOLDER README.md FILES — DO NOT INDEX OR REWRITE
 --------------------------------------------------------------
 Twelve README.md files live under src/CodeBrix.Imaging/. They are upstream
@@ -237,8 +428,9 @@ CODING CONVENTIONS
   * Vendored files keep their `// Copyright (c) Six Labors.` header, including
     partial-class files that were EXTENDED with CodeBrix-only members
     (Image.LoadPixelData.cs is the notable one). Wholly new files under
-    Fonts/Rendering carry `// Copyright (c) Ellisnet`. Match the header of the
-    file you are editing rather than imposing one.
+    Fonts/Rendering carry
+    `// Copyright (c) 2026 Jeremy Ellis and contributors`. Match the header of
+    the file you are editing rather than imposing one.
   * Test classes are named <Class>Tests.cs; test method names in this repo are
     a mix of snake_case and Pascal_Case_With_Underscores; test bodies use
     Arrange / Act / Assert comment markers (both `//Arrange` and `// Arrange`

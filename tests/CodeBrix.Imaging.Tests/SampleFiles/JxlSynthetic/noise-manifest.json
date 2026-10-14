@@ -1,0 +1,168 @@
+{
+  "license": "Apache-2.0",
+  "copyright": "Copyright (c) 2026 Jeremy Ellis and contributors",
+  "encoder": "cjxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "decoder": "djxl v0.11.2 [AVX2,SSE4,SSE2]\nCopyright (c) the JPEG XL Project",
+  "cases": [
+    {
+      "name": "noise-1x1-up1",
+      "width": 1,
+      "height": 1,
+      "upsampling": 1,
+      "inputSha256": "0db3d136e10a1e5a2278f07719ef19fd1ec23ea7fa9c210b10d98f35f7b53a71",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "noise-1x1-up2",
+      "width": 1,
+      "height": 1,
+      "upsampling": 2,
+      "inputSha256": "ac4f64f0920a0abfd196389c10d090fc592dd56489ff0f33521eb78e76cf2a46",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "noise-1x1-up4",
+      "width": 1,
+      "height": 1,
+      "upsampling": 4,
+      "inputSha256": "d57102a8e352a540de89083eaf1e374fc3016a12ecc001b0038e249f5021069c",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "noise-1x1-up8",
+      "width": 1,
+      "height": 1,
+      "upsampling": 8,
+      "inputSha256": "7a91ee8dcfa22d5f81e276a8cc1304ed76586a5262e68f31c792fd6480be7561",
+      "referenceSha256": "3c18e0ba555b9d43da72917f023d856b2eec38098ef9cba16ecde7d01fa4e2ef"
+    },
+    {
+      "name": "noise-1x7-up1",
+      "width": 1,
+      "height": 7,
+      "upsampling": 1,
+      "inputSha256": "6bad3d22abf624116fe03b0ecc4a666086ffca2086663fb2b9267089bd1a1d51",
+      "referenceSha256": "c3097c8929e8a14d5269d4a0c03e091b3224c8a9326e8f491f1bb27f67a97dc6"
+    },
+    {
+      "name": "noise-1x7-up2",
+      "width": 1,
+      "height": 7,
+      "upsampling": 2,
+      "inputSha256": "2b3fe0154d72dfba3b7eeebf73a23d7080151e4290ec6b2b9545f9f8fd1909c6",
+      "referenceSha256": "b2225becee9b2e1bb58059ef17bcb4356d5a79ce4b77830e788901b0d229ff91"
+    },
+    {
+      "name": "noise-1x7-up4",
+      "width": 1,
+      "height": 7,
+      "upsampling": 4,
+      "inputSha256": "ca5bce2b4658b1142c247801d9b956745073c7c7b5be77f1f844ebb23e73fbb9",
+      "referenceSha256": "6d5e32423c45d3be7ae49620e5d39d79b5853c195adbbd1b71840a7819f12e78"
+    },
+    {
+      "name": "noise-1x7-up8",
+      "width": 1,
+      "height": 7,
+      "upsampling": 8,
+      "inputSha256": "4563d4f5548be2b306f0208cd8e121659cbfa4dd62e11cac5efce5ba16dfcfb1",
+      "referenceSha256": "85902c9d18d118ca75141526b725c9b22f895fa5a568d34959ab5fc4032904d3"
+    },
+    {
+      "name": "noise-9x1-up1",
+      "width": 9,
+      "height": 1,
+      "upsampling": 1,
+      "inputSha256": "60bf3e5d1ae5793e9442d38292a592108de3b2ca7b53edf4081c5fe2fde6d471",
+      "referenceSha256": "01dea49e46114b590e5de6d35bc0a34d9c364e8653b27feff728943b887877e8"
+    },
+    {
+      "name": "noise-9x1-up2",
+      "width": 9,
+      "height": 1,
+      "upsampling": 2,
+      "inputSha256": "f0d562e767d249bf8047c8b3708fa2b15d06e64c241c23bccff188df8abea369",
+      "referenceSha256": "ff6292884bd914b1bddaf4ff9ff43ff100c13228105ccbd053b68e5d8c436a53"
+    },
+    {
+      "name": "noise-9x1-up4",
+      "width": 9,
+      "height": 1,
+      "upsampling": 4,
+      "inputSha256": "14d61a724a6ac51fedf426ef9a0bfa27ae774512aaadef3361b8482a2cd6ac4c",
+      "referenceSha256": "fbfd891c219d26b5713a4d5f8394358b8b9f3a6c6af12d17249dff65cf195477"
+    },
+    {
+      "name": "noise-9x1-up8",
+      "width": 9,
+      "height": 1,
+      "upsampling": 8,
+      "inputSha256": "33890cb3e204d580175feb44ae29a62b30c222431ff7b8ac9ae3e354110ed8ff",
+      "referenceSha256": "fe4970feaf66d90c0ae6c222f2e93c89d68aff51863f903bed5448f0d980ffe0"
+    },
+    {
+      "name": "noise-19x13-up1",
+      "width": 19,
+      "height": 13,
+      "upsampling": 1,
+      "inputSha256": "974ae42c8760cdee82efc8e73c44a974d5c5b5793e6645df846353d14f04eb5b",
+      "referenceSha256": "eda71e94712be72d48da1f0e554c0901c75da3b18718b052922d7a4604e91351"
+    },
+    {
+      "name": "noise-19x13-up2",
+      "width": 19,
+      "height": 13,
+      "upsampling": 2,
+      "inputSha256": "f7d66b42a2952d6c986b553f06061d10f3e9cbe92e04374fb539a6aa88e38dfb",
+      "referenceSha256": "8c99ee723c42251834fc21b03cdfe2e32e3a04d8f204d2d936010e4136868775"
+    },
+    {
+      "name": "noise-19x13-up4",
+      "width": 19,
+      "height": 13,
+      "upsampling": 4,
+      "inputSha256": "3bb50cc55f4cfa4d9b94fc88a1cb96cfc5c0450730258cf1dfb3c0016ef39c16",
+      "referenceSha256": "ed7ce324fc89e32a0b157c7a46c37b70ff42f61a08560dc6937deef05e30e6d8"
+    },
+    {
+      "name": "noise-19x13-up8",
+      "width": 19,
+      "height": 13,
+      "upsampling": 8,
+      "inputSha256": "3b6c0a5b192291e4e4a62aa5b9094f59810b2ce84ead7bcd089499bd9b5f2917",
+      "referenceSha256": "7ad0d46fc14935bf347629e1ec8ec2f80a08aaf39059111a1422276377582a38"
+    },
+    {
+      "name": "noise-263x17-up1",
+      "width": 263,
+      "height": 17,
+      "upsampling": 1,
+      "inputSha256": "aa63660f0e65f058c9f039fae5f1710293890955d17b42f0fab2f8daa1e86717",
+      "referenceSha256": "ebb45602e92d5461d437cf08d93094514fcba991a6d24effc1546aaa52f67942"
+    },
+    {
+      "name": "noise-263x17-up2",
+      "width": 263,
+      "height": 17,
+      "upsampling": 2,
+      "inputSha256": "8a41c0d2d2423c8044b957139e636e6b416ee20feb786aae8c0f788e5e28e649",
+      "referenceSha256": "e96e3c1ed45a318ab12f62271e9d2d6dc202795f9bd8672e4e1376de3f3b3a93"
+    },
+    {
+      "name": "noise-263x17-up4",
+      "width": 263,
+      "height": 17,
+      "upsampling": 4,
+      "inputSha256": "288f55f6af07725441b5c83879fa63a3e9a37588f1ba3237833f7c0fdf80d143",
+      "referenceSha256": "8bdd6b56839025b8f65c8b8ee8061ea7b6bfa76422ab0074265751b045f2bc3d"
+    },
+    {
+      "name": "noise-263x17-up8",
+      "width": 263,
+      "height": 17,
+      "upsampling": 8,
+      "inputSha256": "baaaad1682f1d1cfcf22f4adbe27741f74d203983b8e3b6940e65f7292091cb0",
+      "referenceSha256": "db9f5c7a12d5c36d8cd60bb153d8cb85740356704b6cf1321e7a12188d62bc26"
+    }
+  ]
+}

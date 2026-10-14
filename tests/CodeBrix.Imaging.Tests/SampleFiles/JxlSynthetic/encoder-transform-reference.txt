@@ -1,0 +1,19 @@
+Copyright (c) 2026 Jeremy Ellis and contributors
+Licensed under the Apache License, Version 2.0.
+
+encoder-transform-reference.bin contains direct forward-transform outputs
+generated from the scalar libjxl TransformFromPixels implementation in
+lib/jxl/enc_transforms-inl.h at revision
+ef67fde2ec16d52e644c5a0969230b9a85e3eb31 (BSD-3-Clause plus PATENTS).
+The input pattern and generating harness are original CodeBrix test work.
+No native code is required to run the tests that consume these records.
+
+For each transform type 0 through 26, the file stores three little-endian
+UInt32 values (type, pixel width, pixel height), then width*height little-endian
+IEEE binary32 coefficients in the native canonical coefficient layout.
+Input sample (x,y), using integer arithmetic inside the remainders:
+  ((x*37 + y*191 + x*y*17) % 257 - 128) * 0.0078125f
+    + ((x*3 + y*7) % 11 == 0 ? 0.35f : 0.0f)
+
+Size: 703300 bytes.
+SHA-256: 026e56d5a1496a2d5645c4745d0eeb56127fc947ac4b886eee952a6340e667db

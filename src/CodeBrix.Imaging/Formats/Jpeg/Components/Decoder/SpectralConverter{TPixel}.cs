@@ -1,4 +1,5 @@
 // Copyright (c) Six Labors.
+// Copyright (c) 2026 Jeremy Ellis and contributors
 // Licensed under the Apache License, Version 2.0.
 
 using System;
@@ -41,6 +42,8 @@ internal class SpectralConverter<TPixel> : SpectralConverter, IDisposable
     /// </summary>
     private JpegColorConverterBase colorConverter;
 
+    private Func<JpegColorConverterBase, JpegColorConverterBase> configureColorConverter;
+
     /// <summary>
     /// Intermediate buffer of RGB components used in color conversion.
     /// </summary>
@@ -72,6 +75,9 @@ internal class SpectralConverter<TPixel> : SpectralConverter, IDisposable
     /// <param name="configuration">The configuration.</param>
     public SpectralConverter(Configuration configuration) =>
         this.configuration = configuration;
+
+    internal SpectralConverter(Configuration configuration, Func<JpegColorConverterBase, JpegColorConverterBase> configureColorConverter)
+        : this(configuration) => this.configureColorConverter = configureColorConverter;
 
     /// <summary>
     /// Gets converted pixel buffer.
@@ -156,6 +162,13 @@ internal class SpectralConverter<TPixel> : SpectralConverter, IDisposable
     /// <param name="spectralStep">Spectral stride index.</param>
     private void ConvertStride(int spectralStep)
     {
+        // APP2 profiles can follow SOF. Bind the profile at the first actual
+        // conversion, after scan headers (or all scans for deferred decoding).
+        if (this.configureColorConverter != null)
+        {
+            this.colorConverter = this.configureColorConverter(this.colorConverter);
+            this.configureColorConverter = null;
+        }
         var maxY = Math.Min(this.pixelBuffer.Height, this.pixelRowCounter + this.pixelRowsPerStep);
 
         for (var i = 0; i < this.componentProcessors.Length; i++)

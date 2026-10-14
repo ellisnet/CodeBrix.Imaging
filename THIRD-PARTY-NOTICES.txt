@@ -27,6 +27,14 @@ SixLabors.ImageSharp v2.1.13 (Apache License 2.0).
 No code has been copied, modified, adapted, or repurposed from any version
 of SixLabors.ImageSharp that has a license newer than the Apache License 2.0.
 
+Original JPEG corrections by Jeremy Ellis and contributors reset entropy state
+at each SOS, emit only referenced quantization tables, and reject unsupported
+explicit encoder color options. JpegColorConverter.FromCmykIcc.cs and the decoder
+integration use the existing JPEG sample converters and the separately attributed
+managed ICC engine to produce sRGB from profiled CMYK/YCCK samples. RGB output
+does not retain a source CMYK profile. These changes and their generated tests
+are Apache-2.0; no additional upstream JPEG implementation was copied.
+
    Copyright (c) Six Labors
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -187,3 +195,858 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+================================================================================
+jxl-oxide 0.12.6 (JPEG XL managed port)
+================================================================================
+
+Source: https://github.com/tirr-c/jxl-oxide
+Revision: f8ae722ef2d6b782941c89517d19cfbf605c4a9d (tag 0.12.6)
+License: Apache-2.0 (selected from MIT OR Apache-2.0)
+Author: Wonwoo Choi and jxl-oxide contributors
+
+Adapted into src/CodeBrix.Imaging/Formats/Jxl/Bitstream, Headers, Container,
+Coding, Color, Modular, Rendering, and VarDct, plus the spot-color equations in
+JxlDecoderCore.Decode.cs. Rendering adaptations include restoration filters,
+frame/patch blending, patch bitstream parsing and channel upsampling. Color
+adaptations include inverse XYB and YCbCr transforms. Individual source files
+identify the upstream source path.
+The Vector128 inverse-DCT butterflies in VarDct/JxlDct.Vector.cs derive
+from crates/jxl-render/src/vardct/x86_64/dct/mod.rs at the same revision;
+the managed vector path preserves the scalar path's row-first operation order.
+The C# port supplies stream integration, validation and inverse field writers.
+Encoder/Modular/JxlModularEncoder.cs uses the inverse grammar, reversible color
+transform and clamped-gradient equations of those attributed managed Modular
+sources. Its entropy writers separately retain the libjxl attribution below.
+Encoder/Modular/JxlRctEncoder.cs inverts transform/rct.rs for all 42 reversible
+color transforms. Encoder/VarDct/JxlForwardTransform.cs inverts the attributed
+decoder transforms and shares its AFV basis and DCT normalization tables.
+Encoder/VarDct/JxlVarDctEncoder.cs inverts the attributed frame, HF metadata
+and coefficient token grammar and uses the shared managed entropy writers.
+JxlPaletteEncoder.cs inverts transform/palette.rs for exact
+explicit palettes. Color/JxlIccCodec.Encode.cs inverts the ICC header, tag and
+command grammar from crates/jxl-color/src/icc/decode.rs. Container box writers
+invert the attributed container reader. Their selection/buffering integration
+is specific to CodeBrix.Imaging; entropy primitives are attributed separately.
+JpegReconstruction/JxlJpegData.Write.cs inverts the fields and Huffman table
+grammar in crates/jxl-jbr/src/lib.rs and huffman.rs at the same revision, using
+BCL Brotli for the byte payload.
+Each adapted file names its upstream source. These modifications are licensed
+under Apache-2.0. Upstream license text follows in full.
+
+                              Apache License
+                        Version 2.0, January 2004
+                     http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+   "License" shall mean the terms and conditions for use, reproduction,
+   and distribution as defined by Sections 1 through 9 of this document.
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+
+   "Legal Entity" shall mean the union of the acting entity and all
+   other entities that control, are controlled by, or are under common
+   control with that entity. For the purposes of this definition,
+   "control" means (i) the power, direct or indirect, to cause the
+   direction or management of such entity, whether by contract or
+   otherwise, or (ii) ownership of fifty percent (50%) or more of the
+   outstanding shares, or (iii) beneficial ownership of such entity.
+
+   "You" (or "Your") shall mean an individual or Legal Entity
+   exercising permissions granted by this License.
+
+   "Source" form shall mean the preferred form for making modifications,
+   including but not limited to software source code, documentation
+   source, and configuration files.
+
+   "Object" form shall mean any form resulting from mechanical
+   transformation or translation of a Source form, including but
+   not limited to compiled object code, generated documentation,
+   and conversions to other media types.
+
+   "Work" shall mean the work of authorship, whether in Source or
+   Object form, made available under the License, as indicated by a
+   copyright notice that is included in or attached to the work
+   (an example is provided in the Appendix below).
+
+   "Derivative Works" shall mean any work, whether in Source or Object
+   form, that is based on (or derived from) the Work and for which the
+   editorial revisions, annotations, elaborations, or other modifications
+   represent, as a whole, an original work of authorship. For the purposes
+   of this License, Derivative Works shall not include works that remain
+   separable from, or merely link (or bind by name) to the interfaces of,
+   the Work and Derivative Works thereof.
+
+   "Contribution" shall mean any work of authorship, including
+   the original version of the Work and any modifications or additions
+   to that Work or Derivative Works thereof, that is intentionally
+   submitted to Licensor for inclusion in the Work by the copyright owner
+   or by an individual or Legal Entity authorized to submit on behalf of
+   the copyright owner. For the purposes of this definition, "submitted"
+   means any form of electronic, verbal, or written communication sent
+   to the Licensor or its representatives, including but not limited to
+   communication on electronic mailing lists, source code control systems,
+   and issue tracking systems that are managed by, or on behalf of, the
+   Licensor for the purpose of discussing and improving the Work, but
+   excluding communication that is conspicuously marked or otherwise
+   designated in writing by the copyright owner as "Not a Contribution."
+
+   "Contributor" shall mean Licensor and any individual or Legal Entity
+   on behalf of whom a Contribution has been received by Licensor and
+   subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   copyright license to reproduce, prepare Derivative Works of,
+   publicly display, publicly perform, sublicense, and distribute the
+   Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   (except as stated in this section) patent license to make, have made,
+   use, offer to sell, sell, import, and otherwise transfer the Work,
+   where such license applies only to those patent claims licensable
+   by such Contributor that are necessarily infringed by their
+   Contribution(s) alone or by combination of their Contribution(s)
+   with the Work to which such Contribution(s) was submitted. If You
+   institute patent litigation against any entity (including a
+   cross-claim or counterclaim in a lawsuit) alleging that the Work
+   or a Contribution incorporated within the Work constitutes direct
+   or contributory patent infringement, then any patent licenses
+   granted to You under this License for that Work shall terminate
+   as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the
+   Work or Derivative Works thereof in any medium, with or without
+   modifications, and in Source or Object form, provided that You
+   meet the following conditions:
+
+   (a) You must give any other recipients of the Work or
+       Derivative Works a copy of this License; and
+
+   (b) You must cause any modified files to carry prominent notices
+       stating that You changed the files; and
+
+   (c) You must retain, in the Source form of any Derivative Works
+       that You distribute, all copyright, patent, trademark, and
+       attribution notices from the Source form of the Work,
+       excluding those notices that do not pertain to any part of
+       the Derivative Works; and
+
+   (d) If the Work includes a "NOTICE" text file as part of its
+       distribution, then any Derivative Works that You distribute must
+       include a readable copy of the attribution notices contained
+       within such NOTICE file, excluding those notices that do not
+       pertain to any part of the Derivative Works, in at least one
+       of the following places: within a NOTICE text file distributed
+       as part of the Derivative Works; within the Source form or
+       documentation, if provided along with the Derivative Works; or,
+       within a display generated by the Derivative Works, if and
+       wherever such third-party notices normally appear. The contents
+       of the NOTICE file are for informational purposes only and
+       do not modify the License. You may add Your own attribution
+       notices within Derivative Works that You distribute, alongside
+       or as an addendum to the NOTICE text from the Work, provided
+       that such additional attribution notices cannot be construed
+       as modifying the License.
+
+   You may add Your own copyright statement to Your modifications and
+   may provide additional or different license terms and conditions
+   for use, reproduction, or distribution of Your modifications, or
+   for any such Derivative Works as a whole, provided Your use,
+   reproduction, and distribution of the Work otherwise complies with
+   the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise,
+   any Contribution intentionally submitted for inclusion in the Work
+   by You to the Licensor shall be under the terms and conditions of
+   this License, without any additional terms or conditions.
+   Notwithstanding the above, nothing herein shall supersede or modify
+   the terms of any separate license agreement you may have executed
+   with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade
+   names, trademarks, service marks, or product names of the Licensor,
+   except as required for reasonable and customary use in describing the
+   origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or
+   agreed to in writing, Licensor provides the Work (and each
+   Contributor provides its Contributions) on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied, including, without limitation, any warranties or conditions
+   of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+   PARTICULAR PURPOSE. You are solely responsible for determining the
+   appropriateness of using or redistributing the Work and assume any
+   risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory,
+   whether in tort (including negligence), contract, or otherwise,
+   unless required by applicable law (such as deliberate and grossly
+   negligent acts) or agreed to in writing, shall any Contributor be
+   liable to You for damages, including any direct, indirect, special,
+   incidental, or consequential damages of any character arising as a
+   result of this License or out of the use or inability to use the
+   Work (including but not limited to damages for loss of goodwill,
+   work stoppage, computer failure or malfunction, or any and all
+   other commercial damages or losses), even if such Contributor
+   has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing
+   the Work or Derivative Works thereof, You may choose to offer,
+   and charge a fee for, acceptance of support, warranty, indemnity,
+   or other liability obligations and/or rights consistent with this
+   License. However, in accepting such obligations, You may act only
+   on Your own behalf and on Your sole responsibility, not on behalf
+   of any other Contributor, and only if You agree to indemnify,
+   defend, and hold each Contributor harmless for any liability
+   incurred by, or claims asserted against, such Contributor by reason
+   of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+
+================================================================================
+libjxl (JPEG XL reference implementation)
+================================================================================
+
+Source: https://github.com/libjxl/libjxl
+Audited reference revision: ef67fde2ec16d52e644c5a0969230b9a85e3eb31
+License: BSD-3-Clause, with the accompanying PATENTS grant below.
+
+src/CodeBrix.Imaging/Formats/Jxl/Coding/JxlAnsHistogram.cs adapts the alias-table
+algorithm through jxl-oxide 0.12.6 crates/jxl-coding/src/ans.rs (revision recorded
+above). That upstream file explicitly identifies its libjxl derivation but does
+not identify the historical libjxl revision. The alias-table algorithm was also
+reviewed in lib/jxl/ans_common.cc at the audited revision above. The C# adaptation
+uses portable managed structures. Jeremy Ellis and contributors' modifications are Apache-2.0.
+src/CodeBrix.Imaging/Formats/Jxl/VarDct/JxlLfGlobal.cs checks context limits
+against lib/jxl/entropy_coder.cc at the libjxl revision recorded above.
+src/CodeBrix.Imaging/Formats/Jxl/JxlDecoderCore.Decode.cs uses the rendering
+stage order from lib/jxl/dec_cache.cc at that revision: noise is added after
+upsampling, while patches and splines are applied before color upsampling.
+Its skipped-preview noise indexing follows lib/jxl/dec_frame.cc: the preview
+counts as an invisible frame for references before the first displayed frame.
+
+src/CodeBrix.Imaging/Formats/Jxl/Encoder/Entropy/JxlPrefixEncoder.cs adapts
+lib/jxl/enc_huffman.cc and lib/jxl/enc_huffman_tree.cc at that revision:
+length-limited Huffman trees, canonical codes and run-length-coded tree storage.
+The managed implementation uses 64-bit histogram sums to avoid count overflow.
+Encoder/Entropy/JxlAnsEncoder*.cs adapts the ANS histogram normalization,
+precision search, histogram serialization and symbol coder in lib/jxl/enc_ans.cc,
+enc_ans.h and ans_common.h at the same revision. It inverts the shared managed
+alias table for encoding. Managed histogram cost estimates use double-precision
+logarithms; the normalization step retains upstream fixed-point entropy deltas.
+The managed normalizer explicitly prevents used bins from shrinking below one
+state while repairing an initially nonpositive balancing bin after rounding.
+Encoder/Entropy/JxlLz77.cs adapts token cost estimation, hash-chain matching,
+repeat parsing and dynamic-programming refinement from lib/jxl/enc_lz77.cc at
+the same revision. Managed changes include absolute chain positions, effort
+dependent search limits, double-precision cost estimates, long-periodic-run
+bounds and final selection by actual encoded bit count. The special-distance
+table is shared with the jxl-oxide-derived managed decoder.
+Greedy rejected-match skipping follows ApplyLZ77_LZ77 in enc_lz77.cc;
+managed chain comparisons are additionally limited to 65,536 samples per
+candidate. Both bounds prevent repeated scans of cheaply coded periodic input.
+Encoder/Entropy/JxlHistogramOptimizer.cs adapts versioned priority-queue
+histogram merging and the prefix single-symbol merge penalty from
+lib/jxl/enc_cluster.cc, and hybrid-integer candidate configurations and their
+selection from enc_ans.cc at that revision. Managed merge ranking uses bounded
+histograms and double-precision estimates; final selection compares complete
+encoded bit counts, including configuration and context-map overhead.
+Eight-byte token storage, zero-copy traversal of grouped token arrays in
+JxlTokenSequence.cs, and bounded distinct-value collection for configuration
+selection are original managed changes by Jeremy Ellis and contributors.
+After 65,536 distinct values, configuration selection accumulates the same
+candidate histograms directly, preserving exhaustive candidate costs.
+Encoder/JxlEncoderPreflight.cs is original managed admission control for
+encoder working-memory estimates and frame-section limits. Its estimates cover
+managed tokens, retained candidate streams, imported planes, raw features and
+metadata; it uses the separately attributed frame geometry without altering
+the requested coding tools. Encoder workspace exception classification and
+early JPEG coefficient-allocation checks are original integration changes.
+Encoder/Entropy/JxlEntropyEncoder.cs adapts context-map move-to-front,
+entropy and run-length candidate selection from lib/jxl/enc_context_map.cc
+and enc_ans_params.h at the same revision. The managed writer compares actual
+bit counts for simple, prefix, ANS and run-length representations, with bounded
+recursion for the two-context run-length model's own context map.
+For more than 256 input contexts, distant-seed selection and nearest-cluster
+assignment follow FastClusterHistograms in enc_cluster.cc before pair merging.
+All input distributions are retained until clustering; context-index modulo
+grouping is only a baseline candidate, never the input to the optimized search.
+Encoder/Entropy/JxlPermutationEncoder.cs adapts Lehmer-rank tokenization from
+lib/jxl/enc_coeff_order.cc at the same revision, using a managed Fenwick tree
+for bounded O(n log n) work. Headers/JxlFrameToc.cs uses it for reordered TOCs.
+Encoder/VarDct/JxlXybEncoder.cs adapts the linear-sRGB-to-XYB absorbance matrix,
+intensity scaling and cube-root transform from lib/jxl/enc_xyb.cc and
+cms/opsin_params.h at that revision, using BCL floating-point operations.
+Its raw-header path inverts the caller's rounded custom opsin matrix and
+biases using the managed matrix routines. Preview frame geometry follows
+lib/jxl/frame_header.cc: omitted preview dimensions refer to the preview
+canvas, independently of the main image dimensions.
+VarDct/JxlDequantMatrices.Encode.cs inverts the attributed jxl-oxide raw
+matrix grammar. The public transform/matrix API, power-of-two quantization
+and propagation through strategy, chroma prediction, quantization and
+perceptual reconstruction are original managed integration. Raw rectangular
+matrix wire dimensions in both reader and writer are corrected against
+libjxl quant_weights.h, dec_modular.cc and enc_modular.cc at the same revision;
+the Modular image is narrow/tall, and its flattened coefficient layout is
+wide/short. Default and parametrized matrix generation retain their original
+jxl-oxide provenance.
+Encoder/VarDct/JxlNoiseEstimator.cs adapts flat-patch SAD selection,
+Laplacian noise measurements, asymmetric regularized LUT fitting and the
+scaled conjugate-gradient solver from lib/jxl/enc_noise.cc, enc_optimize.h,
+noise.h and enc_frame.cc at the same revision. The managed version bounds
+fitting to forty iterations, checks cancellation, guards zero gradients and
+empty samples, and quantizes the final LUT before writing. Estimation is
+explicitly enabled through NoiseModeling; the default matches the pinned
+reference's disabled estimation throughout the supported distance range.
+Encoder/VarDct/JxlLossyPatchEncoder.cs adapts text-like flat-background seeds,
+nearby background growth, connected components, perceptual duplicate keys and
+additive reference-frame organization from lib/jxl/enc_patch_dictionary.cc.
+Its distance-dependent, non-progressive Modular XYB atlas precision follows
+enc_modular.cc; dequantizers are rounded through binary16 before sample
+quantization, following enc_quant_weights.cc at the same revision.
+Managed differences include one bounded pixel queue, compact background seed
+indices, bounded hash buckets/candidate storage, shelf atlas packing, and a
+Modular atlas whose decoded samples are also used for subtraction
+and perceptual evaluation. This text-patch search is separate from dot search.
+JxlLossyPatchEncoder.Dots.cs adapts the two Gaussian guidance filters,
+component energy/score thresholds, moment fitting, least-squares intensities
+and dot acceptance from lib/jxl/enc_detect_dots.cc and enc_dot_dictionary.cc.
+The managed implementation uses a closed-form symmetric 2x2 covariance
+eigendecomposition, bounds retained components to one hundred, and fully
+visits rejected large components instead of restarting their search.
+Encoder/VarDct/JxlVarDctPreparation.cs adapts initial DC/AC quantization,
+global scale selection, dead zones and reconstructed-luma prediction from
+lib/jxl/enc_heuristics.cc, enc_adaptive_quantization.cc, quantizer.cc and
+enc_group.cc at that revision. LF extraction inverts the attributed managed
+jxl-oxide reconstruction. JxlEncoder.cs uses the quality-to-distance mapping
+from JxlEncoderDistanceFromQuality in lib/jxl/encode.cc at that revision.
+Its positive-distance floor follows JxlEncoderSetFrameDistance and the
+kMinButteraugliDistance constant in enc_params.h at that revision.
+Encoder/VarDct/JxlVarDctInput.cs is original integration of the attributed
+managed ICC, enumerated-color and XYB components with CodeBrix pixel import.
+Encoder/VarDct/JxlVarDctEncoder.cs also adapts the three AC frequency passes
+from lib/jxl/enc_frame.cc and enc_progressive_split.cc at that revision,
+with shared frame headers and a separate entropy model for each pass.
+Its default edge-preserving filter iteration thresholds follow enc_frame.cc;
+the initial sharpness of four follows enc_heuristics.cc. Low-frequency
+smoothing is enabled by default, using the shared frame flag when disabled.
+Its no-Gaborish initial quantization distance adjustment also follows
+enc_heuristics.cc at that revision.
+Encoder/VarDct/JxlCoefficientOrder.cs adapts zero-frequency sorting, natural
+order tie-breaking, quantized counts and the size limits from enc_coeff_order.cc
+at that revision. It counts all eligible blocks and shares the existing
+Lehmer permutation writer; native sampling/dispatch machinery is not copied.
+Encoder/VarDct/JxlChromaFromLuma.cs adapts the initial 8x8 and final selected-
+transform, quantization-weighted color-correlation searches from
+lib/jxl/enc_chroma_from_luma.cc at that revision: regularized least squares,
+the bounded Newton search, its shared residual outlier mask for approximate
+curvature, soft threshold and signed-byte range. Managed scalar accumulation
+uses double precision and bounded 64x64 tile scratch. JxlChromaFromLumaTests
+includes native SSE2 multiplier results from the same pinned source for
+original deterministic CodeBrix samples spanning the outlier threshold.
+Encoder/VarDct/JxlPhotonNoise.cs adapts the sensor/ISO noise model and LUT
+quantization from lib/jxl/enc_photon_noise.cc and enc_noise.cc at that revision,
+using double intermediates to keep all finite positive ISO values bounded.
+Encoder/VarDct/JxlChromaticityQuantization.cs adapts the distance thresholds,
+worst neighboring XYB differences and exposed-blue measurements from
+PixelStatsForChromacityAdjustment and ComputeChromacityAdjustments in
+lib/jxl/enc_frame.cc at that revision. It examines the edge-extended block
+rectangle without allocating padding and checks cancellation per row.
+The test fixture JxlSynthetic/encoder-transform-reference.bin contains scalar
+forward-transform results generated by this pinned libjxl implementation from
+an original deterministic CodeBrix sample pattern. Its adjacent text file
+records the generator inputs, binary layout and SHA-256. The fixture provides
+an independent numerical reference; the tests do not load a native library.
+Encoder/VarDct/JxlInverseGabor.cs adapts the approximate inverse Gaborish kernel
+and symmetric five-tap-per-axis convolution from lib/jxl/enc_gaborish.cc and
+convolve.h at that revision. It uses one allocator-backed scratch plane and
+the attributed managed mirrored boundary helper. Enablement follows
+enc_frame.cc: effort five or greater and perceptual distance above 0.5.
+Encoder/VarDct/JxlAdaptiveQuantization.cs adapts the initial quantization field
+from enc_adaptive_quantization.cc at that revision: gamma-adjusted local
+differences, fuzzy erosion, masking, gamma/high-frequency/blue modulations and
+distance dampening. It uses managed allocator-backed grids and BCL log/exp
+functions. The fine strategy mask uses the attributed logarithmic Laplacian
+and symmetric 5x5 blur. Butteraugli iterations are not included in this
+initial component.
+Encoder/VarDct/JxlAcStrategy.cs adapts transform entropy/error estimation,
+distance/effort-dependent transform costs, and rectangular/square split/merge
+search from lib/jxl/enc_ac_strategy.cc and quant_weights.cc at that revision.
+The managed search uses bounded 64x64 tile scratch and cached estimates,
+double-precision cost accumulation, and explicit overlap checks. Its edge
+search follows hierarchical merges rather than the native priority scan.
+Encoder/VarDct/JxlAcQuantizer.cs adapts per-block quantizer refinement and
+frequency-quadrant dead zones from lib/jxl/enc_group.cc at that revision:
+low-activity boundaries, isolated high-frequency detail, large-transform
+error and texture activity. Managed cost accumulation uses double precision
+and clamps before integer conversion. The upstream error_diffusion parameter
+is unused by that revision's QuantizeBlockAC implementation.
+Encoder/VarDct/JxlBlockContextModel.cs adapts transform-order/quantizer frequency
+counts, quantizer thresholds and low-count cluster merging from
+FindBestBlockEntropyModel in enc_heuristics.cc, with defaults from
+entropy_coder.cc at that revision. Managed counting weights transform anchors
+by their covered area and uses final quantizers, with deterministic tie breaks.
+Encoder/Butteraugli/ ports the perceptual comparator, opsin dynamics, frequency
+decomposition, directional Malta filters, asymmetric error accumulation,
+activity masking, half-resolution comparison and small-image padding from
+lib/jxl/butteraugli/butteraugli.cc at that revision. The blur's mirrored 5-tap
+case follows enc_convolve_separable5.cc; the gamma approximation follows
+base/fast_math-inl.h and base/rational_polynomial-inl.h. Managed code uses
+allocator-owned planes, cancellation checks, BCL scalar math and explicit
+fused multiply-add where the reference uses it. The unused deeper recursive
+reference pyramid is omitted; both resolutions used by the comparator remain.
+The row lookup and bounded vertical-tile optimization in the blur is original
+managed work and retains the same floating-point operation order. Its previous
+scalar implementation is retained in JxlButteraugliBlurTests as a bit-exact
+regression reference under the same source attribution.
+Encoder/VarDct/JxlPerceptualQuantizer.cs adapts FindBestQuantization,
+AdjustQuantField and TileDistMap from enc_adaptive_quantization.cc at that
+revision: fixed-transform quantization trials, sixteenth-norm block errors,
+bounded field updates and two/four refinement rounds at efforts eight/nine.
+It preserves the initial selected-transform color-correlation maps throughout
+refinement, following the search ordering in enc_heuristics.cc at that revision.
+It uses the separately attributed managed Butteraugli and decoder components.
+Tile errors use normalized double accumulation to avoid HDR overflow.
+JxlVarDctPreparation's iterative global scale uses the median and median
+absolute deviation from quantizer.cc. JxlVarDctRoundtrip.cs is original
+integration that reuses the managed decoder's transforms and restoration
+without repeating entropy coding; synthesized noise is excluded from the
+search, as in the reference RoundtripImage pipeline.
+The FasterDecoding settings in JxlVarDctEncoder, JxlAcStrategy and
+JxlBlockContextModel follow enc_frame.cc, enc_ac_strategy.cc and
+enc_heuristics.cc at that revision: filter reductions, transform-size limits,
+the simple two-class block map and six AC histograms. Modular restrictions
+in JxlModularSearchOptions follow enc_modular.cc, enc_frame.cc and enc_ans.cc:
+omit weighted prediction, use 128-pixel groups, restrict gradient prediction
+and disable MA learning at the highest setting, with twelve histograms from
+setting two. The entropy optimizer applies the cap to both candidates and
+their fallback distributions. These constraints also apply to expert search
+candidates, chunked frames, patch references and VarDCT's Modular streams.
+Encoder/VarDct/JxlDownsampling.cs adapts DownsampleImage2_Sharper,
+DownsampleImage2_Iterative, CreateMask and AntiUpsample from enc_heuristics.cc,
+and box averaging from image_ops.cc at that revision. It retains the symmetric
+12x12 filter, ringing bounds, three derivative-based refinement rounds at
+effort ten and box sampling for factors four/eight and extra channels.
+The managed version omits unused perceptual-mask allocations and initializes
+maxima to negative infinity so negative samples have correct clipping bounds.
+Encoder dispatch and the resampled Butteraugli-search threshold follow
+enc_frame.cc and enc_adaptive_quantization.cc at that revision.
+Encoder/Modular/JxlLossyModularEncoder.cs adapts the XYB scale factors,
+YX(B-Y) channel order, per-component/per-resolution Squeeze quantizers,
+signed rounding and global/LF/HF stream organization from enc_modular.cc
+and enc_frame.cc at that revision. Extra-channel quantization remains one
+for exact alpha. JxlSqueezeEncoder's default layout follows the attributed
+managed decoder grammar and libjxl modular/transform/squeeze.cc and squeeze_params.cc;
+component identities are retained across transforms for quantizer selection.
+VarDct/JxlDequantMatrices.Defaults.cs corrects the default 128x256 and 256x128
+dequantization weights against lib/jxl/quant_weights.cc at the same revision.
+The inherited oxide Y and B constants differed from the reference decoder.
+Encoder/Modular/FastLossless/ adapts the dedicated effort-1 path from
+lib/jxl/enc_fast_lossless.cc at that revision: fixed per-channel gradient tree,
+sampled shared two-level prefix tables, per-symbol length limits, YCoCg and
+eight-sample zero-run coding. The managed implementation imports bounded
+256-pixel groups and uses the shared header/TOC and prefix-length writers.
+The native SIMD, C ABI and output-buffer alignment machinery are not copied.
+Encoder/Modular/JxlPaletteEncoder.cs additionally adapts the implicit color
+cubes, retention of frequent implicit colors, image-order candidates and
+frequency/luma/alpha ordering from modular/transform/enc_palette.cc at that
+revision. Lossless candidates are selected by their complete encoded size.
+Modular/JxlPaletteTransform.cs corrects implicit extra-channel values to zero
+as specified by modular/transform/palette.h at that revision; this differs
+from the originally ported jxl-oxide calculation for the small color cube.
+Encoder/Modular/JxlModularSearchOptions.cs ports the two expert-effort probes
+and the 24/20 conditional configuration lists from lib/jxl/enc_frame.cc
+(TectonicPlateSettingsLessPalette/MorePalette) at that revision. Managed
+orchestration compares complete frame bytes, preserves the ordinary effort-10
+candidate and deduplicates identical configurations. Sampling, predictor and
+weighted-tree restrictions follow modular/encoding/enc_ma.cc; deterministic
+sample selection and bounded managed tree learning remain port adaptations.
+JxlRctEncoder.cs uses the effort-dependent 4/5/7/9/19 candidate sequence from
+lib/jxl/enc_modular.cc at that revision. All 42 wire transforms remain supported.
+JxlMaEncoder.cs serializes residual multipliers using enc_ma.cc's trailing-zero
+exponent/odd-part grammar. The exact greatest-common-divisor refinement over
+all encoded residual streams is original managed integration; a multiplier is
+never inferred solely from the MA learning sample.
+Encoder/Modular/JxlMaEncoder.cs adapts entropy-based predictor selection and
+property-threshold tree splitting from lib/jxl/modular/encoding/enc_ma.cc at
+the same revision. Managed changes include bounded deterministic sampling,
+sorted threshold sweeps, double-precision entropy estimates and median residual
+offset candidates. It shares the decoder's exact predictors and properties.
+Fixed gradient/WP trees and their pixel-count/precision-scaled thresholds follow
+MakeFixedTree and PredefinedTree in modular/encoding/enc_encoding.cc at that pin.
+Encoder/Modular/JxlSqueezeEncoder.cs adapts forward horizontal/vertical squeeze
+from lib/jxl/modular/transform/enc_squeeze.cc at that revision. It uses explicit
+managed plane ownership, shares the attributed decoder's tendency equation and
+selects a candidate only when its complete encoded stream is smaller.
+Encoder/Modular/JxlWeightedPredictorEncoder.cs adapts the five predictor presets
+in lib/jxl/modular/encoding/context_predict.h and the WP-error-conditioned
+histogram cost selection in lib/jxl/enc_modular.cc at the same revision. It
+uses double-precision entropy estimates and the shared managed predictor state.
+Encoder/Modular/JxlModularEncoder.GlobalTree.cs follows global MA-tree and
+shared histogram organization in lib/jxl/enc_modular.cc and
+lib/jxl/modular/encoding/enc_encoding.cc at that revision. Its managed candidates
+retain independent group entropy/LZ77 states and compare complete payload sizes.
+Encoder/Modular/JxlModularEncoder.Chunked.cs follows LF-group-sized input
+chunking and lossless eligibility in lib/jxl/enc_frame.cc at the same revision.
+The managed path releases sample planes after each chunk and retains compressed
+payloads to support forward-only output without temporary files.
+Rendering/JxlPatches.Encode.cs adapts patch tokenization from
+lib/jxl/enc_patch_dictionary.cc at the same revision. The alpha-selection
+condition in JxlPatches.cs follows dec_patch_dictionary.cc: explicit selection
+is present when there is more than one extra channel, regardless of its type.
+Rendering/JxlSplines.Encode.cs adapts spline token contexts, starting-point
+deltas and coefficient serialization from lib/jxl/enc_splines.cc at that pin.
+Its validation and second-difference construction integrate the attributed
+managed spline decoder. JxlRawImage, JxlRawFrameEncoding, JxlRawEncoder and
+Encoder/JxlFrameFeatures are original public API, ownership and integration
+code around the separately attributed field and feature writers.
+Encoder/VarDct/JxlLowFrequencyEncoder.cs follows the separate Modular LF-frame
+organization, placeholder extra channels, and pre-color-transform reference
+handling in lib/jxl/enc_cache.cc and enc_frame.cc at the same libjxl revision.
+The power-of-two representation is original; LF smoothing and reconstruction
+reuse the separately attributed managed decoder. Progressive Modular output
+uses the existing attributed Squeeze layout and pass-group selection grammar.
+JxlPatches.cs and JxlCompositor.cs follow color/alpha precedence and background
+alpha reference selection in lib/jxl/blending.cc, alpha.cc and
+render_pipeline/stage_blending.cc at that pin. Color alpha blending writes its
+resulting alpha even when that extra channel has a separate blending mode.
+Headers/JxlFrameHeader.cs follows per-channel blending-source field presence in
+lib/jxl/frame_header.cc: an extra channel's own mode determines whether its
+reference source is serialized, independently of the color channels' mode.
+Its progressive-pass validation also follows Passes::VisitFields in that
+pinned frame_header.cc: decreasing downsampling, increasing last-pass indices,
+and indices bounded by the pass count. Equal downsample and pass counts are
+allowed, matching the reference implementation.
+Encoder/Modular/JxlLosslessPatchEncoder.cs follows the reference-frame atlas
+organization in lib/jxl/enc_patch_dictionary.cc at that pin. Its managed exact
+tile hash search verifies collisions and compares complete encoded candidates;
+it does not implement the upstream perceptual/text-component detection.
+Encoder/Jpeg/JxlJpegParser*.cs and JxlJpegInputBits.cs adapt JPEG marker,
+Huffman, sequential/progressive coefficient and restart parsing from
+lib/jxl/jpeg/enc_jpeg_data_reader.cc, plus metadata classification and color
+selection from enc_jpeg_data.cc at the same revision. Managed changes use
+bounded span reads, pooled coefficient planes, explicit disposal and a scalar
+canonical Huffman reader without speculative byte reads.
+The reconstruction preflight checks, scan-count preflight before pixel fallback,
+caller-configurable resource budgets, bounded output adapter, and incremental
+Brotli payload reader are original CodeBrix changes. Final DC representability
+is checked after progressive refinement against the separately attributed JPEG
+XL reconstruction clamp. Huffman all-ones rejection was checked against the
+same pinned enc_jpeg_data_reader.cc; the existing JPEG decoder keeps its
+Apache-2.0 provenance and its equivalent rejection.
+Encoder/Jpeg/JxlJpegEncoder.cs adapts JPEG coefficient preparation, quantization
+scaling and channel ordering from lib/jxl/enc_frame.cc at the same revision.
+Its field and coefficient token writers invert the attributed managed VarDCT
+decoder grammar; it shares its frequency/nonzero context tables and natural
+coefficient order. Managed changes use pooled planes and owned section buffers.
+JPEG reconstruction also follows lib/jxl/jpeg/jpeg_data.cc at that revision
+for nine-bit Huffman sentinels, empty DHT markers and quantization-table indexes.
+
+src/CodeBrix.Imaging/Formats/Jxl/Color/JxlSampleConverter.cs also adapts the
+int_to_float routine in lib/jxl/dec_modular.cc at the audited revision, including
+subnormal, signed-zero, infinity and NaN handling for custom float precisions.
+The upstream notices and patent grant are retained here in full.
+
+Rendering/JxlSplines.cs and JxlSplines.Encode.cs use the spline/control-point
+count limits and cumulative starting-point accounting from lib/jxl/splines.cc
+at this same revision. VarDct/JxlHfMetadata.cs follows lib/jxl/dec_modular.cc
+for the prohibition on transforms spanning multiple 8x8 blocks when chroma
+channels are subsampled; transforms confined to one block remain supported.
+Extension payload buffering, Modular channel lookup and decoder patch-work
+accounting are original managed resource-management changes.
+
+Encoder/Modular/JxlModularEncoder.PaletteSearch.cs adapts scalar EstimateCost
+from lib/jxl/enc_modular_simd.cc and the estimated palette selection strategy
+from lib/jxl/enc_modular.cc at the same pin. The managed version samples at most
+16,384 positions per channel, ranks whole-frame candidates before group encoding,
+and compares selected palette streams against actual untransformed output size.
+Efforts 10/11 retain exhaustive whole-frame palette comparisons. The bounded,
+sample-verified Modular encoding cache is original managed optimization work.
+
+ICC transport preflight follows the encoded-profile cap in lib/jxl/icc_codec.cc,
+its decoded-size-plus-65536 command-expansion limit, and the 4 MiB Level 5 ICC
+limit in lib/jxl/encode.cc at that pin. Literal-command fallback and bounded
+forward prefix entropy writing for large ICC payloads are original managed
+adaptations of the attributed command/entropy grammars.
+
+Copyright (c) the JPEG XL Project Authors.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Additional IP Rights Grant (Patents)
+
+"This implementation" means the copyrightable works distributed by
+Google as part of the JPEG XL project.
+
+Google hereby grants to You a perpetual, worldwide, non-exclusive,
+no-charge, royalty-free, irrevocable (except as stated in this section)
+patent license to make, have made, use, offer to sell, sell, import,
+transfer and otherwise run, modify and propagate the contents of this
+implementation of JPEG XL, where such license applies only to those patent
+claims, both currently owned or controlled by Google and acquired in
+the future, licensable by Google that are necessarily infringed by this
+implementation of JPEG XL.  This grant does not include claims that would be
+infringed only as a consequence of further modification of this
+implementation.  If you or your agent or exclusive licensee institute or
+order or agree to the institution of patent litigation against any
+entity (including a cross-claim or counterclaim in a lawsuit) alleging
+that this implementation of JPEG XL or any code incorporated within this
+implementation of JPEG XL constitutes direct or contributory patent
+infringement, or inducement of patent infringement, then any patent
+rights granted to you under this License for this implementation of JPEG XL
+shall terminate as of the date such litigation is filed.
+
+================================================================================
+skcms (managed ICC color-management adaptation)
+================================================================================
+
+Source: https://skia.googlesource.com/skcms
+Audited reference revision: 7e572ada698a60ff50bd9038fd6e01e44f40868a
+License: BSD-3-Clause.
+
+src/CodeBrix.Imaging/ColorSpaces/Icc/IccData.cs, IccCurve.cs, IccLut.cs and
+IccColorProfile.cs adapt
+bounded ICC reading, profile/PCS conversion, curve evaluation, A2B/B2A LUT
+parsing and multidimensional
+CLUT interpolation from skcms.cc and
+src/Transform_inl.h at the revision above. The implementation uses managed C#
+and .NET math, with direct inversion of monotone tables. Jeremy Ellis and
+contributors' modifications are Apache-2.0. Original corrections to IccLut.cs
+apply PCSXYZ scaling at the LUT boundary, preserve legacy lut16Type PCSLAB
+encoding, and apply/clamp legacy XYZ input matrices. These follow the numerical
+encodings and processing order in ICC.1:2022 sections 6.3.4.2 and 10.10-10.13
+(https://www.color.org/specification/ICC.1-2022-05.pdf), not source code from
+another color engine. Generated numerical regressions cover these corrections;
+the original nonlinear LUT fixtures are compared with their defining polynomial
+because the pinned skcms reference folds XYZ scaling into the wrong stage.
+The CMYK fixture's native A2B reference is adjusted only for the legacy Lab
+endpoint encoding that skcms omits; its native interpolation samples are retained.
+The complete upstream skcms notice follows.
+
+// Copyright (c) 2018 Google Inc. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//    * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//    * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+src/CodeBrix.Imaging/ColorSpaces/Icc/IccMatrix.cs adapts 3x3 matrix math from
+jxl-oxide crates/jxl-color/src/ciexyz.rs at the revision recorded above, under
+the Apache-2.0 option. It is not derived from skcms.
+
+JxlEnumeratedColorSpace.cs adapts white-point adaptation, primary matrices and
+transfer functions from jxl-oxide crates/jxl-color/src/{ciexyz,consts,convert,tf}.rs
+and tf/{bt709,pq}.rs at the same pinned revision, under the Apache-2.0 option.
+PQ uses the exact equations shown in the upstream tests, evaluated with double
+precision, rather than the upstream rational approximation.
+
+JxlIccSynthesis.cs adapts ICC tag construction and enumerated transfer-function
+representation from jxl-oxide crates/jxl-color/src/icc/synthesize.rs at the same
+revision, under the Apache-2.0 option. Generated profiles use CodeBrix identifiers
+and Jeremy's copyright notice; table samples are evaluated with .NET math.
+
+ColorSpaces/Icc/IccHdrTransfer.cs and CICP handling in IccColorProfile.cs also
+adapt the pinned skcms source above: PQ and HLG transfer functions, the reference
+HLG OOTF in the D50 PCS, and HDR reference-white scaling (203 nits).
+
+Formats/Jxl/JpegReconstruction/JxlJpegData.cs adapts JPEG reconstruction header
+fields and Huffman descriptions from jxl-oxide crates/jxl-jbr/src/{lib,huffman}.rs
+at f8ae722ef2d6b782941c89517d19cfbf605c4a9d, under the Apache-2.0 option.
+BCL Brotli decoding and metadata bounds are CodeBrix-specific adaptations.
+
+JpegReconstruction/JxlJpegCoefficients.cs adapts integer JPEG coefficient
+extraction from jxl-oxide crates/jxl-jbr/src/reconstruct.rs and
+reconstruct/scan.rs at the same pinned Apache-2.0 revision. Its integer
+chroma-from-luma calculation derives through that source from libjxl
+lib/jxl/dec_group.cc at ef67fde2ec16d52e644c5a0969230b9a85e3eb31; the complete
+BSD-3-Clause notice and PATENTS grant appear in the libjxl section above.
+
+JpegReconstruction/JxlJpegBitWriter.cs and JxlJpegHuffman.cs adapt JPEG bit
+packing, byte stuffing and canonical Huffman reconstruction from
+crates/jxl-jbr/src/{bit_writer,huffman}.rs at the same pinned jxl-oxide revision,
+under the Apache-2.0 option. The fixed-size streaming output buffer and extra
+malformed-table checks are CodeBrix-specific.
+
+JpegReconstruction/JxlJpegScanWriter.cs adapts sequential and progressive scan
+coding, EOB runs and refinement-bit buffering from jxl-oxide
+crates/jxl-jbr/src/reconstruct/scan.rs at the same pinned Apache-2.0 revision.
+The CodeBrix implementation traverses complete component coefficient planes,
+including noninterleaved scans at their component's actual sampling resolution.
+
+JpegReconstruction/JxlJpegReconstructor.cs adapts JPEG marker/header writing
+and original APP/COM/ICC/Exif/XMP reconstruction from jxl-oxide
+crates/jxl-jbr/src/reconstruct.rs at the same pinned Apache-2.0 revision.
+
+The padding-bit order correction in JxlJpegBitWriter.cs follows
+lib/jxl/jpeg/dec_jpeg_data_writer.cc from libjxl at
+ef67fde2ec16d52e644c5a0969230b9a85e3eb31 (BSD-3-Clause + PATENTS).
+
+Formats/Jxl/Color/JxlToneMapper.cs adapts Rec.2408 tone mapping, HLG display
+adaptation and gamut mapping from libjxl lib/jxl/cms/tone_mapping.h and
+lib/jxl/render_pipeline/stage_tone_mapping.cc at the same pinned revision.
+Copyright (c) the JPEG XL Project Authors. All rights reserved.
+The complete BSD-3-Clause notice and PATENTS grant are retained above.
+
+
+JPEG XL FUZZ TEST TOOLING (test dependencies only)
+=================================================
+SharpFuzz 2.3.0 and SharpFuzz.Common 2.2.0 (MIT)
+https://github.com/Metalnem/sharpfuzz
+SharpFuzz 2.3.0 package source revision:
+7dde242459c5459cb988fb8ace4397a9485d720f
+Copyright (c) 2018 Nemanja Mijailovic
+Package metadata also records Copyright © 2018-2025, Nemanja Mijailovic.
+
+dnlib 4.4.0 (MIT), used by SharpFuzz for test instrumentation
+https://github.com/0xd4d/dnlib
+Package source revision: 34267646667b97717067c9f408c2b6333f438331
+Copyright (C) 2012-2019 de4dot@gmail.com
+
+The C# fuzz driver is original CodeBrix test code using SharpFuzz's public API.
+Only a temporary library copy is instrumented. These packages are confined to
+the test project and are not dependencies or contents of the shipped package.
+No SharpFuzz or dnlib implementation is copied into the production library.
+The following MIT permission and disclaimer apply to both components:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+JPEG XL CONFORMANCE TEST ASSETS (repository only)
+================================================
+JPEG XL conformance test resources
+=================================
+Upstream: https://github.com/libjxl/conformance
+Revision: b1d0f990b03e57bf6d137c365cd5dc8b470b9191
+
+LICENSE contains the upstream BSD-3-Clause license for the conformance
+repository. UPSTREAM-README.md records the individual image licenses.
+These resources are used for testing only and are never packed into NuGet.
+Images retain their own licenses; they are not relicensed as Apache-2.0.
+CodeBrix's C# implementation does not derive code from these images.
+
+CC0: alpha_nonpremultiplied, alpha_premultiplied, alpha_triangles,
+animation_icos4d, animation_spline, bench_oriented_brg, bicycles, blendmodes,
+cmyk_layers, delta_palette, grayscale, grayscale_jpeg, lossless_pfm,
+lz77_flower, mul_no_extra_channels, noise, opsin_inverse, patches,
+patches_lossless, spot, sunset_logo.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+CC BY-SA 3.0:
+* animation_newtons_cradle: Dominique Toussaint, Newton's cradle animation.
+  https://commons.wikimedia.org/wiki/File:Newtons_cradle_animation_book_2.gif
+* upsampling: PNG transparency demonstration, Daniel G. (2005), Ed g2s
+  (2009), CyberShadow (2019), and file optimization contributors.
+  https://commons.wikimedia.org/wiki/File:PNG_transparency_demonstration_1.png
+License: https://creativecommons.org/licenses/by-sa/3.0/
+The JPEG XL Project adapted these source images into test bitstreams and
+decoded previews. CodeBrix copies the upstream test files without alteration.
+Those images and adaptations remain under CC BY-SA 3.0.
+
+CC BY 3.0: grayscale_public_university, Arnold and Richter Cine Technik GmbH.
+See grayscale_public_university/source for the source URL and attribution.
+https://creativecommons.org/licenses/by/3.0/
+
+Microsoft custom license: progressive. All Images Copyright (c) 2003-2007
+Microsoft Corporation. The original grant and notice are in progressive/source.
+
+The bike and cafe bitstreams and previews are NOT included. Their tests
+require the explicit external-test environment gate before downloading them.
+Full floating-point, ICC and reconstructed JPEG references are likewise
+external and SHA-256 verified. Their hashes remain in upstream test.json.
+
+Level 5 cases share base-case inputs/previews where upstream does so.
+manifest.json retains all 24 Level 5 and 27 Level 10 test records. Metadata
+and licenses count toward the aggregate 100,000,000-byte resource budget.
+
+Microsoft Reference Photo Library grant and notice (progressive fixture)
+------------------------------------------------------------------------
+This image is Copyright (c) Microsoft and was made available initially in the JPEG XR (ISO/IEC 29199-2) standardization activity.
+
+Microsoft Reference Photo Library Content
+All Images Copyright © 2003-2007 Microsoft Corporation
+
+Individuals and organizations using photos or portions of photos from this archive (“Content”)
+agree that all intellectual property rights therein remain the property of Microsoft Corporation.
+Microsoft grants you the right to use all or part of this content for any purpose.
+You agree to display a copyright notice sufficient to protect Microsoft’s copyright in the Content.
+The Content is provided to you “AS IS” without warranty of any kind and Microsoft disclaims all warranties,
+whether express, implied or statutory including but not limited to, the implied warranties of merchantability
+and fitness for a particular purpose, and warranties of title and noninfringement.
+
+For additional information, contact Bill Crow – billcrow@microsoft.com
+
+The grayscale_public_university fixture is by Arnold and Richter Cine
+Technik GmbH, under CC Attribution 3.0. The upstream fixture was converted
+to grayscale and lossy compression was applied.
