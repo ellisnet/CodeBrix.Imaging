@@ -237,20 +237,53 @@ public sealed class Configuration
     }
 
     /// <summary>
-    /// Creates a shallow copy of the <see cref="Configuration"/>.
+    /// Creates a copy of the <see cref="Configuration"/>. By default the copy is independent: changing its formats,
+    /// encoders, decoders, detectors or <see cref="Properties"/> does not change this instance, and the reverse.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The full copy (the default) gets its own <see cref="ImageFormatsManager"/> holding the same registrations, its own
+    /// <see cref="Properties"/> dictionary holding the same entries (the values themselves are not copied), and
+    /// <see cref="PreferContiguousImageBuffers"/>. So <c>Configuration.Default.Clone()</c> followed by
+    /// <c>ImageFormatsManager.SetDecoder(...)</c> leaves <see cref="Default"/> unchanged.
+    /// </para>
+    /// <para>
+    /// <paramref name="doShallowClone"/> = <see langword="true"/> gives the earlier shallow copy: the copy SHARES this
+    /// instance's <see cref="ImageFormatsManager"/>, so registering a format, encoder, decoder or detector on either one
+    /// changes both; <see cref="Properties"/> and <see cref="PreferContiguousImageBuffers"/> are not copied.
+    /// </para>
+    /// <para>
+    /// Either way the <see cref="MemoryAllocator"/> is shared, not copied: allocators are expensive and meant to be
+    /// process-wide.
+    /// </para>
+    /// </remarks>
+    /// <param name="doShallowClone">
+    /// <see langword="true"/> to share this instance's <see cref="ImageFormatsManager"/> (the shallow copy);
+    /// <see langword="false"/> (the default) for an independent copy.
+    /// </param>
     /// <returns>A new configuration instance.</returns>
-    public Configuration Clone() => new()
+    public Configuration Clone(bool doShallowClone = false)
     {
-        MaxDegreeOfParallelism = this.MaxDegreeOfParallelism,
-        StreamProcessingBufferSize = this.StreamProcessingBufferSize,
-        ImageFormatsManager = this.ImageFormatsManager,
-        memoryAllocator = this.memoryAllocator,
-        ImageOperationsProvider = this.ImageOperationsProvider,
-        ReadOrigin = this.ReadOrigin,
-        FileSystem = this.FileSystem,
-        WorkingBufferSizeHintInBytes = this.WorkingBufferSizeHintInBytes,
-    };
+        Configuration copy = new()
+        {
+            MaxDegreeOfParallelism = this.MaxDegreeOfParallelism,
+            StreamProcessingBufferSize = this.StreamProcessingBufferSize,
+            ImageFormatsManager = doShallowClone ? this.ImageFormatsManager : this.ImageFormatsManager.Clone(),
+            memoryAllocator = this.memoryAllocator,
+            ImageOperationsProvider = this.ImageOperationsProvider,
+            ReadOrigin = this.ReadOrigin,
+            FileSystem = this.FileSystem,
+            WorkingBufferSizeHintInBytes = this.WorkingBufferSizeHintInBytes,
+        };
+
+        if (!doShallowClone)
+        {
+            copy.PreferContiguousImageBuffers = this.PreferContiguousImageBuffers;
+            foreach (KeyValuePair<object, object> property in this.Properties) { copy.Properties[property.Key] = property.Value; }
+        }
+
+        return copy;
+    }
 
     /// <summary>
     /// Creates the default instance with the following <see cref="IConfigurationModule"/>s preregistered:

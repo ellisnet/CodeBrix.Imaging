@@ -1,3 +1,4 @@
+using CodeBrix.Imaging.Advanced;
 using CodeBrix.Imaging.Formats.Bmp;
 using CodeBrix.Imaging.Formats.Jpeg;
 using CodeBrix.Imaging.Formats.Png;
@@ -362,6 +363,75 @@ public class ImageTests
         Assert.True(info.Width > 0);
         Assert.True(info.Height > 0);
         _output.WriteLine($"Identified image: {info.Width}x{info.Height}");
+    }
+
+    #endregion
+
+    #region DangerousTryGetSinglePixelMemory Tests
+
+    [Fact]
+    public void DangerousTryGetSinglePixelMemory_returns_the_whole_buffer_without_allocating()
+    {
+        //Arrange
+        using var image = new Image<Rgba32>(16, 8);
+        image.DangerousTryGetSinglePixelMemory(out _);
+        image.Frames.RootFrame.DangerousTryGetSinglePixelMemory(out _);
+
+        //Act
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        bool fromImage = image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> imageMemory);
+        bool fromFrame = image.Frames.RootFrame.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> frameMemory);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        //Assert
+        Assert.True(fromImage);
+        Assert.True(fromFrame);
+        Assert.Equal(16 * 8, imageMemory.Length);
+        Assert.True(imageMemory.Span == frameMemory.Span);
+        Assert.Equal(0, allocated);
+
+        //Output
+        _output.WriteLine($"Allocated bytes: {allocated}");
+    }
+
+    [Fact]
+    public void DangerousTryGetSinglePixelMemory_returns_false_for_a_discontiguous_buffer()
+    {
+        //Arrange
+        var configuration = Configuration.Default.Clone();
+        configuration.MemoryAllocator = new SmallBufferAllocator();
+        using var image = new Image<Rgba32>(configuration, 16, 8);
+
+        //Act
+        bool fromImage = image.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> imageMemory);
+        bool fromFrame = image.Frames.RootFrame.DangerousTryGetSinglePixelMemory(out Memory<Rgba32> frameMemory);
+
+        //Assert
+        Assert.False(fromImage);
+        Assert.False(fromFrame);
+        Assert.True(imageMemory.IsEmpty);
+        Assert.True(frameMemory.IsEmpty);
+
+        //Output
+        _output.WriteLine($"Buffers in the group: {image.GetPixelMemoryGroup().Count}");
+    }
+
+    // Splits pixel storage into 256-byte buffers so a 16 x 8 Rgba32 image needs two.
+    private sealed class SmallBufferAllocator : CodeBrix.Imaging.Memory.MemoryAllocator
+    {
+        protected internal override int GetBufferCapacityInBytes() => 256;
+
+        public override System.Buffers.IMemoryOwner<T> Allocate<T>(int length, CodeBrix.Imaging.Memory.AllocationOptions options = CodeBrix.Imaging.Memory.AllocationOptions.None)
+            => new Owner<T>(new T[length]);
+
+        private sealed class Owner<T>(T[] array) : System.Buffers.IMemoryOwner<T>
+        {
+            public Memory<T> Memory => array;
+
+            public void Dispose()
+            {
+            }
+        }
     }
 
     #endregion

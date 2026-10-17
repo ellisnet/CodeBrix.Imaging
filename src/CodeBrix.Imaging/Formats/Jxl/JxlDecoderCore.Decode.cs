@@ -56,7 +56,7 @@ internal sealed partial class JxlDecoderCore
             : null;
         JxlOutputColorTransform outputColor = new(header, icc, this.options, raw);
         if (onHeader != null)
-        { onHeader(header, this.CreateMetadata(header, codestream, outputColor.OutputSrgb ? null : icc, 0, originalColor: !outputColor.OutputSrgb)); }
+        { onHeader(header, this.CreateMetadata(header, codestream, outputColor.MetadataIcc(icc), 0, originalColor: !outputColor.OutputSrgb)); }
         if (header.Preview.HasValue)
         {
             budget.CountFrame();
@@ -136,7 +136,7 @@ internal sealed partial class JxlDecoderCore
                 if (frame.IsLast || displayFrames >= this.options.MaxFrames || (displayFrames != 0 && this.options.DecodingMode == FrameDecodingMode.First)) { break; }
             }
             codestream.Drain();
-            return (this.CreateMetadata(header, codestream, outputColor.OutputSrgb ? null : icc, displayFrames, coalesce && this.options.ApplyOrientation, !outputColor.OutputSrgb), header);
+            return (this.CreateMetadata(header, codestream, outputColor.MetadataIcc(icc), displayFrames, coalesce && this.options.ApplyOrientation, !outputColor.OutputSrgb), header);
         }
         finally
         {

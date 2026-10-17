@@ -712,11 +712,17 @@ JxlEncoder (CodeBrix.Imaging.Formats.Jxl) — full detail in "JPEG XL (.jxl)"
     bool? UseContainer                     null = container only when needed
     bool CompressMetadataBoxes             default true (Brotli)
     int BrotliEffort                       0..11, default 6
+    JxlColorEncodingInfo ColorEncoding     null (default) = sRGB/gray, or the
+                                           image's ICC profile; set
+                                           JxlColorEncodingInfo.LinearSrgb for
+                                           libjxl's linear-float convention
+                                           (see COLOR, ICC AND HDR)
 
 JxlDecoder
     bool IgnoreMetadata
     bool ApplyOrientation                  default true
     JxlTargetColor TargetColor             Auto (default) | Original | Srgb
+                                           | LinearSrgb
     float TargetDisplayLuminance           0 (default) keeps the HDR range
     FrameDecodingMode DecodingMode         All | First (default All)
     uint MaxFrames                         default uint.MaxValue
@@ -2027,9 +2033,12 @@ MaxTotalPixels; work and frame budgets reset per playback pass.
 COLOR, ICC AND HDR
 ------------------
 JxlDecoder.TargetColor is Auto (sRGB for XYB-coded images, original
-otherwise), Original or Srgb. Original output keeps the embedded ICC profile
-or synthesizes one for an enumerated encoding. Srgb output converts pixels and
-drops the profile. The managed CMS supports RGB/gray matrices, sampled and
+otherwise), Original, Srgb or LinearSrgb. Original output keeps the embedded
+ICC profile or synthesizes one for an enumerated encoding. Srgb output converts
+pixels and drops the profile. LinearSrgb output converts pixels to linear light
+(sRGB primaries, D65, linear transfer) and attaches a synthesized linear-sRGB
+ICC profile (none when IgnoreMetadata is set); use RgbaVector, a Half type or
+a 16-bit type with it, since 8-bit linear samples lose shadow detail. The managed CMS supports RGB/gray matrices, sampled and
 parametric curves, A2B/B2A LUTs, Lab PCS, CMYK and PQ/HLG CICP profiles. CMYK
 display pixels default to sRGB; use DecodeRaw for original CMYK including its
 K plane. LUT color conversion applies XYZ scaling at the PCS boundary and
@@ -2037,8 +2046,35 @@ honors legacy lut16Type Lab encodings and XYZ input matrices. The undefined
 legacy lut8Type XYZ case retains unit scaling; use a 16-bit LUT for an
 unambiguous XYZ profile.
 
+LINEAR FLOATS (libjxl's convention, opt-in). Imaging's own rule is that pixel
+samples are in the encoding of the image's color profile - sRGB when there is
+none, floating-point RgbaVector included. So by default an Image<RgbaVector>
+is written as a float JXL tagged with the sRGB transfer curve, and lossless
+decoding with TargetColor = Auto gives the same sRGB-encoded floats back.
+libjxl instead treats float buffers as linear sRGB. To follow libjxl, opt in
+on both sides; the defaults never change:
+
+    // Samples are linear light: write them unchanged, tagged as linear.
+    new JxlEncoder { Lossless = true, ColorEncoding = JxlColorEncodingInfo.LinearSrgb }
+        .Encode(linearImage, stream);
+
+    // Get linear values back from any JXL (sRGB, wide-gamut, HDR or linear).
+    var decoder = new JxlDecoder { TargetColor = JxlTargetColor.LinearSrgb };
+    using var image = decoder.Decode<RgbaVector>(Configuration.Default, stream, token);
+
+JxlEncoder.ColorEncoding takes any enumerated encoding (JxlColorEncodingInfo:
+white point, primaries, transfer function such as 8=linear, 13=sRGB, 16=PQ,
+18=HLG) and works for every pixel type, lossless or lossy; it only describes
+the samples and never converts them. It is read when encoding starts (later
+changes to the object do not affect an encode in progress), it applies to
+Encode/EncodeAsync only (EncodeRaw uses JxlRawImageEncoding.ColorEncoding), and
+an image that carries an ICC profile cannot be combined with it
+(ArgumentException) - remove the profile or leave ColorEncoding null to keep
+the profile's tagging. An image decoded with LinearSrgb carries a linear ICC
+profile, so re-encoding it with the default encoder keeps it correctly tagged.
+
 TargetDisplayLuminance defaults to zero, preserving the source HDR range. Set
-it to a display peak in nits (for example, 255) with sRGB output to apply PQ
+it to a display peak in nits (for example, 255) with sRGB or linear-sRGB output to apply PQ
 tone mapping or HLG display adaptation and gamut mapping. Original-color
 output is unaffected by this setting; RgbaVector can retain unclamped HDR
 values.
@@ -2352,9 +2388,20 @@ own before changing anything in a library or a server.
     public MemoryAllocator MemoryAllocator { get; set; }
     public void Configure(IConfigurationModule configuration)
     public Configuration CreateSandboxed(int allocationLimitMegabytes)
-    public Configuration Clone()
+    public Configuration Clone(bool doShallowClone = false)
 
 `MaxDegreeOfParallelism` of 0 or below -1 throws ArgumentOutOfRangeException.
+
+`Clone()` returns an INDEPENDENT copy: its own ImageFormatsManager holding the
+same formats, encoders, decoders and detectors (same detector order), its own
+Properties dictionary holding the same entries (values are not copied), plus
+PreferContiguousImageBuffers and the other settings. Registering a decoder or
+format on the copy does not change the source, so `Configuration.Default.Clone()`
+is a safe way to customise formats. `Clone(doShallowClone: true)` is the older
+shallow copy: it SHARES the source's ImageFormatsManager (a registration on
+either changes both) and copies neither Properties nor
+PreferContiguousImageBuffers. Both share the MemoryAllocator, which is meant to
+be process-wide. CreateSandboxed uses the independent copy.
 
     var config = Configuration.Default.Clone();
     config.MaxDegreeOfParallelism = 2;
@@ -3316,6 +3363,8 @@ Feature-to-test-file map (all paths under tests/CodeBrix.Imaging.Tests/):
                                              JxlJpegReconstructionTests.cs
     Streaming playback (JxlAnimationReader): JxlAnimationTests.cs
     Color targets, ICC and HDR tone mapping: JxlColorTests.cs, JxlHdrTests.cs
+    Linear floats (ColorEncoding,
+    TargetColor = LinearSrgb):               JxlLinearColorTests.cs
     Raw planes, layers and EncodeRaw:        JxlRawTests.cs, JxlRawEncoderTests.cs
     Decoder resource limits:                 JxlDecodeBudgetTests.cs
     Encoder memory limits:                   JxlEncoderMemoryLimitTests.cs
@@ -3415,6 +3464,8 @@ JPEG XL   (using CodeBrix.Imaging.Formats.Jxl;)
     Playback        JxlAnimationReader.Open(stream) + TryGetNextFrame(out frame)
     HDR to SDR      new JxlDecoder { TargetColor = JxlTargetColor.Srgb,
                                      TargetDisplayLuminance = 255 }
+    Linear floats   new JxlEncoder { ColorEncoding = JxlColorEncodingInfo.LinearSrgb }
+                    new JxlDecoder { TargetColor = JxlTargetColor.LinearSrgb }
     Raw planes      new JxlDecoder().DecodeRaw(config, stream) | encoder.EncodeRaw(raw, s)
 
 8BPP BMP   (using CodeBrix.Imaging.Helpers;)
@@ -3423,7 +3474,8 @@ JPEG XL   (using CodeBrix.Imaging.Formats.Jxl;)
     BmpIndexingMode.Normal | BmpIndexingMode.SystemDrawingCompatible
 
 CONFIG
-    Configuration.Default.Clone() | .CreateSandboxed(megabytes)
+    Configuration.Default.Clone() (independent) | .Clone(doShallowClone: true)
+    Configuration.Default.CreateSandboxed(megabytes)
     config.MaxDegreeOfParallelism | .PreferContiguousImageBuffers
     MemoryAllocator.Default.ReleaseRetainedResources()
 

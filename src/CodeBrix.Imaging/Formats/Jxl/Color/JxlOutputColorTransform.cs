@@ -17,6 +17,7 @@ internal sealed class JxlOutputColorTransform
     private readonly JxlEnumeratedColorSpace enumerated;
     private readonly JxlToneMapper toneMapper;
     internal readonly bool OutputSrgb;
+    internal readonly bool OutputLinear;
     internal readonly int BlackIndex;
     internal readonly bool PreserveCoded;
 
@@ -25,7 +26,8 @@ internal sealed class JxlOutputColorTransform
         this.header = header;
         this.BlackIndex = Array.FindIndex(header.ExtraChannels, e => e.Type == 4);
         this.PreserveCoded = raw && !options.Coalesce && options.TargetColor == JxlTargetColor.Auto;
-        this.OutputSrgb = options.TargetColor == JxlTargetColor.Srgb ||
+        this.OutputLinear = options.TargetColor == JxlTargetColor.LinearSrgb;
+        this.OutputSrgb = options.TargetColor is JxlTargetColor.Srgb or JxlTargetColor.LinearSrgb ||
             (options.TargetColor == JxlTargetColor.Auto && !this.PreserveCoded && (header.XybEncoded || (!raw && this.BlackIndex >= 0)));
         if (!raw && this.BlackIndex >= 0 && !this.OutputSrgb)
         { throw new ArgumentException("CMYK original-color output requires DecodeRaw.", nameof(options.TargetColor)); }
@@ -45,8 +47,14 @@ internal sealed class JxlOutputColorTransform
         }
     }
 
+    private static readonly byte[] LinearSrgbIcc = JxlIccSynthesis.Create(new JxlColorEncoding { TransferFunction = 8 });
+
+    // The ICC profile decoded images carry: the file's own for original-color output, none for sRGB
+    // (Imaging's default), and a synthesized linear-sRGB profile for linear-sRGB output.
+    internal byte[] MetadataIcc(byte[] icc) => this.OutputLinear ? (byte[])LinearSrgbIcc.Clone() : this.OutputSrgb ? null : icc;
+
     internal bool IsIdentity(JxlFloatFrame frame) => this.PreserveCoded ||
-        (frame.ColorTransformed && !frame.LinearSrgb && (!this.OutputSrgb || this.enumerated?.IsSrgb == true));
+        (!this.OutputLinear && frame.ColorTransformed && !frame.LinearSrgb && (!this.OutputSrgb || this.enumerated?.IsSrgb == true));
 
     internal Vector3 Convert(Vector3 value, float black, JxlFloatFrame frame, JxlColorTransform frameTransform, bool forceLinear = false)
     {
@@ -57,7 +65,7 @@ internal sealed class JxlOutputColorTransform
             value = frameTransform.Convert(value);
             linear = this.header.XybEncoded && this.header.Color.WantIcc;
         }
-        if (!linear && (!this.OutputSrgb || this.enumerated?.IsSrgb == true)) { return value; }
+        if (!linear && (!this.OutputSrgb || (!this.OutputLinear && this.enumerated?.IsSrgb == true))) { return value; }
         if (linear)
         {
             if (this.OutputSrgb) { return this.EncodeSrgb(value); }
@@ -76,6 +84,7 @@ internal sealed class JxlOutputColorTransform
                 if (this.profile.HdrTransfer != 0) { value *= 203 / this.header.IntensityTarget; }
                 return this.EncodeSrgb(value);
             }
+            if (this.OutputLinear) { return XyzToSrgb.Apply(xyz); }
             IccColorProfile.Srgb.FromXyz(xyz, channels);
             return new(channels[0], channels[1], channels[2]);
         }
@@ -86,6 +95,7 @@ internal sealed class JxlOutputColorTransform
     private Vector3 EncodeSrgb(Vector3 value)
     {
         if (this.toneMapper != null) { value = this.toneMapper.Apply(value); }
+        if (this.OutputLinear) { return value; }
         return new(JxlEnumeratedColorSpace.Srgb(value.X), JxlEnumeratedColorSpace.Srgb(value.Y), JxlEnumeratedColorSpace.Srgb(value.Z));
     }
 }

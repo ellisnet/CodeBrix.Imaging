@@ -53,6 +53,8 @@ internal sealed class JxlEncoderCore(JxlEncoder options) : IImageEncoderInternal
         bool alpha = pixel.AlphaRepresentation != PixelAlphaRepresentation.None;
         JxlBitDepth depth = PixelDepth<TPixel>();
         byte[] icc = image.Metadata.IccProfile?.ToByteArray();
+        if (icc != null && options.ColorEncodingSnapshot != null)
+        { throw new ArgumentException("Choose an ICC profile or an enumerated color encoding.", nameof(image)); }
         if (icc != null)
         {
             if (icc.Length < 128) { throw new ArgumentException("The ICC profile is truncated.", nameof(image)); }
@@ -79,7 +81,7 @@ internal sealed class JxlEncoderCore(JxlEncoder options) : IImageEncoderInternal
         {
             Size = new((uint)image.Width, (uint)image.Height), XybEncoded = !options.IsLossless, Orientation = orientation,
             BitDepth = depth, Modular16BitBuffers = depth.Bits <= 12, IntensityTarget = (float)(Half)metadata.IntensityTarget,
-            Color = new() { ColorSpace = gray ? 1U : 0, WantIcc = icc != null },
+            Color = options.ColorEncodingSnapshot is { } encoding ? encoding.ToHeader(gray ? 1U : 0) : new() { ColorSpace = gray ? 1U : 0, WantIcc = icc != null },
             ExtraChannels = alpha ? [new() { Type = 0, BitDepth = depth, AlphaAssociated = pixel.AlphaRepresentation == PixelAlphaRepresentation.Associated }] : [],
             IsAnimated = image.Frames.Count > 1 || metadata.IsAnimated, TpsNumerator = metadata.TicksPerSecondNumerator,
             TpsDenominator = metadata.TicksPerSecondDenominator, LoopCount = gifSource?.RepeatCount ?? metadata.LoopCount,

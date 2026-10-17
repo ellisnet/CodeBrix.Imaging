@@ -73,6 +73,11 @@ public sealed class JxlRawImageEncoding
 /// <summary>An enumerated JPEG XL color encoding using the numeric identifiers defined by the format.</summary>
 public sealed class JxlColorEncodingInfo
 {
+    /// <summary>Gets a new sRGB encoding: D65 white point, sRGB primaries and the sRGB transfer curve. This is the default.</summary>
+    public static JxlColorEncodingInfo Srgb => new();
+    /// <summary>Gets a new linear sRGB encoding: D65 white point and sRGB primaries with a linear transfer function (libjxl's float convention).</summary>
+    public static JxlColorEncodingInfo LinearSrgb => new() { TransferFunction = 8 };
+
     /// <summary>Gets or sets the white point: 1=D65, 2=custom, 10=equal energy, 11=DCI.</summary>
     public int WhitePoint { get; set; } = 1;
     /// <summary>Gets or sets custom CIE xy white-point coordinates.</summary>
@@ -91,6 +96,8 @@ public sealed class JxlColorEncodingInfo
     public float? Gamma { get; set; }
     /// <summary>Gets or sets rendering intent: 0=perceptual, 1=relative, 2=saturation, 3=absolute.</summary>
     public int RenderingIntent { get; set; } = 1;
+
+    internal JxlColorEncodingInfo Copy() => (JxlColorEncodingInfo)this.MemberwiseClone();
 
     internal JxlColorEncoding ToHeader(uint colorSpace)
     {

@@ -12,4 +12,10 @@ public enum JxlTargetColor
     Original,
     /// <summary>Convert color samples to sRGB. Floating-point output retains values outside the unit interval.</summary>
     Srgb,
+    /// <summary>
+    /// Convert color samples to linear sRGB (sRGB primaries and D65 white with a linear transfer function), libjxl's convention for
+    /// floating-point output. Values outside the unit interval are retained, as for <see cref="Srgb"/>. Decoded images carry a
+    /// linear-sRGB ICC profile unless metadata is ignored. Use a floating-point or 16-bit pixel type: 8-bit linear samples lose shadow detail.
+    /// </summary>
+    LinearSrgb,
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0.
 
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CodeBrix.Imaging.Advanced;
@@ -307,7 +306,7 @@ public sealed class ImageFrame<TPixel> : ImageFrame, IPixelSource<TPixel>
             return false;
         }
 
-        memory = mg.Single();
+        memory = mg[0];
         return true;
     }
 

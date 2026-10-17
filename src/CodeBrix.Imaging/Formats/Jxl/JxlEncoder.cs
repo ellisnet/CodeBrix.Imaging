@@ -58,6 +58,18 @@ public sealed class JxlEncoder : IImageEncoder
     public bool? UseContainer { get; set; }
     /// <summary>Gets or sets whether to compress supported metadata boxes with Brotli.</summary>
     public bool CompressMetadataBoxes { get; set; } = true;
+    /// <summary>Gets or sets an enumerated color encoding that describes the image's samples; null (the default) tags them as sRGB (or gray), or uses the image's ICC profile.</summary>
+    /// <remarks>
+    /// Imaging's convention is that samples carry the encoding of the image's color profile, which is sRGB when there is none - floating-point
+    /// pixels such as <see cref="RgbaVector"/> included. libjxl instead treats floating-point input as linear sRGB. To follow that convention,
+    /// set this to <see cref="JxlColorEncodingInfo.LinearSrgb"/>: the samples are written unchanged and the file says they are linear. Any other
+    /// enumerated encoding (BT.2020, PQ, HLG, ...) works the same way, for any pixel type. Decode such a file with
+    /// <see cref="JxlTargetColor.LinearSrgb"/> to get linear values back. An image that carries an ICC profile cannot be combined with this option.
+    /// Applies to <see cref="Encode{TPixel}"/> and <see cref="EncodeAsync{TPixel}"/>; <see cref="EncodeRaw"/> uses <see cref="JxlRawImageEncoding.ColorEncoding"/>.
+    /// </remarks>
+    public JxlColorEncodingInfo ColorEncoding { get; set; }
+
+    internal JxlColorEncodingInfo ColorEncodingSnapshot { get; private set; }
 
     /// <inheritdoc/>
     public void Encode<TPixel>(Image<TPixel> image, Stream stream)
@@ -109,6 +121,8 @@ public sealed class JxlEncoder : IImageEncoder
     private JxlEncoder Snapshot()
     {
         JxlEncoder copy = (JxlEncoder)this.MemberwiseClone();
+        copy.ColorEncodingSnapshot = copy.ColorEncoding?.Copy();
+        copy.ColorEncodingSnapshot?.ToHeader(0);
         if (!float.IsFinite(copy.Distance) || copy.Distance is < 0 or > 25) { throw new ArgumentOutOfRangeException(nameof(this.Distance)); }
         if (copy.Quality is < 0 or > 100) { throw new ArgumentOutOfRangeException(nameof(this.Quality)); }
         if (copy.Effort < 1 || copy.Effort > (copy.AllowExpertEffort && copy.IsLossless ? 11 : 10))

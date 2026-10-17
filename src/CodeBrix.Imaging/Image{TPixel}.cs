@@ -340,7 +340,7 @@ public sealed class Image<TPixel> : Image
             return false;
         }
 
-        memory = mg.Single();
+        memory = mg[0];
         return true;
     }
 

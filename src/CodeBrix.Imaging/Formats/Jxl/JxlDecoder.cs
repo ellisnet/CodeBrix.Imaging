@@ -22,7 +22,7 @@ public sealed class JxlDecoder : IImageDecoder, IImageInfoDetector
     /// <summary>Gets or sets the output color encoding. The default selects sRGB for XYB and the original encoding otherwise.</summary>
     public JxlTargetColor TargetColor { get; set; }
     /// <summary>Gets or sets the peak display luminance in nits for HDR-to-sRGB tone mapping. Zero preserves the source range.</summary>
-    /// <remarks>Applies only to sRGB output. For example, use 255 for an SDR display. Floating-point output remains unclamped when this is zero.</remarks>
+    /// <remarks>Applies only to sRGB and linear-sRGB output. For example, use 255 for an SDR display. Floating-point output remains unclamped when this is zero.</remarks>
     public float TargetDisplayLuminance { get; set; }
     /// <summary>Gets or sets whether to decode all displayed animation frames or only the first.</summary>
     public FrameDecodingMode DecodingMode { get; set; } = FrameDecodingMode.All;
@@ -110,7 +110,7 @@ public sealed class JxlDecoder : IImageDecoder, IImageInfoDetector
 
     private void ValidateOptions()
     {
-        if (this.TargetColor is not (JxlTargetColor.Auto or JxlTargetColor.Original or JxlTargetColor.Srgb)) { throw new ArgumentOutOfRangeException(nameof(this.TargetColor)); }
+        if (this.TargetColor is not (JxlTargetColor.Auto or JxlTargetColor.Original or JxlTargetColor.Srgb or JxlTargetColor.LinearSrgb)) { throw new ArgumentOutOfRangeException(nameof(this.TargetColor)); }
         if (!float.IsFinite(this.TargetDisplayLuminance) || this.TargetDisplayLuminance < 0) { throw new ArgumentOutOfRangeException(nameof(this.TargetDisplayLuminance)); }
         if (this.MaxPixels <= 0) { throw new ArgumentOutOfRangeException(nameof(this.MaxPixels)); }
         if (this.MaxTotalPixels <= 0) { throw new ArgumentOutOfRangeException(nameof(this.MaxTotalPixels)); }

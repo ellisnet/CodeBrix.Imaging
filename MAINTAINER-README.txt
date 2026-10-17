@@ -451,6 +451,15 @@ NOTES
     descriptions worked even before (the trimmer keeps enum fields), so this
     removed a warning, not a malfunction; ExifProfileTests ToString_* fence
     the lookup. Re-run that trimmed publish after adding reflection.
+  * Configuration.Clone(bool doShallowClone = false) DIVERGES from upstream
+    (2026-10-17). Upstream's parameterless Clone() was shallow: the copy shared
+    the source's ImageFormatManager, so SetDecoder on a "clone" of
+    Configuration.Default changed the global default. The default is now an
+    independent copy (internal ImageFormatManager.Clone(); same detector ORDER,
+    which matters because detection keeps the LAST match; Properties entries
+    and PreferContiguousImageBuffers copied); doShallowClone: true keeps the
+    old behaviour exactly. Fenced by ConfigurationTests Clone_* /
+    Shallow_clone_*. Do not revert to the upstream shape when re-syncing.
   * CodeBrix-only public API that does NOT exist upstream, and therefore has
     no upstream documentation to fall back on:
         Image.LoadPixelDataFromBgra (4 overloads, SIMD channel reorder)

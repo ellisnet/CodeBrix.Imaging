@@ -225,6 +225,30 @@ public class ImageFormatManager
     }
 
     /// <summary>
+    /// Creates an independent copy of this manager: the copy holds the same formats, encoders, decoders and
+    /// detectors (the instances themselves are shared), and later registrations on either one do not affect the other.
+    /// </summary>
+    /// <returns>A new <see cref="ImageFormatManager"/>.</returns>
+    internal ImageFormatManager Clone()
+    {
+        ImageFormatManager copy = new();
+        lock (HashLock)
+        {
+            copy.imageFormats.UnionWith(this.imageFormats);
+        }
+
+        foreach (KeyValuePair<IImageFormat, IImageEncoder> pair in this.mimeTypeEncoders) { copy.mimeTypeEncoders[pair.Key] = pair.Value; }
+        foreach (KeyValuePair<IImageFormat, IImageDecoder> pair in this.mimeTypeDecoders) { copy.mimeTypeDecoders[pair.Key] = pair.Value; }
+
+        // Detection keeps the LAST detector that matches, so the copy must enumerate in the same order. A bag filled
+        // on one thread enumerates newest first, so adding the snapshot in reverse reproduces the snapshot's order.
+        IImageFormatDetector[] detectors = this.imageFormatDetectors.ToArray();
+        for (int i = detectors.Length - 1; i >= 0; i--) { copy.imageFormatDetectors.Add(detectors[i]); }
+        copy.MaxHeaderSize = this.MaxHeaderSize;
+        return copy;
+    }
+
+    /// <summary>
     /// Sets the max header size.
     /// </summary>
     private void SetMaxHeaderSize() => this.MaxHeaderSize = this.imageFormatDetectors.Max(x => x.HeaderSize);
